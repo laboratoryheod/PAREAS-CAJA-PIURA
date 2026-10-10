@@ -15,16 +15,23 @@ export function getDb(): Database.Database {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
   db.exec(fs.readFileSync(path.join(process.cwd(), "lib", "db", "schema.sql"), "utf8"));
+  migrar(db);
   seedSiVacio(db);
   g.__db = db;
   return db;
+}
+
+/** Columnas agregadas después de la primera versión (para bases ya creadas). */
+function migrar(db: Database.Database) {
+  const cols = (db.prepare("PRAGMA table_info(clientes)").all() as { name: string }[]).map((c) => c.name);
+  if (!cols.includes("sin_beneficios")) db.exec("ALTER TABLE clientes ADD COLUMN sin_beneficios INTEGER NOT NULL DEFAULT 0");
 }
 
 /** Borra todo y vuelve a sembrar (para resetear la demo). */
 export function resetDb(): Database.Database {
   const db = getDb();
   db.exec("PRAGMA foreign_keys = OFF");
-  for (const t of ["eventos", "trivia_respuestas", "trivia_preguntas", "movimientos_score", "propuestas", "cuotas_vencidas", "creditos", "clientes", "app_estado"]) {
+  for (const t of ["campanas", "eventos", "trivia_respuestas", "trivia_preguntas", "movimientos_score", "propuestas", "cuotas_vencidas", "creditos", "clientes", "app_estado"]) {
     db.exec(`DELETE FROM ${t}`);
   }
   db.exec("DELETE FROM sqlite_sequence");

@@ -2,6 +2,7 @@
 // Todos los valores se ajustan en PARAMS_SCORE.
 import { nivelDe, UMBRALES_NIVEL, type Nivel } from "./niveles";
 import { REGLAS } from "./reglas";
+import { APELATIVO } from "./config";
 
 export const PARAMS_SCORE = {
   inicial: 70,
@@ -16,7 +17,8 @@ export const PARAMS_SCORE = {
   promesaCumplida: 20,
   // Resta (chicotazo del Pacaso)
   chicotazoPorDia: -12, // por cada día que el cliente sigue en mora; supera a propósito el tope de trivia (+10)
-  promesaIncumplida: -25,
+  // Incumplir un plan NO resta puntos fijos: vuelve el chicotazo diario y el cliente pierde sus beneficios
+  // (ver REGLAS en lib/reglas.ts) hasta que la Caja le ofrezca un "regalo salvador".
 } as const;
 // Nota: con trivia (+10 máx.) y sin racha en mora, el neto diario en mora es 10 − 12 = −2, siempre negativo.
 // El Pacaso solo deja de pegar cuando el cliente paga.
@@ -97,23 +99,30 @@ export function puntosParaSiguienteNivel(score: number): { siguiente: Nivel | nu
   return { siguiente: "Plata", faltan: UMBRALES_NIVEL.plata - score };
 }
 
-export function beneficiosDeNivel(nivel: Nivel): string {
+export function beneficiosDeNivel(nivel: Nivel, sinBeneficios = false): string {
+  if (sinBeneficios) return "Por no cumplir tu plan anterior, tus beneficios están en pausa hasta que te regularices con una campaña de la Caja.";
   const b = REGLAS.beneficiosNivel[nivel];
   const partes: string[] = [];
   if (b.cuotasExtra) partes.push(`${b.cuotasExtra} cuota extra para reprogramar`);
   if (b.inicialMenosPct) partes.push(`${Math.round(b.inicialMenosPct * 100)}% menos de inicial`);
-  return partes.length ? `Beneficios de nivel ${nivel}: ${partes.join(" y ")}.` : `Sube de nivel para desbloquear más cuotas y menos inicial.`;
+  return partes.length ? `Beneficios de nivel ${nivel}: ${partes.join(" y ")}. ¡Chévere!` : `Sube de nivel para desbloquear más cuotas y menos inicial.`;
 }
 
 export type HumorPacaso = "feliz" | "serio" | "chicotazo";
 
-export function estadoPacaso(c: { nombre?: string; diasAtraso: number; score: number }): { humor: HumorPacaso; mensaje: string } {
-  const nombre = c.nombre ? `, ${c.nombre}` : "";
+export function estadoPacaso(c: { nombre?: string; diasAtraso: number; score: number; sinBeneficios?: boolean; regaloDisponible?: boolean }): { humor: HumorPacaso; mensaje: string } {
+  const quien = c.nombre ?? APELATIVO;
+  if (c.regaloDisponible) {
+    return { humor: "feliz", mensaje: `🦫 ¡Oe ${quien}, te salió el Regalo Salvador! La Caja te da una mano para ponerte al día. Aprovéchalo antes de que venza, ${APELATIVO}.` };
+  }
+  if (c.diasAtraso > 0 && c.sinBeneficios) {
+    return { humor: "chicotazo", mensaje: `🦫 ¡Chas, chas! ${quien}, se pasó un pago de tu plan y tus beneficios quedaron en pausa. Tranqui, ${APELATIVO}: paga lo pendiente y el Pacaso deja de pegar.` };
+  }
   if (c.diasAtraso > 0) {
-    return { humor: "chicotazo", mensaje: `🦫 ¡Chas! El Pacaso te recuerda que tienes una cuota pendiente${nombre}. Mientras siga pendiente, tus puntos bajan; apenas te pongas al día, vuelven a subir.` };
+    return { humor: "chicotazo", mensaje: `🦫 ¡Chas! Oe ${quien}, el Pacaso te recuerda que tienes una cuota pendiente. Mientras siga pendiente, tus puntos bajan; apenas pagues, vuelven a subir. ¡Tú puedes, ${APELATIVO}!` };
   }
   if (c.score < UMBRALES_NIVEL.plata) {
-    return { humor: "serio", mensaje: `🦫 El Pacaso está atento${nombre}. Vas al día, ¡buen paso! Suma puntos con la trivia para subir de nivel.` };
+    return { humor: "serio", mensaje: `🦫 El Pacaso te tiene el ojo encima, ${quien}. Vas al día, ¡chévere! Suma puntos con la trivia para subir de nivel.` };
   }
-  return { humor: "feliz", mensaje: `🦫 ¡El Pacaso está feliz${nombre}! Estás al día con tus pagos. ¡Sigue así!` };
+  return { humor: "feliz", mensaje: `🦫 ¡Chévere, ${quien}! Estás al día con tus pagos y el Pacaso está feliz. ¡Sigue así, ${APELATIVO}!` };
 }

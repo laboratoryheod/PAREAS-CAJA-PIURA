@@ -1,7 +1,7 @@
 // REGLAS DE NEGOCIO SIMULADAS — un solo archivo editable.
 // Todo número que el banco pueda querer ajustar en la hackathon vive aquí.
 import { generarCronograma, type Cronograma } from "./cronograma";
-import { diferenciaDias, sumarDias } from "./fecha";
+import { diferenciaDias, sumarDias, sumarMeses } from "./fecha";
 import { nivelDe, type Nivel } from "./niveles";
 
 /** Tasa moratoria = TEA del crédito × este factor, prorrateada por día (interés simple). Simulado. */
@@ -27,6 +27,13 @@ export const REGLAS = {
   } as Record<Nivel, { cuotasExtra: number; inicialMenosPct: number }>,
 };
 
+/**
+ * "Regalo salvador": campaña que el gestor puede activar para que un moroso se regularice.
+ * Prototipo: paga hoy un 30% menos de lo que le toca y recupera ese descuento con +10% en sus 3 cuotas siguientes.
+ * (Cada caja define su propia campaña; se cambia aquí.)
+ */
+export const REGALO_SALVADOR = { descuentoPct: 0.3, recargoPct: 0.1, meses: 3, vigenciaDias: 7 };
+
 export function interesMoratorio(montoCuota: number, diasAtraso: number, tea: number): number {
   if (diasAtraso <= 0) return 0;
   const tasaDiaria = (tea * FACTOR_MORATORIO) / 360;
@@ -41,7 +48,8 @@ export interface CreditoReglas {
   interesMoratorio: number; // a la fecha
   reprogramacionActiva: boolean;
 }
-export interface ClienteReglas { score: number }
+/** sinBeneficios: incumplió un plan; pierde beneficios de nivel y no puede volver a reprogramar (salvo regalo salvador). */
+export interface ClienteReglas { score: number; sinBeneficios?: boolean }
 export interface PropuestaPlan { nCuotas: number; inicial: number; fechaPrimerPago: string }
 
 export interface Limites {
@@ -53,6 +61,7 @@ export interface Limites {
   primerPagoMin: string;
   primerPagoMax: string;
   nivel: Nivel;
+  sinBeneficios: boolean;
 }
 
 export interface Validacion {
@@ -72,7 +81,7 @@ const fmt = (n: number) => "S/ " + n.toFixed(2);
 export function limitesPara(credito: CreditoReglas, cliente: ClienteReglas, hoy: string): Limites {
   const deuda = r2(credito.montoVencido + credito.interesMoratorio);
   const nivel = nivelDe(cliente.score);
-  const base = { deuda, nivel, primerPagoMin: hoy, primerPagoMax: sumarDias(hoy, REGLAS.maxDiasPrimerPago) };
+  const base = { deuda, nivel, sinBeneficios: !!cliente.sinBeneficios, primerPagoMin: hoy, primerPagoMax: sumarDias(hoy, REGLAS.maxDiasPrimerPago) };
 
   if (credito.diasAtraso > REGLAS.tramos[REGLAS.tramos.length - 1].hasta) {
     const pct = REGLAS.derivado.inicialPct;
@@ -81,7 +90,7 @@ export function limitesPara(credito: CreditoReglas, cliente: ClienteReglas, hoy:
   const t = REGLAS.tramos.find((x) => credito.diasAtraso <= x.hasta)!;
   let pct = t.inicialPct;
   if ("inicialPctScoreBajo" in t && t.inicialPctScoreBajo !== undefined && cliente.score < REGLAS.scoreBuenHistorial) pct = t.inicialPctScoreBajo;
-  const ben = REGLAS.beneficiosNivel[nivel];
+  const ben = cliente.sinBeneficios ? REGLAS.beneficiosNivel.Bronce : REGLAS.beneficiosNivel[nivel];
   pct = Math.max(0, r2(pct - ben.inicialMenosPct));
   return { ...base, derivado: false, maxCuotas: t.maxCuotas + ben.cuotasExtra, inicialMinPct: pct, inicialMin: Math.min(deuda, Math.ceil(deuda * pct * 100) / 100) };
 }
@@ -95,6 +104,10 @@ export function validarPropuesta(credito: CreditoReglas, cliente: ClienteReglas,
   if (credito.reprogramacionActiva) {
     return { aceptable: false, resultado: "no_disponible", contrapropuesta: null, limites: lim, cronograma: cron(propuesta),
       motivos: ["Este crédito ya tiene una reprogramación activa. Solo se permite una a la vez."] };
+  }
+  if (cliente.sinBeneficios) {
+    return { aceptable: false, resultado: "no_disponible", contrapropuesta: null, limites: lim, cronograma: cron(propuesta),
+      motivos: ["Como no se cumplió tu plan anterior, por ahora no puedes armar otro plan. Puedes pagar tu deuda o esperar una campaña de la Caja."] };
   }
   if (credito.diasAtraso <= 0 || lim.deuda <= 0) {
     return { aceptable: false, resultado: "no_disponible", contrapropuesta: null, limites: lim, cronograma: cron(propuesta),
@@ -145,4 +158,22 @@ function mejorAlternativa(lim: Limites, p: PropuestaPlan, hoy: string): Propuest
     }
   }
   return { nCuotas: r2(lim.deuda - inicial) > 0 ? n : 0, inicial, fechaPrimerPago: fecha };
+}
+
+// ---------------------------------------------------------------- regalo salvador
+
+export interface RegaloCalculado { base: number; descuento: number; montoHoy: number; recargos: { n: number; fecha: string; monto: number }[] }
+
+/** base = lo que le toca pagar hoy (cuotas vencidas + moratorio). Los recargos suman exactamente el descuento. */
+export function calcularRegaloSalvador(base: number, hoy: string): RegaloCalculado {
+  const { descuentoPct, recargoPct, meses } = REGALO_SALVADOR;
+  const descuento = r2(base * descuentoPct);
+  const recargos: RegaloCalculado["recargos"] = [];
+  let acumulado = 0;
+  for (let i = 1; i <= meses; i++) {
+    const monto = i === meses ? r2(descuento - acumulado) : r2(base * recargoPct);
+    acumulado = r2(acumulado + monto);
+    recargos.push({ n: i, fecha: sumarMeses(hoy, i), monto });
+  }
+  return { base: r2(base), descuento, montoHoy: r2(base - descuento), recargos };
 }

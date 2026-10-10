@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validarPropuesta, limitesPara, interesMoratorio, type CreditoReglas } from "@/lib/reglas";
+import { validarPropuesta, limitesPara, interesMoratorio, calcularRegaloSalvador, type CreditoReglas } from "@/lib/reglas";
 
 const HOY = "2026-10-10";
 const credito = (diasAtraso: number, montoVencido = 1000, interes = 0, activa = false): CreditoReglas =>
@@ -117,5 +117,23 @@ describe("otras reglas", () => {
   it("interés moratorio simple por día", () => {
     expect(interesMoratorio(320, 12, 0.38)).toBe(6.08);
     expect(interesMoratorio(320, 0, 0.38)).toBe(0);
+  });
+});
+
+describe("incumplimiento y regalo salvador", () => {
+  it("quien incumplió no puede reprogramar ni tiene beneficios de nivel", () => {
+    const v = validarPropuesta(credito(10), { score: 80, sinBeneficios: true }, plan(2), HOY);
+    expect(v.aceptable).toBe(false);
+    expect(v.resultado).toBe("no_disponible");
+    expect(v.contrapropuesta).toBeNull();
+    expect(limitesPara(credito(31), { score: 80, sinBeneficios: true }, HOY)).toMatchObject({ maxCuotas: 4, inicialMinPct: 0.2 });
+  });
+  it("regalo salvador: -30% hoy y +10% en 3 cuotas que recuperan exactamente el descuento", () => {
+    const r = calcularRegaloSalvador(326.08, HOY);
+    expect(r.descuento).toBe(97.82);
+    expect(r.montoHoy).toBe(228.26);
+    expect(r.recargos.map((x) => x.monto)).toEqual([32.61, 32.61, 32.6]);
+    expect(r.recargos.reduce((s, x) => s + x.monto, 0)).toBeCloseTo(r.descuento, 2);
+    expect(r.recargos.map((x) => x.fecha)).toEqual(["2026-11-10", "2026-12-10", "2027-01-10"]);
   });
 });

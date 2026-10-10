@@ -20,7 +20,7 @@ describe("Gengis Guerrero (demo)", () => {
     expect(s.deuda.total).toBeCloseTo(326.08, 2);
     expect(s.score).toBe(70);
     expect(s.pacaso.humor).toBe("chicotazo");
-    expect(s.saludo).toContain("Hola, Gengis");
+    expect(s.saludo).toContain("¡Habla, Gengis!");
   });
 
   it("el simulador valida en servidor y propone la alternativa más cercana", () => {
@@ -39,15 +39,28 @@ describe("Gengis Guerrero (demo)", () => {
     await expect(S.registrarPropuesta({ ...plan(2), motivo: "olvido" })).rejects.toThrow(/aceptar/);
   });
 
-  it("propuesta aceptada: el Pacaso deja de pegar y aparece en el banco", async () => {
+  it("aceptar el plan NO detiene el chicotazo: recién el primer pago lo hace", async () => {
     const r = await S.registrarPropuesta({ ...plan(2), motivo: "bajaron_ventas", acepta: true });
     expect(r.estado).toBe("aceptada");
-    expect(r.situacion.estado).toBe("reprogramado");
-    expect(r.situacion.diasAtraso).toBe(0);
+    expect(r.situacion.estado).toBe("plan_pendiente");
+    expect(r.situacion.diasAtraso).toBe(12);
+    expect(r.situacion.pacaso.humor).toBe("chicotazo");
+    S.avanzarDia();
+    expect(S.situacion(GENGIS).score).toBe(70 - 12); // sigue pegando
+    const pago = await S.pagoSimulado(GENGIS);
+    expect(pago.situacion.estado).toBe("reprogramado");
+    expect(pago.situacion.diasAtraso).toBe(0);
+    expect(pago.mensajes.join(" ")).toMatch(/Arrancó tu plan/);
+    S.avanzarDia();
+    expect(S.situacion(GENGIS).score).toBe(70 - 12 + 15); // ya no pega
+  });
+
+  it("propuesta aceptada aparece en el banco y solo hay una activa", async () => {
+    await S.registrarPropuesta({ ...plan(2), motivo: "bajaron_ventas", acepta: true });
     expect(S.feed(0, 50).items.some((i) => i.tipo === "propuesta_enviada" && i.texto.includes("Gengis G."))).toBe(true);
     // una sola reprogramación activa
     await expect(S.registrarPropuesta({ ...plan(2), motivo: "olvido", acepta: true })).rejects.toThrow();
-    expect(S.kpis().propuestasAceptadas).toBeGreaterThanOrEqual(11);
+    expect(S.kpis().propuestasAceptadas).toBe(13);
   });
 
   it("cumplir el plan: pagos a tiempo suman y al final se cumple la promesa (+20)", async () => {
@@ -59,13 +72,18 @@ describe("Gengis Guerrero (demo)", () => {
     expect(fin.score).toBe(100); // 85 + 15 + 20 de promesa cumplida, acotado a 100
   });
 
-  it("incumplir el plan: -25 y vuelve la mora", async () => {
+  it("incumplir el plan: solo chicotazo diario, sin -25, y pierde beneficios", async () => {
     await S.registrarPropuesta({ ...plan(2, 0, "2026-10-12"), motivo: "olvido", acepta: true });
-    for (let i = 0; i < 3; i++) S.avanzarDia(); // pasa la fecha del primer pago (12 oct)
+    for (let i = 0; i < 3; i++) S.avanzarDia(); // 11, 12 y 13 oct: pasa la fecha del primer pago
     const s = S.situacion(GENGIS);
-    expect(s.estado).toBe("en_mora");
-    expect(s.score).toBeLessThan(70 - 25 + 1);
-    expect(S.detalleCliente(GENGIS).historialScore.some((m) => m.tipo === "promesa_incumplida")).toBe(true);
+    expect(s.estado).toBe("incumplido");
+    expect(s.sinBeneficios).toBe(true);
+    expect(s.score).toBe(70 - 3 * 12);
+    expect(s.limites).toBeNull();
+    expect(S.detalleCliente(GENGIS).historialScore.some((m) => m.tipo === "promesa_incumplida")).toBe(false);
+    expect(S.simular(plan(2, 0, "2026-10-20")).validacion.resultado).toBe("no_disponible");
+    await expect(S.registrarPropuesta({ ...plan(2, 0, "2026-10-20"), motivo: "olvido", acepta: true })).rejects.toThrow(/no puedes armar otro plan/);
+    expect(S.feed(0, 80).items.some((i) => i.tipo === "promesa_incumplida" && i.texto.includes("Gengis G."))).toBe(true);
   });
 
   it("pagar la deuda hoy: queda al día y el Pacaso feliz", async () => {
@@ -76,6 +94,44 @@ describe("Gengis Guerrero (demo)", () => {
     expect(r.situacion.estado).toBe("al_dia");
     expect(r.situacion.pacaso.humor).toBe("feliz");
     await expect(S.pagoSimulado(GENGIS)).rejects.toThrow(/al día/);
+  });
+});
+
+describe("regalo salvador", () => {
+  async function incumplir() {
+    await S.registrarPropuesta({ ...plan(2, 0, "2026-10-11"), motivo: "olvido", acepta: true });
+    S.avanzarDia(); S.avanzarDia();
+  }
+  it("el gestor lo otorga: paga 30% menos hoy, recupera beneficios y queda al día", async () => {
+    await incumplir();
+    const deuda = S.situacion(GENGIS).deuda.total;
+    const { regalo } = S.otorgarRegalo(GENGIS);
+    expect(regalo.montoHoy).toBeCloseTo(deuda * 0.7, 1);
+    expect(regalo.recargos).toHaveLength(3);
+    const s = S.situacion(GENGIS);
+    expect(s.regalo?.montoHoy).toBe(regalo.montoHoy);
+    expect(s.pacaso.mensaje).toMatch(/Regalo Salvador/);
+    const cobro = await S.cobroPendiente(GENGIS);
+    expect(cobro.concepto).toBe("regalo");
+    expect(cobro.monto).toBe(regalo.montoHoy);
+    const r = await S.pagoSimulado(GENGIS, "regalo");
+    expect(r.situacion.estado).toBe("al_dia");
+    expect(r.situacion.sinBeneficios).toBe(false);
+    expect(r.situacion.regalo).toBeNull();
+    expect(S.detalleCliente(GENGIS).campanas[0].estado).toBe("usada");
+    expect(S.kpis().regalosUsados).toBe(1);
+  });
+  it("no se da dos veces ni a quien está al día", async () => {
+    S.otorgarRegalo(GENGIS);
+    expect(() => S.otorgarRegalo(GENGIS)).toThrow(/vigente/);
+    await S.pagoSimulado(GENGIS);
+    expect(() => S.otorgarRegalo(GENGIS)).toThrow(/no está en mora/);
+  });
+  it("vence a los 7 días si no se usa", () => {
+    S.otorgarRegalo(GENGIS);
+    for (let i = 0; i < 8; i++) S.avanzarDia();
+    expect(S.situacion(GENGIS).regalo).toBeNull();
+    expect(S.detalleCliente(GENGIS).campanas[0].estado).toBe("vencida");
   });
 });
 
@@ -119,7 +175,8 @@ describe("banco", () => {
   it("kpis coherentes", () => {
     const k = S.kpis();
     expect(k.avisosEnviados).toBe(100);
-    expect(k.propuestasAceptadas).toBe(10);
+    expect(k.propuestasAceptadas).toBe(12); // 10 aceptadas + 2 incumplidas sembradas
+    expect(k.incumplidos).toBe(2);
     expect(k.montoComprometido).toBeGreaterThan(0);
   });
 });

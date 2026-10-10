@@ -1,9 +1,10 @@
 import type { Movimiento } from "@/lib/score";
 import { FECHA_DEMO_INICIAL } from "@/lib/fecha";
 import { getDb, resetDb } from "./sqlite";
-import type { ClienteRow, CreditoRow, CuotaRow, EventoRow, MovimientoRow, PreguntaRow, PropuestaRow, Repo } from "./repo";
+import type { CampanaRow, ClienteRow, CreditoRow, CuotaRow, EventoRow, MovimientoRow, PreguntaRow, PropuestaRow, Repo } from "./repo";
 
 const parseProp = (r: any): PropuestaRow => ({ ...r, cronograma: JSON.parse(r.cronograma) });
+const parseCamp = (r: any): CampanaRow => ({ ...r, recargos: JSON.parse(r.recargos) });
 const parseEv = (r: any): EventoRow => ({ ...r, detalle: r.detalle ? JSON.parse(r.detalle) : {} });
 
 export function crearRepoSqlite(): Repo {
@@ -16,6 +17,18 @@ export function crearRepoSqlite(): Repo {
     cliente: (id) => db().prepare("SELECT * FROM clientes WHERE id=?").get(id) as ClienteRow | undefined,
     clientes: () => db().prepare("SELECT * FROM clientes ORDER BY id").all() as ClienteRow[],
     actualizarScoreCliente: (id, score, nivel) => void db().prepare("UPDATE clientes SET score=?, nivel=? WHERE id=?").run(score, nivel, id),
+    setSinBeneficios: (id, v) => void db().prepare("UPDATE clientes SET sin_beneficios=? WHERE id=?").run(v ? 1 : 0, id),
+
+    campanasDeCliente: (cid) => (db().prepare("SELECT * FROM campanas WHERE cliente_id=? ORDER BY id DESC").all(cid) as any[]).map(parseCamp),
+    todasLasCampanas: () => (db().prepare("SELECT * FROM campanas ORDER BY id").all() as any[]).map(parseCamp),
+    crearCampana: (c) => {
+      const creado = new Date().toISOString();
+      const id = Number(db().prepare("INSERT INTO campanas (cliente_id,tipo,base,descuento,monto_hoy,recargos,estado,otorgada_por,vence,creado_en) VALUES (?,?,?,?,?,?,?,?,?,?)")
+        .run(c.cliente_id, c.tipo, c.base, c.descuento, c.monto_hoy, JSON.stringify(c.recargos), c.estado, c.otorgada_por, c.vence, creado).lastInsertRowid);
+      return { ...c, id, creado_en: creado };
+    },
+    actualizarEstadoCampana: (id, estado) => void db().prepare("UPDATE campanas SET estado=? WHERE id=?").run(estado, id),
+
     creditoDeCliente: (id) => db().prepare("SELECT * FROM creditos WHERE cliente_id=? ORDER BY id LIMIT 1").get(id) as CreditoRow | undefined,
     actualizarDiasCredito: (id, dias) => void db().prepare("UPDATE creditos SET dias_atraso=? WHERE id=?").run(dias, id),
 
@@ -63,6 +76,11 @@ export function crearRepoSqlite(): Repo {
     ultimosEventos: (limite) => (db().prepare("SELECT * FROM eventos ORDER BY id DESC LIMIT ?").all(limite) as any[]).map(parseEv),
     eventosDeCliente: (cid) => (db().prepare("SELECT * FROM eventos WHERE cliente_id=? ORDER BY id DESC").all(cid) as any[]).map(parseEv),
     contarEventos: (tipo) => (db().prepare("SELECT COUNT(*) c FROM eventos WHERE tipo=?").get(tipo) as { c: number }).c,
+    contarChatsIA: (desde, cid) => {
+      const sql = "SELECT COUNT(*) c FROM eventos WHERE tipo='chat' AND json_extract(detalle,'$.fuente')='gemini' AND creado_en>=?";
+      const r = (cid ? db().prepare(sql + " AND cliente_id=?").get(desde, cid) : db().prepare(sql).get(desde)) as { c: number };
+      return r.c;
+    },
     clientesConEvento: (tipo) => (db().prepare("SELECT COUNT(DISTINCT cliente_id) c FROM eventos WHERE tipo=?").get(tipo) as { c: number }).c,
   };
 }

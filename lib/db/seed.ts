@@ -129,8 +129,10 @@ function sembrarActividad(db: Database.Database, rnd: () => number, hoy: string)
       const plan = v.aceptable ? { nCuotas: n, inicial: 0, fechaPrimerPago: sumarDias(hoy, 7) } : v.contrapropuesta;
       if (!plan) continue;
       const cron = generarCronograma({ deuda: v.limites.deuda, ...plan, hoy });
-      insProp.run(f.credito_id, plan.nCuotas, plan.inicial, plan.fechaPrimerPago, JSON.stringify(cron.pagos.map((p) => ({ ...p, pagado: p.tipo === "inicial" }))), "aceptada", motivos[Math.floor(rnd() * 4)], haceMin(min));
-      marcar.run(f.credito_id); diasCred.run(f.credito_id);
+      // 6 planes ya en marcha (hicieron su 1er pago), 4 aceptados pero sin iniciar (el Pacaso sigue pegando)
+      const iniciado = aceptadas < 6;
+      insProp.run(f.credito_id, plan.nCuotas, plan.inicial, plan.fechaPrimerPago, JSON.stringify(cron.pagos.map((p, i) => ({ ...p, pagado: iniciado && i === 0 }))), "aceptada", motivos[Math.floor(rnd() * 4)], haceMin(min));
+      if (iniciado) { marcar.run(f.credito_id); diasCred.run(f.credito_id); }
       ev(f.id, "propuesta_enviada", { estado: "aceptada", nCuotas: plan.nCuotas, inicial: plan.inicial, total: cron.total }, min);
       aceptadas++;
     } else if (f.dias_atraso > 60 && derivadas < 3) {
@@ -142,6 +144,14 @@ function sembrarActividad(db: Database.Database, rnd: () => number, hoy: string)
       derivadas++;
     }
   }
+  // Dos clientes incumplieron un plan anterior: sin beneficios (candidatos a Regalo Salvador)
+  const conPropuesta = new Set((db.prepare("SELECT credito_id FROM propuestas").all() as { credito_id: number }[]).map((r) => r.credito_id));
+  for (const f of filas.filter((x) => x.dias_atraso >= 16 && x.dias_atraso <= 45 && !conPropuesta.has(x.credito_id)).slice(0, 2)) {
+    insProp.run(f.credito_id, 2, 0, sumarDias(hoy, -10), JSON.stringify([{ n: 1, fecha: sumarDias(hoy, -10), monto: 100, tipo: "cuota", pagado: false }]), "incumplida", "bajaron_ventas", haceMin(600));
+    db.prepare("UPDATE clientes SET sin_beneficios=1 WHERE id=?").run(f.id);
+    ev(f.id, "promesa_incumplida", {}, 50 + Math.floor(rnd() * 40));
+  }
+
   // Dos clientes pidieron ayuda humana
   for (const f of filas.filter((x) => x.dias_atraso > 30).slice(0, 2)) ev(f.id, "ayuda_humana", { nota: "Quiero hablar con una persona" }, 15 + Math.floor(rnd() * 30));
 }

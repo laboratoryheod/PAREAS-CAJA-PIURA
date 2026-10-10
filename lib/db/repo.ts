@@ -4,7 +4,7 @@ import type { Movimiento } from "@/lib/score";
 import type { Nivel } from "@/lib/niveles";
 import { crearRepoSqlite } from "./repo-sqlite";
 
-export interface ClienteRow { id: number; nombres: string; dni_mascara: string; telefono: string; zona: string; negocio: string; score: number; nivel: Nivel; creado_en: string }
+export interface ClienteRow { id: number; nombres: string; dni_mascara: string; telefono: string; zona: string; negocio: string; score: number; nivel: Nivel; sin_beneficios: 0 | 1; creado_en: string }
 export interface CreditoRow { id: number; cliente_id: number; tipo_credito: string; monto_desembolsado: number; saldo_capital: number; tea: number; cuota_mensual: number; cuotas_pendientes: number; dias_atraso: number }
 /** pagada: 0 = vencida, 1 = pagada, 2 = reprogramada (incluida en un plan aceptado) */
 export interface CuotaRow { id: number; credito_id: number; monto: number; fecha_vencimiento: string; dias_atraso: number; interes_moratorio: number; pagada: 0 | 1 | 2 }
@@ -13,7 +13,8 @@ export type EstadoPropuesta = "aceptada" | "rechazada" | "derivada" | "cumplida"
 export interface PropuestaRow { id: number; credito_id: number; n_cuotas: number; inicial: number; fecha_primer_pago: string; cronograma: PagoPlan[]; estado: EstadoPropuesta; motivo_atraso: string | null; creado_en: string }
 export interface MovimientoRow { id: number; cliente_id: number; tipo: Movimiento["tipo"]; puntos: number; saldo_resultante: number; detalle: string | null; fecha: string; creado_en: string }
 export interface PreguntaRow { id: number; categoria: string; pregunta: string; opciones: string[]; correcta: number; explicacion: string }
-export type TipoEvento = "aviso_enviado" | "modulo_abierto" | "simulacion" | "propuesta_enviada" | "pago_simulado" | "chat" | "trivia_jugada" | "ayuda_humana";
+export type TipoEvento = "aviso_enviado" | "modulo_abierto" | "simulacion" | "propuesta_enviada" | "pago_simulado" | "chat" | "trivia_jugada" | "ayuda_humana" | "promesa_incumplida" | "regalo_otorgado" | "regalo_usado";
+export interface CampanaRow { id: number; cliente_id: number; tipo: "regalo_salvador"; base: number; descuento: number; monto_hoy: number; recargos: { n: number; fecha: string; monto: number }[]; estado: "ofrecida" | "usada" | "vencida"; otorgada_por: string; vence: string; creado_en: string }
 export interface EventoRow { id: number; cliente_id: number; tipo: TipoEvento; detalle: Record<string, unknown>; creado_en: string }
 
 export interface Repo {
@@ -24,6 +25,12 @@ export interface Repo {
   cliente(id: number): ClienteRow | undefined;
   clientes(): ClienteRow[];
   actualizarScoreCliente(id: number, score: number, nivel: Nivel): void;
+  setSinBeneficios(id: number, valor: boolean): void;
+
+  campanasDeCliente(clienteId: number): CampanaRow[];
+  todasLasCampanas(): CampanaRow[];
+  crearCampana(c: Omit<CampanaRow, "id" | "creado_en">): CampanaRow;
+  actualizarEstadoCampana(id: number, estado: CampanaRow["estado"]): void;
   creditoDeCliente(clienteId: number): CreditoRow | undefined;
   actualizarDiasCredito(creditoId: number, dias: number): void;
 
@@ -50,6 +57,8 @@ export interface Repo {
   eventosDeCliente(clienteId: number): EventoRow[];
   contarEventos(tipo: TipoEvento): number;
   clientesConEvento(tipo: TipoEvento): number;
+  /** Respuestas generadas por IA desde una fecha ISO (para los cupos del asistente). */
+  contarChatsIA(desdeIso: string, clienteId?: number): number;
 }
 
 const g = globalThis as unknown as { __repo?: Repo };

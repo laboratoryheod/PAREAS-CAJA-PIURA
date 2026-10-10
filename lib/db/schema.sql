@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS clientes (
   negocio TEXT,
   score INTEGER NOT NULL DEFAULT 70,
   nivel TEXT NOT NULL DEFAULT 'Plata',
+  sin_beneficios INTEGER NOT NULL DEFAULT 0, -- 1 = incumplió un plan: sin beneficios ni nueva reprogramación (salvo regalo salvador)
   creado_en TEXT NOT NULL
 );
 
@@ -85,6 +86,21 @@ CREATE TABLE IF NOT EXISTS eventos (
   cliente_id INTEGER NOT NULL REFERENCES clientes(id),
   tipo TEXT NOT NULL,              -- modulo_abierto | simulacion | propuesta_enviada | pago_simulado | chat | trivia_jugada | ayuda_humana
   detalle TEXT,
+  creado_en TEXT NOT NULL
+);
+
+-- Campañas de la Caja para regularizar morosos (p. ej. "regalo salvador"), otorgadas por el gestor
+CREATE TABLE IF NOT EXISTS campanas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id INTEGER NOT NULL REFERENCES clientes(id),
+  tipo TEXT NOT NULL,              -- regalo_salvador
+  base REAL NOT NULL,              -- lo que le tocaba pagar
+  descuento REAL NOT NULL,
+  monto_hoy REAL NOT NULL,
+  recargos TEXT NOT NULL,          -- JSON [{n, fecha, monto}]
+  estado TEXT NOT NULL,            -- ofrecida | usada | vencida
+  otorgada_por TEXT NOT NULL,
+  vence TEXT NOT NULL,             -- YYYY-MM-DD
   creado_en TEXT NOT NULL
 );
 
