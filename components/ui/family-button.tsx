@@ -2,7 +2,7 @@
 "use client"
 
 import { FC, ReactNode, useState } from "react"
-import { PlusIcon, XIcon } from "lucide-react"
+import { IcCerrar as XIcon, IcMas as PlusIcon } from "@/components/iconos"
 import { motion } from "motion/react"
 
 import { cn } from "@/lib/utils"

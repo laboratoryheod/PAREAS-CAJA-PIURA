@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { FichaApp, IcCalculadora, IcCheck, IcAlerta, IcChispa, IcAtras } from "@/components/iconos";
 import { TextureButton } from "@/components/ui/texture-button";
 import { api, soles, type Situacion } from "@/lib/cliente-api";
 
@@ -28,10 +29,10 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
 
   return (
     <section className="space-y-4">
-      <button onClick={onVolver} className="text-sm text-caja underline min-h-[44px]">← Volver</button>
+      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0A84FF]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-5">
         <div>
-          <h2 className="text-xl font-extrabold text-caja">🧮 Arma tu plan, a tu ritmo</h2>
+          <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcCalculadora} color="sol" tam={34} />Arma tu plan, a tu ritmo</h2>
           <p className="text-sm text-gray-600">Mueve los controles y mira al toque cómo queda. Hoy debes <b>{soles(deuda)}</b>.</p>
         </div>
 
@@ -58,13 +59,13 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
 
       {v && (
         <div className={`rounded-tarjeta border p-4 ${verde ? "bg-green-50 border-green-300" : "bg-amber-50 border-amber-300"}`} role="status">
-          <p className="font-semibold">{verde ? "🟢 " : "🟠 "}{v.mensaje}</p>
+          <p className="flex items-start gap-2 font-semibold">{verde ? <IcCheck tam={20} className="mt-0.5 text-[#1DA851]" /> : <IcAlerta tam={20} className="mt-0.5 text-[#FF9F0A]" />}<span>{v.mensaje}</span></p>
           {v.motivos.length > 0 && (
             <ul className="mt-2 list-disc pl-5 text-sm space-y-1">{v.motivos.map((m: string) => <li key={m}>{m}</li>)}</ul>
           )}
           {v.contrapropuesta && (
             <TextureButton variant="accent" className="mt-3" onClick={() => { setN(v.contrapropuesta.nCuotas || 1); setInicial(v.contrapropuesta.inicial); setFecha(v.contrapropuesta.fechaPrimerPago); }}>
-              ✨ Usar esta alternativa: {v.contrapropuesta.nCuotas} cuota{v.contrapropuesta.nCuotas === 1 ? "" : "s"}{v.contrapropuesta.inicial > 0 ? ` e inicial de ${soles(v.contrapropuesta.inicial)}` : ""}
+              <IcChispa tam={18} />Usar esta alternativa: {v.contrapropuesta.nCuotas} cuota{v.contrapropuesta.nCuotas === 1 ? "" : "s"}{v.contrapropuesta.inicial > 0 ? ` e inicial de ${soles(v.contrapropuesta.inicial)}` : ""}
             </TextureButton>
           )}
         </div>

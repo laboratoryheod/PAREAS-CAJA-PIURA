@@ -1,8 +1,10 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { FichaApp, IcMando, IcCheck, IcBombilla, IcAtras } from "@/components/iconos";
 import { TextureButton } from "@/components/ui/texture-button";
 import { api, type Situacion } from "@/lib/cliente-api";
 import Pareas from "@/components/Pareas";
+import { HaloProgress } from "@/components/ui/halo-progress";
 
 export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onScore: (s: Situacion) => void; onVolver: () => void }) {
   const [t, setT] = useState<any>(null);
@@ -27,13 +29,13 @@ export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onS
   const pr = res?.progreso ?? t?.progreso;
   return (
     <section className="space-y-4">
-      <button onClick={onVolver} className="text-sm text-caja underline min-h-[44px]">← Volver</button>
+      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0A84FF]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-3">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-extrabold text-caja">🎮 Trivia del día</h2>
+          <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcMando} color="violeta" tam={34} />Trivia del día</h2>
           {pr && <span className="text-sm">{pr.respondidas}/{pr.total} · +{pr.puntosTriviaHoy}/{pr.topeDia} pts</span>}
         </div>
-        {pr && <div className="h-2 rounded-full bg-caja-borde"><div className="h-2 rounded-full bg-caja-acento transition-all" style={{ width: `${(pr.respondidas / pr.total) * 100}%` }} /></div>}
+        {pr && <HaloProgress value={Math.round((pr.respondidas / pr.total) * 100)} aria-label="Avance de la trivia de hoy" />}
         {error && <p className="text-red-700 text-sm">{error}</p>}
 
         {t?.pregunta && (
@@ -51,7 +53,7 @@ export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onS
 
         {res && (
           <div className="space-y-2">
-            <p className="font-semibold">{res.acerto ? "✅ " : "💡 "}{res.mensaje}</p>
+            <p className="flex items-center gap-2 font-semibold">{res.acerto ? <IcCheck tam={20} className="text-[#34C759]" /> : <IcBombilla tam={20} className="text-[#FF9F0A]" />}{res.mensaje}</p>
             <p className="text-sm">{res.explicacion}</p>
             {res.mensajeRacha && <p className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-sm">{res.mensajeRacha}</p>}
             <Pareas humor={res.pareas.humor} mensaje={res.pareas.mensaje} />

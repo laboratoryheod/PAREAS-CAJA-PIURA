@@ -53,6 +53,6 @@ export function clasificar(texto: string): Clase {
   return "sin_tema";
 }
 
-export const RESPUESTA_AJENO = `Uy ${APELATIVO}, de eso no te puedo ayudar 😅. Yo solo veo tu deuda, tu plan de pago, tus puntos, temas de la Caja y tips de plata. ¿Vemos cuánto debes o armamos tu plan?`;
+export const RESPUESTA_AJENO = `Uy ${APELATIVO}, de eso no te puedo ayudar. Yo solo veo tu deuda, tu plan de pago, tus puntos, temas de la Caja y tips de plata. ¿Vemos cuánto debes o armamos tu plan?`;
 export const RESPUESTA_INYECCION = `Eso no lo puedo hacer, ${APELATIVO}. Solo te ayudo con tu deuda, tu plan de pago y temas de la Caja. ¿En qué de eso te ayudo?`;
-export const RESPUESTA_CUPO = `Hoy ya conversamos un montón, ${APELATIVO} 😄. Te sigo ayudando con las preguntas frecuentes: tu deuda, tu plan y cómo pagar.`;
+export const RESPUESTA_CUPO = `Hoy ya conversamos un montón, ${APELATIVO}. Te sigo ayudando con las preguntas frecuentes: tu deuda, tu plan y cómo pagar.`;

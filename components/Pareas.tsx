@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { SpeechBubble } from "@/components/ui/speech-bubble";
+import { IcChispa } from "@/components/iconos";
 
 export type HumorPareas = "feliz" | "serio" | "chicotazo";
 
@@ -13,9 +14,9 @@ function Chas() {
   return (
     <motion.div className="pointer-events-none absolute -right-2 -top-3 z-10" initial={false}
       animate={{ scale: [0, 1.25, 1, 0], rotate: [-20, 8, -4, 0], opacity: [0, 1, 1, 0] }} transition={CICLO}>
-      <svg width="76" height="52" viewBox="0 0 76 52" aria-hidden>
+      <svg width="84" height="56" viewBox="0 0 76 52" aria-hidden>
         <path d="M38 2 46 14 62 6 58 20 74 24 60 32 68 46 52 40 44 50 36 40 20 48 24 34 4 30 18 22 8 10 26 14Z" fill="#F9A825" stroke="#7A2E0E" strokeWidth="2.5" strokeLinejoin="round" />
-        <text x="38" y="31" textAnchor="middle" fontSize="15" fontWeight="900" fill="#7A2E0E" fontFamily="inherit">¡CHAS!</text>
+        <text x="38" y="30" textAnchor="middle" fontSize="10.5" fontWeight="900" fill="#7A2E0E" fontFamily="inherit" letterSpacing="-0.3">CHICOTAZO</text>
       </svg>
     </motion.div>
   );
@@ -42,12 +43,11 @@ function Figura({ humor, tam }: { humor: HumorPareas; tam: number }) {
     <div className="relative shrink-0" style={{ width: tam, height: tam }}>
       {humor === "chicotazo" && !reducir && <><Latigo /><Chas /></>}
       {humor === "feliz" && !reducir && ["left-0 top-1", "right-1 top-6", "left-6 bottom-2"].map((pos, i) => (
-        <motion.span key={pos} className={`absolute ${pos} z-10 text-base`} animate={{ opacity: [0, 1, 0], scale: [0.4, 1.1, 0.4] }} transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.5 }}>✨</motion.span>
+        <motion.span key={pos} className={`absolute ${pos} z-10 text-[#FF9F0A]`} animate={{ opacity: [0, 1, 0], scale: [0.4, 1.1, 0.4] }} transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.5 }}><IcChispa tam={16} /></motion.span>
       ))}
       <motion.div className="relative z-[1] h-full w-full origin-bottom" {...anim}>
         <Image src="/pareas/pareas.png" alt="Pareas, la iguana de Ponte al Día" fill sizes={`${tam}px`} className="object-contain drop-shadow-[0_8px_12px_rgba(0,40,90,0.25)]" priority={tam > 100} />
       </motion.div>
-      {humor === "serio" && <span className="absolute -right-1 top-0 z-10 text-lg" aria-hidden>👀</span>}
     </div>
   );
 }
@@ -59,7 +59,7 @@ export default function Pareas({ humor, mensaje, grande = false, fiesta = false,
       <Figura humor={humor} tam={t} />
       {mensaje && (
         <motion.div key={mensaje} className="min-w-0" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ type: "spring", bounce: 0, duration: 0.5 }}>
-          <SpeechBubble tono={fiesta ? "fiesta" : humor === "chicotazo" ? "alerta" : "info"}>{mensaje.replace(/^🦎\s*/, "")}</SpeechBubble>
+          <SpeechBubble tono={fiesta ? "fiesta" : humor === "chicotazo" ? "alerta" : "info"}>{mensaje}</SpeechBubble>
         </motion.div>
       )}
     </div>

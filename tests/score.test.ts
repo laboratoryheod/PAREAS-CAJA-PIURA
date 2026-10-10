@@ -70,7 +70,7 @@ describe("estado de Pareas", () => {
   it("en mora: chicotazo con humor amable, sin amenazas", () => {
     const e = estadoPareas({ nombre: "Gengis", diasAtraso: 3, score: 60 });
     expect(e.humor).toBe("chicotazo");
-    expect(e.mensaje).toMatch(/¡Chas!/);
+    expect(e.mensaje).toMatch(/¡CHICOTAZO!/);
     expect(e.mensaje.toLowerCase()).not.toMatch(/legal|embargo|demanda|amenaz/);
   });
   it("al día: feliz; al día con score bajo: serio", () => {

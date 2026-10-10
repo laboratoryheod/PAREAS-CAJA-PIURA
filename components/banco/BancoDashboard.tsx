@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { IcEnVivo, IcGestor, IcRegalo } from "@/components/iconos";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { APP_NOMBRE } from "@/lib/config";
@@ -26,7 +27,7 @@ export default function BancoDashboard() {
   const [aviso, setAviso] = useState("");
 
   async function darRegalo(id: number, nombre: string) {
-    try { const r = await api("/api/banco/regalo", { clienteId: id }); setAviso(`🎁 Regalo Salvador otorgado a ${nombre}: paga ${soles(r.regalo.montoHoy)} hoy.`); }
+    try { const r = await api("/api/banco/regalo", { clienteId: id }); setAviso(`Regalo Salvador otorgado a ${nombre}: paga ${soles(r.regalo.montoHoy)} hoy.`); }
     catch (e: any) { setAviso(e.message); }
     setTimeout(() => setAviso(""), 5000);
   }
@@ -81,13 +82,13 @@ export default function BancoDashboard() {
             {kpi("Cartera en mora", kpis.carteraEnMora, soles(kpis.deudaEnMora))}
             {kpi("Reprogramados", kpis.reprogramados)}
             {kpi("Casos para gestor", kpis.derivados, `${kpis.incumplidos} incumplieron su plan`)}
-            {kpi("🎁 Regalos Salvador", kpis.regalosOtorgados, `${kpis.regalosUsados} ya usados`)}
+            {kpi("Regalos Salvador", kpis.regalosOtorgados, `${kpis.regalosUsados} ya usados`)}
           </section>
         )}
 
         <div className="grid md:grid-cols-2 gap-4">
           <section className="card">
-            <h2 className="font-bold text-caja mb-2">⚡ En tiempo real</h2>
+            <h2 className="mb-2 flex items-center gap-2 font-bold text-caja"><IcEnVivo tam={18} className="text-[#FF3B30]" />En tiempo real</h2>
             <ul className="divide-y divide-caja-borde text-sm max-h-72 overflow-y-auto">
               {feed.length === 0 && <li className="py-2 text-gray-500">Esperando actividad…</li>}
               {feed.map((e) => (
@@ -100,7 +101,7 @@ export default function BancoDashboard() {
           </section>
 
           <section className="card">
-            <h2 className="font-bold text-caja mb-2">🧑‍💼 Casos derivados a gestor ({derivados.length})</h2>
+            <h2 className="mb-2 flex items-center gap-2 font-bold text-caja"><IcGestor tam={18} />Casos derivados a gestor ({derivados.length})</h2>
             <ul className="divide-y divide-caja-borde text-sm max-h-72 overflow-y-auto">
               {derivados.length === 0 && <li className="py-2 text-gray-500">Sin casos pendientes.</li>}
               {derivados.map((d) => (
@@ -108,8 +109,8 @@ export default function BancoDashboard() {
                   <Link href={`/banco/cliente/${d.id}`} className="font-semibold underline">{d.nombres}</Link>
                   <span className="text-gray-600"> · {d.diasAtraso} días · {soles(d.deuda)}</span>
                   <p className="text-xs text-gray-600">{d.motivos.join(" · ")}{d.propuesta ? ` · propuesta: ${d.propuesta.nCuotas} cuotas` : ""}</p>
-                  {d.puedeRecibirRegalo && <TextureButton variant="regalo" size="sm" className="mt-1 w-auto" onClick={() => darRegalo(d.id, d.nombres)}>🎁 Dar Regalo Salvador</TextureButton>}
-                  {d.regaloVigente && <span className="text-xs font-semibold text-fuchsia-700">🎁 Regalo vigente</span>}
+                  {d.puedeRecibirRegalo && <TextureButton variant="regalo" size="sm" className="mt-1 w-auto" onClick={() => darRegalo(d.id, d.nombres)}><IcRegalo tam={16} />Dar Regalo Salvador</TextureButton>}
+                  {d.regaloVigente && <span className="flex items-center gap-1 text-xs font-semibold text-fuchsia-700"><IcRegalo tam={14} />Regalo vigente</span>}
                 </li>
               ))}
             </ul>
@@ -137,7 +138,7 @@ export default function BancoDashboard() {
                     <td className="text-right">{c.diasAtraso > 0 ? `${c.diasAtraso} d` : "—"}</td>
                     <td className="text-right">{c.deuda > 0 ? soles(c.deuda) : "—"}</td>
                     <td className="text-center">{c.score} <span className="text-xs text-gray-500">{c.nivel}</span></td>
-                    <td><span className={`rounded-full px-2 py-1 text-xs ${COLOR_ESTADO[c.estado]}`}>{ETIQ_ESTADO[c.estado]}</span>{c.pideAyuda && " 🙋"}{c.regaloVigente && " 🎁"}</td>
+                    <td><span className={`rounded-full px-2 py-1 text-xs ${COLOR_ESTADO[c.estado]}`}>{ETIQ_ESTADO[c.estado]}</span>{c.pideAyuda && <IcGestor tam={14} className="ml-1 inline text-neutral-500" aria-label="Pidió ayuda" />}{c.regaloVigente && <IcRegalo tam={14} className="ml-1 inline text-fuchsia-600" aria-label="Regalo vigente" />}</td>
                   </tr>
                 ))}
               </tbody>

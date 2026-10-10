@@ -1,4 +1,4 @@
-// MOTOR DE SCORE CON EL PACASO 🦎 — puntaje único 0–100.
+// MOTOR DE SCORE CON EL PACASO — puntaje único 0–100.
 // Todos los valores se ajustan en PARAMS_SCORE.
 import { nivelDe, UMBRALES_NIVEL, type Nivel } from "./niveles";
 import { REGLAS } from "./reglas";
@@ -113,16 +113,16 @@ export type HumorPareas = "feliz" | "serio" | "chicotazo";
 export function estadoPareas(c: { nombre?: string; diasAtraso: number; score: number; sinBeneficios?: boolean; regaloDisponible?: boolean }): { humor: HumorPareas; mensaje: string } {
   const quien = c.nombre ?? APELATIVO;
   if (c.regaloDisponible) {
-    return { humor: "feliz", mensaje: `🦎 ¡Oe ${quien}, te salió el Regalo Salvador! La Caja te da una mano para ponerte al día. Aprovéchalo antes de que venza, ${APELATIVO}.` };
+    return { humor: "feliz", mensaje: `¡Oe ${quien}, te salió el Regalo Salvador! La Caja te da una mano para ponerte al día. Aprovéchalo antes de que venza, ${APELATIVO}.` };
   }
   if (c.diasAtraso > 0 && c.sinBeneficios) {
-    return { humor: "chicotazo", mensaje: `🦎 ¡Chas, chas! ${quien}, se pasó un pago de tu plan y tus beneficios quedaron en pausa. Tranqui, ${APELATIVO}: paga lo pendiente y Pareas deja de pegar.` };
+    return { humor: "chicotazo", mensaje: `¡CHICOTAZO doble! ${quien}, se pasó un pago de tu plan y tus beneficios quedaron en pausa. Tranqui, ${APELATIVO}: paga lo pendiente y Pareas deja de pegar.` };
   }
   if (c.diasAtraso > 0) {
-    return { humor: "chicotazo", mensaje: `🦎 ¡Chas! Oe ${quien}, Pareas te recuerda que tienes una cuota pendiente. Mientras siga pendiente, tus puntos bajan; apenas pagues, vuelven a subir. ¡Tú puedes, ${APELATIVO}!` };
+    return { humor: "chicotazo", mensaje: `¡CHICOTAZO! Oe ${quien}, Pareas te recuerda que tienes una cuota pendiente. Mientras siga pendiente, tus puntos bajan; apenas pagues, vuelven a subir. ¡Tú puedes, ${APELATIVO}!` };
   }
   if (c.score < UMBRALES_NIVEL.plata) {
-    return { humor: "serio", mensaje: `🦎 Pareas te tiene el ojo encima, ${quien}. Vas al día, ¡chévere! Suma puntos con la trivia para subir de nivel.` };
+    return { humor: "serio", mensaje: `Pareas te tiene el ojo encima, ${quien}. Vas al día, ¡chévere! Suma puntos con la trivia para subir de nivel.` };
   }
-  return { humor: "feliz", mensaje: `🦎 ¡Chévere, ${quien}! Estás al día con tus pagos y Pareas está feliz. ¡Sigue así, ${APELATIVO}!` };
+  return { humor: "feliz", mensaje: `¡Chévere, ${quien}! Estás al día con tus pagos y Pareas está feliz. ¡Sigue así, ${APELATIVO}!` };
 }

@@ -2,6 +2,7 @@
 import { motion } from "motion/react";
 import { soles, type Situacion } from "@/lib/cliente-api";
 import { TextureButton } from "@/components/ui/texture-button";
+import { IcChispa, IcRegalo } from "@/components/iconos";
 
 /** Tarjeta de la campaña "Regalo Salvador" que el gestor activó para este cliente. */
 export default function RegaloSalvador({ regalo, onPagar }: { regalo: NonNullable<Situacion["regalo"]>; onPagar: () => void }) {
@@ -11,10 +12,10 @@ export default function RegaloSalvador({ regalo, onPagar }: { regalo: NonNullabl
       <div className="relative rounded-[22px] bg-gradient-to-br from-fuchsia-700 via-rose-600 to-orange-500 p-4 text-white">
         {/* destellos de fondo */}
         {["left-4 top-3", "right-6 top-8", "left-1/2 bottom-3", "right-3 bottom-10"].map((pos, i) => (
-          <motion.span key={pos} className={`absolute ${pos} text-lg`} animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.45 }}>✨</motion.span>
+          <motion.span key={pos} className={`absolute ${pos} text-[#FFD60A]`} animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.45 }}><IcChispa tam={16} /></motion.span>
         ))}
         <div className="relative flex items-center gap-3">
-          <motion.span className="text-5xl" animate={{ rotate: [0, -10, 10, -6, 0], y: [0, -4, 0] }} transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 1 }}>🎁</motion.span>
+          <motion.span className="text-white" animate={{ rotate: [0, -10, 10, -6, 0], y: [0, -4, 0] }} transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 1 }}><IcRegalo tam={44} /></motion.span>
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-white/80">Campaña de la Caja</p>
             <h2 className="text-2xl font-extrabold leading-tight">¡Te salió el Regalo Salvador!</h2>
@@ -29,7 +30,7 @@ export default function RegaloSalvador({ regalo, onPagar }: { regalo: NonNullabl
           {regalo.recargos.map((r) => <li key={r.n} className="flex justify-between"><span>Recargo en tu cuota del {r.fechaLarga}</span><b>+ {soles(r.monto)}</b></li>)}
         </ul>
         <p className="relative mt-2 text-xs text-white/80">Válido hasta el {regalo.venceLargo}. Al usarlo recuperas tus beneficios.</p>
-        <TextureButton variant="accent" size="lg" className="relative mt-3" onClick={onPagar}>🎁 Aprovechar mi regalo</TextureButton>
+        <TextureButton variant="accent" size="lg" className="relative mt-3" onClick={onPagar}>Aprovechar mi regalo</TextureButton>
       </div>
     </motion.section>
   );

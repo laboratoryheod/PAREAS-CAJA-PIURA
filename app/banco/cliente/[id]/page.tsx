@@ -1,5 +1,6 @@
 "use client";
 import { use, useEffect, useState } from "react";
+import { IcRegalo, IcCheck, IcReloj } from "@/components/iconos";
 import Link from "next/link";
 import { api, soles } from "@/lib/cliente-api";
 import { TextureButton } from "@/components/ui/texture-button";
@@ -12,7 +13,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
   async function darRegalo() {
-    try { await api("/api/banco/regalo", { clienteId: Number(id) }); setAviso("🎁 Regalo Salvador otorgado. El cliente ya lo ve en su app."); setD(await api(`/api/banco/cliente/${id}`)); }
+    try { await api("/api/banco/regalo", { clienteId: Number(id) }); setAviso("Regalo Salvador otorgado. El cliente ya lo ve en su app."); setD(await api(`/api/banco/cliente/${id}`)); }
     catch (e: any) { setAviso(e.message); }
   }
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
       </section>
 
       <section className="card space-y-2 border-fuchsia-200">
-        <h2 className="font-bold text-fuchsia-700">🎁 Regalo Salvador (campaña de regularización)</h2>
+        <h2 className="flex items-center gap-2 font-bold text-fuchsia-700"><IcRegalo tam={18} />Regalo Salvador (campaña de regularización)</h2>
         {d.cliente.sinBeneficios && <p className="text-sm rounded-xl bg-rose-50 border border-rose-200 p-2">Incumplió un plan: está <b>sin beneficios</b> y no puede reprogramar. Solo una campaña lo reactiva.</p>}
         {d.regaloVigente && (
           <p className="text-sm">Vigente hasta el {d.regaloVigente.venceLargo}: paga <b>{soles(d.regaloVigente.montoHoy)}</b> hoy (en vez de {soles(d.regaloVigente.base)}) y recupera {soles(d.regaloVigente.descuento)} con recargos de {d.regaloVigente.recargos.map((r: any) => soles(r.monto)).join(" + ")}.</p>
@@ -50,7 +51,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         {d.puedeRecibirRegalo && d.vistaPreviaRegalo && (
           <>
             <p className="text-sm">Si se lo otorgas: paga <b>{soles(d.vistaPreviaRegalo.montoHoy)}</b> hoy (−{soles(d.vistaPreviaRegalo.descuento)}) y +{soles(d.vistaPreviaRegalo.recargos[0].monto)} en sus 3 cuotas siguientes. Vence en 7 días.</p>
-            <TextureButton variant="regalo" className="md:w-auto" onClick={darRegalo}>🎁 Otorgar Regalo Salvador</TextureButton>
+            <TextureButton variant="regalo" className="md:w-auto" onClick={darRegalo}><IcRegalo tam={18} />Otorgar Regalo Salvador</TextureButton>
           </>
         )}
         {!d.puedeRecibirRegalo && !d.regaloVigente && <p className="text-sm text-gray-500">No aplica ahora (el cliente no está en mora o tiene un plan en marcha).</p>}
@@ -64,7 +65,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         {d.propuestas.map((p: any) => (
           <div key={p.id} className="border border-caja-borde rounded-xl p-3 mb-2 text-sm">
             <p><b>{p.estado.toUpperCase()}</b> · {p.nCuotas} cuota(s) · inicial {soles(p.inicial)} · total {soles(p.total)} · motivo del atraso: <b>{MOTIVOS[p.motivo] ?? "—"}</b></p>
-            <ul className="mt-1 text-gray-700">{p.pagos.map((x: any) => <li key={x.n}>{x.pagado ? "✅" : "⏳"} {x.tipo === "inicial" ? "Inicial" : `Cuota ${x.n}`} · {x.fechaLarga} · {soles(x.monto)}</li>)}</ul>
+            <ul className="mt-1 text-gray-700">{p.pagos.map((x: any) => <li key={x.n} className="flex items-center gap-1.5">{x.pagado ? <IcCheck tam={14} className="text-[#34C759]" /> : <IcReloj tam={14} className="text-neutral-400" />}{x.tipo === "inicial" ? "Inicial" : `Cuota ${x.n}`} · {x.fechaLarga} · {soles(x.monto)}</li>)}</ul>
           </div>
         ))}
       </section>

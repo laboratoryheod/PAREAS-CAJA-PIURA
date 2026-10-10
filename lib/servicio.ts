@@ -125,9 +125,23 @@ export function situacion(clienteId: number) {
     pareas: estadoPareas({ nombre, diasAtraso: cr.diasAtraso, score: cliente.score, sinBeneficios, regaloDisponible: !!regalo }),
     limites: activa || sinBeneficios || deuda <= 0 ? null : limitesPara(cr, { score: cliente.score }, hoy),
     regalo: regalo ? presentarRegalo(regalo) : null,
+    chicotazo: resumenChicotazo(repo.movimientos(clienteId), cr.diasAtraso),
     propuestaActiva: activa ? presentarPropuesta(activa) : null,
     propuestaDerivada: derivada ? presentarPropuesta(derivada) : null,
     historialScore: repo.movimientosDetalle(clienteId, 15),
+  };
+}
+
+/** El CHICOTAZO en cifras: cuántos golpes dio Pareas en este módulo y cuántos puntos costaron. */
+function resumenChicotazo(movs: Movimiento[], diasAtraso: number) {
+  const golpes = movs.filter((m) => m.tipo === "chicotazo_mora" && (m.detalle ?? "").startsWith("Día"));
+  return {
+    activo: diasAtraso > 0,
+    porDia: PARAMS_SCORE.chicotazoPorDia,
+    diasEnMora: diasAtraso,
+    golpes: golpes.length,
+    puntosPerdidos: golpes.reduce((s, m) => s + m.puntos, 0),
+    topeTriviaDia: PARAMS_SCORE.topeTriviaDia,
   };
 }
 
@@ -490,8 +504,8 @@ function mensajeEvento(e: EventoRow, nombre: string): string {
     case "trivia_jugada": return `${nombre} jugó la trivia`;
     case "chat": return `${nombre} consultó al asistente`;
     case "promesa_incumplida": return `${nombre} incumplió su plan: pierde beneficios`;
-    case "regalo_otorgado": return `🎁 Se otorgó un Regalo Salvador a ${nombre} (paga ${soles(Number(d.montoHoy))} hoy)`;
-    case "regalo_usado": return `🎁 ${nombre} usó su Regalo Salvador`;
+    case "regalo_otorgado": return `Se otorgó un Regalo Salvador a ${nombre} (paga ${soles(Number(d.montoHoy))} hoy)`;
+    case "regalo_usado": return `${nombre} usó su Regalo Salvador`;
     default: return `${nombre}: ${e.tipo}`;
   }
 }

@@ -1,4 +1,3 @@
-import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import type { Metadata } from "next";

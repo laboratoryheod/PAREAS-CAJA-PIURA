@@ -1,14 +1,15 @@
 "use client";
 import { useState } from "react";
+import { IcAtras } from "@/components/iconos";
 import { TextureButton } from "@/components/ui/texture-button";
 import { api, soles, type Situacion } from "@/lib/cliente-api";
 import type { PlanElegido } from "./Simulador";
 
 const MOTIVOS = [
-  { id: "olvido", texto: "😅 Se me pasó la fecha" },
-  { id: "bajaron_ventas", texto: "📉 Bajaron mis ventas" },
-  { id: "salud", texto: "🩺 Un tema de salud" },
-  { id: "otro", texto: "💭 Otro motivo" },
+  { id: "olvido", texto: "Se me pasó la fecha" },
+  { id: "bajaron_ventas", texto: "Bajaron mis ventas" },
+  { id: "salud", texto: "Un tema de salud" },
+  { id: "otro", texto: "Otro motivo" },
 ];
 
 export default function Confirmar({ sit, plan, resultado, total, onListo, onVolver }: { sit: Situacion; plan: PlanElegido; resultado: string; total: number; onListo: (s: Situacion) => void; onVolver: () => void }) {
@@ -28,7 +29,7 @@ export default function Confirmar({ sit, plan, resultado, total, onListo, onVolv
 
   return (
     <section className="space-y-4">
-      <button onClick={onVolver} className="text-sm text-caja underline min-h-[44px]">← Cambiar mi plan</button>
+      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0A84FF]"><IcAtras tam={22} />Cambiar mi plan</button>
       <div className="card space-y-2">
         <h2 className="text-xl font-extrabold text-caja">¿Cerramos trato?</h2>
         <p>{plan.inicial > 0 ? <>Pagarás una inicial de <b>{soles(plan.inicial)}</b> hoy y </> : "Pagarás "}el resto en <b>{plan.nCuotas} cuota{plan.nCuotas === 1 ? "" : "s"}</b>, empezando el <b>{plan.fechaPrimerPago.split("-").reverse().join("/")}</b>.</p>
@@ -53,7 +54,7 @@ export default function Confirmar({ sit, plan, resultado, total, onListo, onVolv
 
       {error && <p className="text-red-700 text-sm">{error}</p>}
       <TextureButton variant="accent" size="lg" disabled={!acepta || !motivo || enviando} onClick={enviar}>
-        {enviando ? "Enviando…" : derivada ? "📨 Enviar mi propuesta al gestor" : "🤝 Confirmar mi plan"}
+        {enviando ? "Enviando…" : derivada ? "Enviar mi propuesta al gestor" : "Confirmar mi plan"}
       </TextureButton>
     </section>
   );
