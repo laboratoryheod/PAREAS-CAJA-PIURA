@@ -1,7 +1,8 @@
 import crypto from "crypto";
 import type Database from "better-sqlite3";
 import { FECHA_DEMO_INICIAL, sumarDias } from "@/lib/fecha";
-import { interesMoratorio } from "@/lib/reglas";
+import { interesMoratorio, validarPropuesta } from "@/lib/reglas";
+import { generarCronograma } from "@/lib/cronograma";
 import { TRIVIA } from "./trivia-data";
 import { nivelDe } from "@/lib/niveles";
 
@@ -87,8 +88,60 @@ export function seed(db: Database.Database) {
       }
     }
 
+    sembrarActividad(db, rnd, hoy);
+
     const insT = db.prepare("INSERT INTO trivia_preguntas (categoria,pregunta,opciones,correcta,explicacion) VALUES (?,?,?,?,?)");
     for (const t of TRIVIA) insT.run(t.categoria, t.pregunta, JSON.stringify(t.opciones), t.correcta, t.explicacion);
   });
   tx();
+}
+
+
+/** Actividad previa ficticia para que el dashboard del banco no arranque vacío. Gengis (id 1) queda sin tocar. */
+function sembrarActividad(db: Database.Database, rnd: () => number, hoy: string) {
+  const insEv = db.prepare("INSERT INTO eventos (cliente_id,tipo,detalle,creado_en) VALUES (?,?,?,?)");
+  const haceMin = (m: number) => new Date(Date.now() - m * 60000).toISOString();
+  const filas = db.prepare(`SELECT c.id, c.score, cr.id AS credito_id, cr.dias_atraso FROM clientes c JOIN creditos cr ON cr.cliente_id=c.id WHERE c.id>1 ORDER BY c.id`).all() as
+    { id: number; score: number; credito_id: number; dias_atraso: number }[];
+  const ev = (cid: number, tipo: string, det: object, min: number) => insEv.run(cid, tipo, JSON.stringify(det), haceMin(min));
+
+  // Todos recibieron su aviso; ~40% abrió el módulo; ~25% simuló
+  insEv.run(1, "aviso_enviado", "{}", haceMin(300));
+  const abrieron: typeof filas = [];
+  for (const f of filas) {
+    ev(f.id, "aviso_enviado", { canal: "push" }, 240 + Math.floor(rnd() * 60));
+    if (rnd() < 0.4) { ev(f.id, "modulo_abierto", {}, 30 + Math.floor(rnd() * 200)); abrieron.push(f); }
+  }
+  for (const f of abrieron) if (rnd() < 0.6) ev(f.id, "simulacion", {}, 20 + Math.floor(rnd() * 100));
+
+  const motivos = ["olvido", "bajaron_ventas", "salud", "otro"];
+  let aceptadas = 0, derivadas = 0;
+  const insProp = db.prepare("INSERT INTO propuestas (credito_id,n_cuotas,inicial,fecha_primer_pago,cronograma,estado,motivo_atraso,creado_en) VALUES (?,?,?,?,?,?,?,?)");
+  const marcar = db.prepare("UPDATE cuotas_vencidas SET pagada=2 WHERE credito_id=?");
+  const diasCred = db.prepare("UPDATE creditos SET dias_atraso=0 WHERE id=?");
+  for (const f of abrieron) {
+    const cuotas = db.prepare("SELECT monto, interes_moratorio FROM cuotas_vencidas WHERE credito_id=?").all(f.credito_id) as { monto: number; interes_moratorio: number }[];
+    const credito = { diasAtraso: f.dias_atraso, montoVencido: cuotas.reduce((a, c) => a + c.monto, 0), interesMoratorio: cuotas.reduce((a, c) => a + c.interes_moratorio, 0), reprogramacionActiva: false };
+    const min = Math.floor(rnd() * 90) + 2;
+    if (f.dias_atraso <= 60 && aceptadas < 10) {
+      const n = f.dias_atraso <= 15 ? 2 : 3;
+      const v = validarPropuesta(credito, { score: f.score }, { nCuotas: n, inicial: 0, fechaPrimerPago: sumarDias(hoy, 7) }, hoy);
+      const plan = v.aceptable ? { nCuotas: n, inicial: 0, fechaPrimerPago: sumarDias(hoy, 7) } : v.contrapropuesta;
+      if (!plan) continue;
+      const cron = generarCronograma({ deuda: v.limites.deuda, ...plan, hoy });
+      insProp.run(f.credito_id, plan.nCuotas, plan.inicial, plan.fechaPrimerPago, JSON.stringify(cron.pagos.map((p) => ({ ...p, pagado: p.tipo === "inicial" }))), "aceptada", motivos[Math.floor(rnd() * 4)], haceMin(min));
+      marcar.run(f.credito_id); diasCred.run(f.credito_id);
+      ev(f.id, "propuesta_enviada", { estado: "aceptada", nCuotas: plan.nCuotas, inicial: plan.inicial, total: cron.total }, min);
+      aceptadas++;
+    } else if (f.dias_atraso > 60 && derivadas < 3) {
+      const v = validarPropuesta(credito, { score: f.score }, { nCuotas: 4, inicial: 0, fechaPrimerPago: sumarDias(hoy, 7) }, hoy);
+      const plan = v.contrapropuesta ?? { nCuotas: 4, inicial: v.limites.inicialMin, fechaPrimerPago: sumarDias(hoy, 7) };
+      const cron = generarCronograma({ deuda: v.limites.deuda, ...plan, hoy });
+      insProp.run(f.credito_id, plan.nCuotas, plan.inicial, plan.fechaPrimerPago, JSON.stringify(cron.pagos.map((p) => ({ ...p, pagado: false }))), "derivada", motivos[Math.floor(rnd() * 4)], haceMin(min));
+      ev(f.id, "propuesta_enviada", { estado: "derivada", nCuotas: plan.nCuotas, inicial: plan.inicial, total: cron.total }, min);
+      derivadas++;
+    }
+  }
+  // Dos clientes pidieron ayuda humana
+  for (const f of filas.filter((x) => x.dias_atraso > 30).slice(0, 2)) ev(f.id, "ayuda_humana", { nota: "Quiero hablar con una persona" }, 15 + Math.floor(rnd() * 30));
 }

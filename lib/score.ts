@@ -102,7 +102,7 @@ export function beneficiosDeNivel(nivel: Nivel): string {
   const partes: string[] = [];
   if (b.cuotasExtra) partes.push(`${b.cuotasExtra} cuota extra para reprogramar`);
   if (b.inicialMenosPct) partes.push(`${Math.round(b.inicialMenosPct * 100)}% menos de inicial`);
-  return partes.length ? `Beneficios de nivel ${nivel}: ${partes.join(" y ")}.` : `Suba de nivel para desbloquear más cuotas y menos inicial.`;
+  return partes.length ? `Beneficios de nivel ${nivel}: ${partes.join(" y ")}.` : `Sube de nivel para desbloquear más cuotas y menos inicial.`;
 }
 
 export type HumorPacaso = "feliz" | "serio" | "chicotazo";
@@ -110,10 +110,10 @@ export type HumorPacaso = "feliz" | "serio" | "chicotazo";
 export function estadoPacaso(c: { nombre?: string; diasAtraso: number; score: number }): { humor: HumorPacaso; mensaje: string } {
   const nombre = c.nombre ? `, ${c.nombre}` : "";
   if (c.diasAtraso > 0) {
-    return { humor: "chicotazo", mensaje: `🦫 ¡Chas! El Pacaso te recuerda que tienes una cuota pendiente${nombre}. Mientras siga pendiente, sus puntos bajan; apenas se ponga al día, vuelven a subir.` };
+    return { humor: "chicotazo", mensaje: `🦫 ¡Chas! El Pacaso te recuerda que tienes una cuota pendiente${nombre}. Mientras siga pendiente, tus puntos bajan; apenas te pongas al día, vuelven a subir.` };
   }
   if (c.score < UMBRALES_NIVEL.plata) {
-    return { humor: "serio", mensaje: `🦫 El Pacaso está atento${nombre}. Va al día, ¡buen paso! Sume puntos con la trivia para subir de nivel.` };
+    return { humor: "serio", mensaje: `🦫 El Pacaso está atento${nombre}. Vas al día, ¡buen paso! Suma puntos con la trivia para subir de nivel.` };
   }
-  return { humor: "feliz", mensaje: `🦫 ¡El Pacaso está feliz${nombre}! Está al día con sus pagos. ¡Siga así!` };
+  return { humor: "feliz", mensaje: `🦫 ¡El Pacaso está feliz${nombre}! Estás al día con tus pagos. ¡Sigue así!` };
 }
