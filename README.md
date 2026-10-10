@@ -2,6 +2,9 @@
 
 Prototipo mobile-first (Next.js + TypeScript + Tailwind) con **dos interfaces**: `/cliente` y `/banco`. Datos 100 % ficticios.
 
+## Abrirlo en Antigravity
+Ver [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md). El contexto para agentes está en `AGENTS.md`, `.agents/rules/` y `.agents/workflows/`.
+
 ## Cómo correrlo
 
 ```bash
@@ -29,6 +32,8 @@ npm run build && npm start
 | Puntos del score y chicotazo | `lib/score.ts` (`PARAMS_SCORE`) |
 | Niveles Bronce/Plata/Oro | `lib/niveles.ts` |
 | Mascota Pareas (componente y animaciones) | `components/Pareas.tsx` |
+| Iconos propios (sin emojis) | `components/iconos.tsx` |
+| Inicio del cliente (widgets del boceto) | `components/cliente/inicio/` |
 | Imágenes de Pareas | `public/pareas/pareas.png` (mascota), `public/pareas/logo.png` (logo), `app/icon.png` y `app/apple-icon.png` (favicon) |
 | Decisiones de diseño | `DESIGN.md` |
 | Acceso a datos | `lib/db/repo.ts` (interfaz) · `repo-sqlite.ts` |
@@ -61,6 +66,13 @@ Para cambiar una imagen basta con reemplazar el archivo con el mismo nombre. Par
 
 ## Tono
 Coloquial y cercano del norte ("¡Habla!", "compare", "chévere", "al toque", "tranqui"), sin faltar el respeto. El apelativo está en `APELATIVO` (`lib/config.ts`). El panel del gestor usa tono formal.
+
+## Inicio del cliente
+Según el boceto del equipo, cada cliente ve primero:
+1. **Juego del día** (botón para empezar la trivia) y **Score** (anillos tipo Actividad de Apple).
+2. **Calendario de pagos** (cuotas vencidas, pagos del plan, recargos, días con CHICOTAZO) y **Pagos y juegos**.
+3. **Beneficios de la Caja**: beneficios por nivel, mis campañas (Regalo Salvador / descuento) y el **CHICOTAZO**; y **Consejos** con el botón para hablar con Pareas.
+La primera vez aparece la hoja **"Empieza el juego"** con las reglas.
 
 ## UI con cult-ui
 De https://github.com/nolly-studio/cult-ui (MIT) se copiaron **solo** los componentes usados a `components/ui/` (ver `components/ui/README.md`): `texture-button`, `texture-card`, `rolling-number`, `text-animate`, `neumorph-eyebrow` y `speech-bubble`. El repo completo pesa ~100 MB y no se sube.

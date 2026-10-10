@@ -29,7 +29,7 @@ export function Beneficios({ sit, className, onPagar }: { sit: Situacion; classN
     <Widget className={className}>
       <TituloWidget icono={<IcCaja tam={18} className="text-[#0A84FF]" />}>Beneficios de la Caja</TituloWidget>
       <HaloSegmented className="mb-3 w-full [&>div:last-child]:w-full" value={tab} onValueChange={setTab}
-        items={[{ value: "beneficios", label: "Beneficios" }, { value: "campanas", label: "Mis campañas" }, { value: "chicotazo", label: "CHICOTAZO" }]} />
+        items={[{ value: "beneficios", label: "Beneficios" }, { value: "campanas", label: "Campañas" }, { value: "chicotazo", label: "CHICOTAZO" }]} />
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div key={tab} initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -6, filter: "blur(4px)" }} transition={{ type: "spring", bounce: 0, duration: 0.35 }}>
           {tab === "beneficios" && (
