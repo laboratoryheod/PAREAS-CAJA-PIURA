@@ -4,7 +4,11 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { APP_NOMBRE } from "@/lib/config";
 import { api, soles, type Situacion } from "@/lib/cliente-api";
-import Pacaso from "@/components/Pacaso";
+import Image from "next/image";
+import { Home, CreditCard, Calculator, CalendarDays, Gamepad2, MessageCircle, Headset, QrCode } from "lucide-react";
+import Pareas from "@/components/Pareas";
+import { Dock, DockCard } from "@/components/ui/dock";
+import { FamilyButton } from "@/components/ui/family-button";
 import { TextureButton } from "@/components/ui/texture-button";
 import { TextureCard, TextureCardContent, TextureSeparator } from "@/components/ui/texture-card";
 import { RollingNumber } from "@/components/ui/rolling-number";
@@ -31,9 +35,11 @@ const ETIQUETA: Record<Situacion["estado"], { texto: string; intent: "secondary"
 const nivelIntent = (n: string) => (n === "Oro" ? "oro" : n === "Plata" ? "plata" : "bronce") as "oro" | "plata" | "bronce";
 const fmtSoles = (n: number) => soles(n);
 
-export default function Dashboard({ clienteId }: { clienteId: number }) {
+export type { Vista };
+export default function Dashboard({ clienteId, vistaInicial = "inicio" }: { clienteId: number; vistaInicial?: Vista }) {
   const [sit, setSit] = useState<Situacion | null>(null);
-  const [vista, setVista] = useState<Vista>("inicio");
+  const [vista, setVista] = useState<Vista>(vistaInicial);
+  const [ayuda, setAyuda] = useState("");
   const [plan, setPlan] = useState<{ plan: PlanElegido; resultado: string; total: number } | null>(null);
   const [error, setError] = useState("");
 
@@ -43,17 +49,31 @@ export default function Dashboard({ clienteId }: { clienteId: number }) {
   useEffect(() => { if (vista !== "inicio") return; const t = setInterval(() => { refrescar().catch(() => {}); }, 5000); return () => clearInterval(t); }, [vista, refrescar]);
 
   if (error) return <main className="p-6 max-w-md mx-auto"><p className="card text-red-700">{error}</p><Link href="/" className="underline text-caja">Volver al inicio</Link></main>;
-  if (!sit) return <main className="p-6 max-w-md mx-auto text-center"><span className="text-5xl inline-block animate-bounce">🦫</span><p>Cargando…</p></main>;
+  if (!sit) return <main className="p-6 max-w-md mx-auto text-center"><span className="text-5xl inline-block animate-bounce">🦎</span><p>Cargando…</p></main>;
 
   const volver = () => { setVista("inicio"); refrescar(); };
   const hayDeuda = sit.deuda.total > 0;
   const puedeArmar = !!sit.limites && hayDeuda && !sit.propuestaDerivada && !sit.propuestaActiva && !sit.regalo;
   const etiqueta = ETIQUETA[sit.estado];
+  const tienePlan = !!(sit.propuestaActiva || sit.propuestaDerivada);
+  const irA = (v: Vista) => { if (v === "inicio") volver(); else setVista(v); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  async function pedirGestor() {
+    try { const r = await api<{ mensaje: string }>("/api/ayuda", { clienteId, nota: "Pidió ayuda desde el botón flotante" }); setAyuda(r.mensaje); }
+    catch (e: any) { setAyuda(e.message); }
+    setTimeout(() => setAyuda(""), 5000);
+  }
+  const ITEMS: { v: Vista; e: string; i: React.ReactNode; ok: boolean }[] = [
+    { v: "inicio", e: "Inicio", i: <Home className="h-5 w-5" />, ok: true },
+    { v: "pagar", e: "Pagar", i: <CreditCard className="h-5 w-5" />, ok: hayDeuda || !!sit.propuestaActiva },
+    tienePlan ? { v: "plan", e: "Mi plan", i: <CalendarDays className="h-5 w-5" />, ok: true } : { v: "simulador", e: "Mi plan", i: <Calculator className="h-5 w-5" />, ok: puedeArmar },
+    { v: "trivia", e: "Trivia", i: <Gamepad2 className="h-5 w-5" />, ok: true },
+    { v: "asistente", e: "Pareas", i: <MessageCircle className="h-5 w-5" />, ok: true },
+  ];
 
   return (
-    <main className="max-w-md md:max-w-xl mx-auto pb-16">
-      <header className="bg-gradient-to-r from-caja-header to-caja-medio text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow">
-        <span className="font-extrabold tracking-tight">🦫 {APP_NOMBRE}</span>
+    <main className="max-w-md md:max-w-xl mx-auto pb-36">
+      <header className="bg-gradient-to-r from-caja-header to-caja-medio text-white px-4 py-2 flex items-center justify-between sticky top-0 z-20 shadow">
+        <span className="flex items-center gap-2 font-display text-lg font-extrabold tracking-tight"><Image src="/pareas/logo.png" alt="" width={32} height={32} className="rounded-lg" />{APP_NOMBRE}</span>
         <Link href="/" className="text-sm underline opacity-90 min-h-[44px] flex items-center">Salir</Link>
       </header>
 
@@ -92,7 +112,7 @@ export default function Dashboard({ clienteId }: { clienteId: number }) {
                       </div>
                     )}
 
-                    <Pacaso humor={sit.pacaso.humor} mensaje={sit.pacaso.mensaje} grande fiesta={!!sit.regalo} />
+                    <Pareas humor={sit.pareas.humor} mensaje={sit.pareas.mensaje} grande fiesta={!!sit.regalo} />
 
                     <TextureSeparator />
                     <div>
@@ -109,7 +129,7 @@ export default function Dashboard({ clienteId }: { clienteId: number }) {
                 </TextureCard>
 
                 {sit.estado === "plan_pendiente" && (
-                  <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm">⚡ Tu plan está aceptado pero <b>arranca con tu primer pago</b>. Mientras tanto el Pacaso sigue pegando, ¡dale!</div>
+                  <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm">⚡ Tu plan está aceptado pero <b>arranca con tu primer pago</b>. Mientras tanto Pareas sigue pegando, ¡dale!</div>
                 )}
                 {sit.propuestaActiva && <TextureButton variant="secondary" onClick={() => setVista("plan")}>📅 Ver mi plan de pago</TextureButton>}
                 {sit.propuestaDerivada && <TextureButton variant="secondary" onClick={() => setVista("plan")}>📨 Ver mi propuesta enviada</TextureButton>}
@@ -118,10 +138,7 @@ export default function Dashboard({ clienteId }: { clienteId: number }) {
                 <div className="grid gap-3">
                   {hayDeuda || sit.propuestaActiva ? <TextureButton variant="accent" size="lg" onClick={() => setVista("pagar")}>💳 {sit.estado === "plan_pendiente" ? "Hacer mi primer pago" : "Pagar hoy"}</TextureButton> : null}
                   {puedeArmar && <TextureButton size="lg" onClick={() => setVista("simulador")}>🧮 Armar mi plan de pago</TextureButton>}
-                  <div className="grid grid-cols-2 gap-3">
-                    <TextureButton variant="secondary" onClick={() => setVista("asistente")}>💬 Asistente</TextureButton>
-                    <TextureButton variant="secondary" onClick={() => setVista("trivia")}>🎮 Trivia</TextureButton>
-                  </div>
+                  {!hayDeuda && !sit.propuestaActiva && <TextureButton variant="secondary" size="lg" onClick={() => setVista("trivia")}>🎮 Jugar la trivia del día</TextureButton>}
                 </div>
 
                 <details className="card text-sm">
@@ -145,6 +162,31 @@ export default function Dashboard({ clienteId }: { clienteId: number }) {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {ayuda && <p className="fixed inset-x-4 top-16 z-50 mx-auto max-w-md rounded-2xl bg-caja-noche p-3 text-sm font-semibold text-white shadow-lg">{ayuda}</p>}
+
+      {/* Botón flotante de ayuda rápida (family-button de cult-ui) */}
+      <div className="fixed bottom-[104px] right-3 z-40 md:right-[calc(50%-300px)]">
+        <FamilyButton etiqueta="Ayuda rápida">
+          <div className="flex h-full flex-col items-stretch gap-2 p-3 pt-4">
+            <p className="px-1 font-display text-sm font-bold text-white/80">¿Te ayudo?</p>
+            <button onClick={() => irA("asistente")} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left font-semibold hover:bg-white/25"><MessageCircle className="h-5 w-5" />Hablar con Pareas</button>
+            <button onClick={pedirGestor} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left font-semibold hover:bg-white/25"><Headset className="h-5 w-5" />Llamar a mi gestor</button>
+            {(hayDeuda || sit.propuestaActiva) && <button onClick={() => irA("pagar")} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left font-semibold hover:bg-white/25"><QrCode className="h-5 w-5" />QR para un familiar</button>}
+          </div>
+        </FamilyButton>
+      </div>
+
+      {/* Navegación flotante (dock de cult-ui) */}
+      <nav aria-label="Secciones">
+        <Dock className="fixed bottom-3 left-1/2 h-auto items-end gap-2 rounded-[22px] bg-white/85 px-2.5 pb-1.5 pt-2 backdrop-blur-md hover:bg-white/90">
+          {ITEMS.filter((x) => x.ok).map((x, i) => (
+            <DockCard key={x.e} id={String(i)} etiqueta={x.e} activo={vista === x.v} onClick={() => irA(x.v)}>
+              <span className="flex h-full w-full items-center justify-center">{x.i}</span>
+            </DockCard>
+          ))}
+        </Dock>
+      </nav>
     </main>
   );
 }

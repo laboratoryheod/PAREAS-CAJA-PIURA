@@ -4,7 +4,7 @@ import { getRepo, type CampanaRow, type ClienteRow, type CreditoRow, type CuotaR
 import { diferenciaDias, fechaLarga, soles, sumarDias } from "./fecha";
 import { calcularRegaloSalvador, interesMoratorio, limitesPara, REGALO_SALVADOR, validarPropuesta, type CreditoReglas, type PropuestaPlan } from "./reglas";
 import { APELATIVO } from "./config";
-import { beneficiosDeNivel, chicotazoDelDia, estadoPacaso, PARAMS_SCORE, puntosParaSiguienteNivel, rachaPermitida, recalcularScore, triviaPermitida, type Movimiento } from "./score";
+import { beneficiosDeNivel, chicotazoDelDia, estadoPareas, PARAMS_SCORE, puntosParaSiguienteNivel, rachaPermitida, recalcularScore, triviaPermitida, type Movimiento } from "./score";
 
 export class ErrorNegocio extends Error {
   constructor(mensaje: string, public status = 400) { super(mensaje); }
@@ -15,7 +15,7 @@ const MOTIVOS = ["olvido", "bajaron_ventas", "salud", "otro"] as const;
 export type MotivoAtraso = (typeof MOTIVOS)[number];
 
 /**
- * al_dia · en_mora · plan_pendiente (aceptó un plan pero aún no hace el 1er pago: el Pacaso sigue pegando)
+ * al_dia · en_mora · plan_pendiente (aceptó un plan pero aún no hace el 1er pago: Pareas sigue pegando)
  * reprogramado (plan en marcha) · derivado (gestor) · incumplido (se le pasó un pago del plan: sin beneficios)
  */
 export type EstadoCliente = "al_dia" | "en_mora" | "plan_pendiente" | "reprogramado" | "derivado" | "incumplido";
@@ -98,9 +98,9 @@ export function situacion(clienteId: number) {
   let saludo: string;
   if (regalo) saludo = `¡Habla, ${nombre}! Tienes ${pendiente}, pero hoy tienes una buena noticia: la Caja te dio un Regalo Salvador para ponerte al día.`;
   else if (estado === "reprogramado") saludo = `¡Habla, ${nombre}! Tu plan de pago está en marcha. Cumplirlo te suma puntos y mejora tu nivel. ¡Chévere!`;
-  else if (estado === "plan_pendiente") saludo = `¡Habla, ${nombre}! Ya armaste tu plan, ${APELATIVO}. Haz tu primer pago para que arranque y el Pacaso deje de pegar.`;
+  else if (estado === "plan_pendiente") saludo = `¡Habla, ${nombre}! Ya armaste tu plan, ${APELATIVO}. Haz tu primer pago para que arranque y Pareas deje de pegar.`;
   else if (estado === "al_dia") saludo = `¡Habla, ${nombre}! Estás al día con tus pagos. ¡Gracias por tu puntualidad, ${APELATIVO}!`;
-  else if (estado === "incumplido") saludo = `Hola, ${nombre}. Se pasó un pago de tu plan y tienes ${pendiente}. Tranqui: paga lo pendiente y el Pacaso deja de pegar.`;
+  else if (estado === "incumplido") saludo = `Hola, ${nombre}. Se pasó un pago de tu plan y tienes ${pendiente}. Tranqui: paga lo pendiente y Pareas deja de pegar.`;
   else saludo = `¡Habla, ${nombre}! Tienes ${pendiente}. Tranqui, ${APELATIVO}: veamos juntos cómo ponerte al día.`;
 
   return {
@@ -122,7 +122,7 @@ export function situacion(clienteId: number) {
     siguienteNivel: sig.siguiente ? { nivel: sig.siguiente, faltan: sig.faltan, texto: `Estás a ${sig.faltan} puntos de ${sig.siguiente}` } : { nivel: null, faltan: 0, texto: "¡Estás en el nivel más alto!" },
     sinBeneficios,
     beneficios: beneficiosDeNivel(cliente.nivel, sinBeneficios),
-    pacaso: estadoPacaso({ nombre, diasAtraso: cr.diasAtraso, score: cliente.score, sinBeneficios, regaloDisponible: !!regalo }),
+    pareas: estadoPareas({ nombre, diasAtraso: cr.diasAtraso, score: cliente.score, sinBeneficios, regaloDisponible: !!regalo }),
     limites: activa || sinBeneficios || deuda <= 0 ? null : limitesPara(cr, { score: cliente.score }, hoy),
     regalo: regalo ? presentarRegalo(regalo) : null,
     propuestaActiva: activa ? presentarPropuesta(activa) : null,
@@ -313,7 +313,7 @@ export function responderTrivia(clienteId: number, preguntaId: number, opcion: n
       ? puntos > 0 ? `¡Correcto! +${puntos} puntos.` : "¡Correcto! Hoy ya llegaste al tope de puntos por trivia."
       : "No fue esta vez, pero ya aprendiste algo nuevo.",
     mensajeRacha: completo ? (racha > 0 ? `¡Racha del día completada! +${racha} puntos.` : "Completaste la trivia de hoy. Mientras haya una cuota pendiente, la racha no suma puntos; al ponerte al día, vuelve a sumar.") : null,
-    score: sit.score, nivel: sit.nivel, pacaso: sit.pacaso,
+    score: sit.score, nivel: sit.nivel, pareas: sit.pareas,
     progreso: triviaSiguiente(clienteId).progreso,
   };
 }
@@ -371,10 +371,10 @@ export async function pagoSimulado(clienteId: number, concepto?: string) {
     repo.insertarEvento(clienteId, "regalo_usado", { monto: regalo.monto_hoy, descuento: regalo.descuento });
     mensajes.push(`¡Te pusiste al día con el Regalo Salvador! Ahorraste ${soles(regalo.descuento)} hoy.`);
     mensajes.push(`Tus próximas ${regalo.recargos.length} cuotas tendrán un recargo de ${regalo.recargos.map((r) => soles(r.monto)).join(", ")} para recuperar el descuento.`);
-    mensajes.push("Recuperaste tus beneficios. ¡El Pacaso deja de pegar!");
+    mensajes.push("Recuperaste tus beneficios. ¡Pareas deja de pegar!");
   } else if (cobro.concepto === "deuda") {
     cancelarVencidas(repo, credito, cuotas);
-    mensajes.push(`¡Te pusiste al día, ${APELATIVO}! El Pacaso deja de pegar y tus puntos vuelven a subir con la trivia.`);
+    mensajes.push(`¡Te pusiste al día, ${APELATIVO}! Pareas deja de pegar y tus puntos vuelven a subir con la trivia.`);
     const der = propuestaDerivada(propuestas);
     if (der) repo.actualizarPropuesta(der.id, { estado: "cumplida" });
   } else {
@@ -384,10 +384,10 @@ export async function pagoSimulado(clienteId: number, concepto?: string) {
     const pagos = activa.cronograma.map((x) => (x === p ? { ...x, pagado: true } : x));
     repo.actualizarPropuesta(activa.id, { cronograma: pagos });
     if (eraPrimerPago) {
-      // Recién con el primer pago la deuda vencida queda "en plan" y el Pacaso deja de pegar
+      // Recién con el primer pago la deuda vencida queda "en plan" y Pareas deja de pegar
       for (const c of vencidas(cuotas)) repo.actualizarCuota(c.id, { pagada: 2 });
       repo.actualizarDiasCredito(credito.id, 0);
-      mensajes.push("¡Arrancó tu plan! El Pacaso deja de pegar mientras cumplas tus fechas.");
+      mensajes.push("¡Arrancó tu plan! Pareas deja de pegar mientras cumplas tus fechas.");
     }
     if (hoy <= p.fecha) {
       moverScore(repo, clienteId, "pago_puntual", PARAMS_SCORE.pagoPuntual, `Pago a tiempo (${p.tipo === "inicial" ? "inicial" : `cuota ${p.n}`})`);
@@ -428,7 +428,7 @@ export function otorgarRegalo(clienteId: number, gestor = "gestor") {
 
 // ------------------------------------------------------------------ paso del tiempo (demo)
 
-/** Avanza un día la fecha de la demo: sube la mora, el Pacaso da su chicotazo y se evalúan planes y campañas vencidas. */
+/** Avanza un día la fecha de la demo: sube la mora, Pareas da su chicotazo y se evalúan planes y campañas vencidas. */
 export function avanzarDia() {
   const repo = getRepo();
   const nueva = sumarDias(repo.fechaDemo(), 1);

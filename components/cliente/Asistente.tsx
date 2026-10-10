@@ -7,7 +7,7 @@ interface Msg { rol: "usuario" | "asistente"; texto: string }
 const SUGERENCIAS = ["¿Cuánto debo hoy?", "¿Qué plan puedo armar?", "¿Cómo pago?", "¿Qué es el Regalo Salvador?", "Quiero hablar con un gestor"];
 
 export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver: () => void }) {
-  const [msgs, setMsgs] = useState<Msg[]>([{ rol: "asistente", texto: `¡Habla, ${sit.cliente.nombre}! Soy el asistente del Pacaso 🦫. Te ayudo con tu deuda, tu plan y cómo pagar. Ojo: nunca te voy a pedir claves ni datos de tarjeta.` }]);
+  const [msgs, setMsgs] = useState<Msg[]>([{ rol: "asistente", texto: `¡Habla, ${sit.cliente.nombre}! Soy Pareas 🦎, tu pata de la Caja. Te ayudo con tu deuda, tu plan y cómo pagar. Ojo: nunca te voy a pedir claves ni datos de tarjeta.` }]);
   const [texto, setTexto] = useState("");
   const [esperando, setEsperando] = useState(false);
   const fin = useRef<HTMLDivElement>(null);
@@ -29,7 +29,7 @@ export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver:
     <section className="space-y-3">
       <button onClick={onVolver} className="text-sm text-caja underline min-h-[44px]">← Volver</button>
       <div className="card space-y-3">
-        <h2 className="text-xl font-extrabold text-caja">🦫 Asistente del Pacaso</h2><p className="text-xs text-gray-500">Solo temas de tu deuda, tu plan y la Caja.</p>
+        <h2 className="text-xl font-extrabold text-caja">💬 Habla con Pareas</h2><p className="text-xs text-gray-500">Solo temas de tu deuda, tu plan y la Caja.</p>
         <div className="space-y-2 max-h-[50vh] overflow-y-auto" aria-live="polite">
           {msgs.map((m, i) => (
             <div key={i} className={`flex ${m.rol === "usuario" ? "justify-end" : ""}`}>

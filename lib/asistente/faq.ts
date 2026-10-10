@@ -45,7 +45,7 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
     if (s.estado === "al_dia") return ok(`Estás al día, no tienes cuotas vencidas. ¡Chévere, ${APELATIVO}!`);
     if ((s.estado === "reprogramado" || s.estado === "plan_pendiente") && s.propuestaActiva) {
       const p = s.propuestaActiva.pagos.find((x) => !x.pagado);
-      return ok(p ? `Tienes un plan por ${soles(s.propuestaActiva.total)}. Tu próximo pago es de ${soles(p.monto)} el ${p.fechaLarga}.${s.estado === "plan_pendiente" ? " Con ese primer pago arranca tu plan y el Pacaso deja de pegar." : ""}` : "Tu plan de pago está completo. ¡Gracias!");
+      return ok(p ? `Tienes un plan por ${soles(s.propuestaActiva.total)}. Tu próximo pago es de ${soles(p.monto)} el ${p.fechaLarga}.${s.estado === "plan_pendiente" ? " Con ese primer pago arranca tu plan y Pareas deja de pegar." : ""}` : "Tu plan de pago está completo. ¡Gracias!");
     }
     return ok(`Hoy debes ${soles(s.deuda.total)}: ${soles(s.deuda.montoVencido)} de cuotas vencidas y ${soles(s.deuda.interesMoratorio)} de interés moratorio, con ${s.diasAtraso} días de atraso. ¿Lo pasamos a cuotas?`);
   }
@@ -62,8 +62,8 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
   if (tiene(t, "como pago", "donde pago", "pagar", "qr", "yape", "agencia", "familiar", "transferencia"))
     return ok(`Fácil, ${APELATIVO}: entra a “Pagar hoy”. Ahí sale un QR que también puede usar un familiar o un pata para pagar por ti.`);
 
-  if (tiene(t, "punto", "score", "pacaso", "nivel", "bronce", "plata", "oro", "chicotazo", "racha"))
-    return ok(`Tienes ${s.score} puntos, nivel ${s.nivel}. ${s.siguienteNivel.texto}. Pagar a tiempo y la trivia suman; en mora el Pacaso resta 12 por día y la racha no cuenta.`);
+  if (tiene(t, "punto", "score", "pareas", "nivel", "bronce", "plata", "oro", "chicotazo", "racha"))
+    return ok(`Tienes ${s.score} puntos, nivel ${s.nivel}. ${s.siguienteNivel.texto}. Pagar a tiempo y la trivia suman; en mora Pareas resta 12 por día y la racha no cuenta.`);
 
   if (tiene(t, "interes", "mora", "moratorio"))
     return ok(`El interés moratorio se suma por cada día de atraso. Hoy va en ${soles(s.deuda.interesMoratorio)}. Mientras antes te pongas al día, menos pagas.`);

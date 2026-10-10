@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { TextureButton } from "@/components/ui/texture-button";
 import { api, type Situacion } from "@/lib/cliente-api";
-import Pacaso from "@/components/Pacaso";
+import Pareas from "@/components/Pareas";
 
 export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onScore: (s: Situacion) => void; onVolver: () => void }) {
   const [t, setT] = useState<any>(null);
@@ -54,7 +54,7 @@ export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onS
             <p className="font-semibold">{res.acerto ? "✅ " : "💡 "}{res.mensaje}</p>
             <p className="text-sm">{res.explicacion}</p>
             {res.mensajeRacha && <p className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-sm">{res.mensajeRacha}</p>}
-            <Pacaso humor={res.pacaso.humor} mensaje={res.pacaso.mensaje} />
+            <Pareas humor={res.pareas.humor} mensaje={res.pareas.mensaje} />
             <p className="text-sm">Tus puntos: <b>{res.score}</b> · Nivel {res.nivel}</p>
             {!res.progreso.completo && <TextureButton onClick={siguiente}>Siguiente pregunta →</TextureButton>}
           </div>

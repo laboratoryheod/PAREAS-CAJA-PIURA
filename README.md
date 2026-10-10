@@ -28,14 +28,16 @@ npm run build && npm start
 | Blindaje y cupos del asistente | `lib/asistente/guardia.ts` (`LIMITES_ASISTENTE`) |
 | Puntos del score y chicotazo | `lib/score.ts` (`PARAMS_SCORE`) |
 | Niveles Bronce/Plata/Oro | `lib/niveles.ts` |
-| Mascota (hoy emoji 🦫) | `components/Pacaso.tsx` |
+| Mascota Pareas (componente y animaciones) | `components/Pareas.tsx` |
+| Imágenes de Pareas | `public/pareas/pareas.png` (mascota), `public/pareas/logo.png` (logo), `app/icon.png` y `app/apple-icon.png` (favicon) |
+| Decisiones de diseño | `DESIGN.md` |
 | Acceso a datos | `lib/db/repo.ts` (interfaz) · `repo-sqlite.ts` |
 
 Los montos y fechas siempre se calculan en el servidor (`lib/servicio.ts`); el navegador solo muestra.
 
 ## Reglas clave (acordadas con el equipo)
 - **Chicotazo:** −12 por cada día que el cliente sigue en mora (una vez por día). En mora o impago **no hay racha**: aunque acierte toda la trivia (+10 máx.) el neto diario es −2.
-- **Plan de pago:** aceptarlo **no** detiene el chicotazo. Recién con el **primer pago** del plan la deuda vencida queda "en plan" y el Pacaso deja de pegar. Cada pago a tiempo: +15. Cumplir todo el plan: +20.
+- **Plan de pago:** aceptarlo **no** detiene el chicotazo. Recién con el **primer pago** del plan la deuda vencida queda "en plan" y Pareas deja de pegar. Cada pago a tiempo: +15. Cumplir todo el plan: +20.
 - **Incumplir el plan:** no hay castigo fijo; vuelve el chicotazo diario y el cliente **pierde sus beneficios** (de nivel y de volver a reprogramar).
 - **🎁 Regalo Salvador:** campaña que otorga el gestor desde su panel (casos derivados o detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
 - Más de 60 días: la propuesta (con inicial ≥ 30 %) queda **derivada** al gestor; el cliente sigue en mora.
@@ -50,6 +52,13 @@ Orden de filtros en `lib/asistente/` (todo lo que se filtra se responde **sin IA
 5. Preguntas frecuentes (deuda, plan, pago, puntos, regalo, interés) → plantilla con cifras del servidor.
 6. Solo si queda una pregunta en tema que nada de lo anterior resuelve → Gemini, con cupo diario por cliente (`GEMINI_MAX_CLIENTE_DIA`, 15) y global (`GEMINI_MAX_DIA`, 300), mensaje ≤ 300 caracteres, 4 turnos de historial y ≤ 150 tokens de respuesta.
 
+## Pareas, la mascota
+Pareas es la iguana (el "pacaso" piurano) que acompaña al cliente y responde en el asistente. Sus imágenes viven en `public/pareas/`:
+- `pareas.png`: ilustración con la bolsa (sin fondo). La usan `components/Pareas.tsx` (dashboard, trivia) y el hero de la landing.
+- `logo.png`: logo cuadrado. Aparece en la barra flotante, el encabezado del cliente y el pie. De él salen `app/icon.png` y `app/apple-icon.png`.
+
+Para cambiar una imagen basta con reemplazar el archivo con el mismo nombre. Para tener varias expresiones (feliz, seria, chicotazo), agrega `pareas-feliz.png`, etc. y elige la imagen según `humor` en `components/Pareas.tsx`.
+
 ## Tono
 Coloquial y cercano del norte ("¡Habla!", "compare", "chévere", "al toque", "tranqui"), sin faltar el respeto. El apelativo está en `APELATIVO` (`lib/config.ts`). El panel del gestor usa tono formal.
 
@@ -61,9 +70,9 @@ De https://github.com/nolly-studio/cult-ui (MIT) se copiaron **solo** los compon
 - Seguridad (prototipo): DNI solo como hash SHA-256 y enmascarado en pantalla; `// ROADMAP` 2FA/biometría (passkeys) y Argon2/bcrypt para claves reales; el login real lo aporta la app de Caja Piura.
 
 ## Guion de demo (3 minutos)
-1. **(0:00) Landing** → "Entrar como cliente". ¡Habla, Gengis!: S/ 326.08 (cuota S/ 320 + mora), 12 días. El Pacaso da su chicotazo con humor.
+1. **(0:00) Landing** → "Entrar como cliente". ¡Habla, Gengis!: S/ 326.08 (cuota S/ 320 + mora), 12 días. Pareas da su chicotazo con humor.
 2. **(0:25) Armar mi plan:** subir a 3 cuotas → semáforo ámbar con el porqué y la alternativa más cercana → "Usar esta alternativa" → verde. Poner el primer pago para mañana.
-3. **(0:55) Confirmar:** motivo "Bajaron mis ventas", aceptar → "¡Plan aceptado! Falta tu primer pago": el Pacaso sigue pegando hasta pagar.
+3. **(0:55) Confirmar:** motivo "Bajaron mis ventas", aceptar → "¡Plan aceptado! Falta tu primer pago": Pareas sigue pegando hasta pagar.
 4. **(1:15) En otra pestaña `/banco`** (gestor / caja2026): el feed muestra *"Gengis G. aceptó pagar en 2 cuotas"* y suben los KPIs.
 5. **(1:35) Incumplir:** en el cliente, "Herramientas de la demo → Pasar un día" dos veces sin pagar → "Beneficios en pausa". El banco lo ve: *"Gengis G. incumplió su plan"*, y aparece en casos derivados como candidato a Regalo Salvador.
 6. **(2:00) 🎁 Regalo Salvador:** el gestor pulsa "Dar Regalo Salvador". En el celular del cliente aparece la tarjeta: paga 30 % menos hoy, +10 % en sus 3 cuotas siguientes → "Aprovechar mi regalo" → pago con QR → al día y con beneficios de vuelta.

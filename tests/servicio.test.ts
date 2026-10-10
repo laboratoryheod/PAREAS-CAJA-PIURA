@@ -19,7 +19,7 @@ describe("Gengis Guerrero (demo)", () => {
     expect(s.deuda.montoVencido).toBe(320);
     expect(s.deuda.total).toBeCloseTo(326.08, 2);
     expect(s.score).toBe(70);
-    expect(s.pacaso.humor).toBe("chicotazo");
+    expect(s.pareas.humor).toBe("chicotazo");
     expect(s.saludo).toContain("¡Habla, Gengis!");
   });
 
@@ -44,7 +44,7 @@ describe("Gengis Guerrero (demo)", () => {
     expect(r.estado).toBe("aceptada");
     expect(r.situacion.estado).toBe("plan_pendiente");
     expect(r.situacion.diasAtraso).toBe(12);
-    expect(r.situacion.pacaso.humor).toBe("chicotazo");
+    expect(r.situacion.pareas.humor).toBe("chicotazo");
     S.avanzarDia();
     expect(S.situacion(GENGIS).score).toBe(70 - 12); // sigue pegando
     const pago = await S.pagoSimulado(GENGIS);
@@ -86,13 +86,13 @@ describe("Gengis Guerrero (demo)", () => {
     expect(S.feed(0, 80).items.some((i) => i.tipo === "promesa_incumplida" && i.texto.includes("Gengis G."))).toBe(true);
   });
 
-  it("pagar la deuda hoy: queda al día y el Pacaso feliz", async () => {
+  it("pagar la deuda hoy: queda al día y Pareas feliz", async () => {
     const cobro = await S.cobroPendiente(GENGIS);
     expect(cobro.concepto).toBe("deuda");
     expect(cobro.qr).toMatch(/^data:image\/png/);
     const r = await S.pagoSimulado(GENGIS, "deuda");
     expect(r.situacion.estado).toBe("al_dia");
-    expect(r.situacion.pacaso.humor).toBe("feliz");
+    expect(r.situacion.pareas.humor).toBe("feliz");
     await expect(S.pagoSimulado(GENGIS)).rejects.toThrow(/al día/);
   });
 });
@@ -110,7 +110,7 @@ describe("regalo salvador", () => {
     expect(regalo.recargos).toHaveLength(3);
     const s = S.situacion(GENGIS);
     expect(s.regalo?.montoHoy).toBe(regalo.montoHoy);
-    expect(s.pacaso.mensaje).toMatch(/Regalo Salvador/);
+    expect(s.pareas.mensaje).toMatch(/Regalo Salvador/);
     const cobro = await S.cobroPendiente(GENGIS);
     expect(cobro.concepto).toBe("regalo");
     expect(cobro.monto).toBe(regalo.montoHoy);

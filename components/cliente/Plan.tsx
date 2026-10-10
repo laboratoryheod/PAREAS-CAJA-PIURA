@@ -19,7 +19,7 @@ export default function Plan({ sit, onPagar, onVolver }: { sit: Situacion; onPag
         <p className="text-4xl text-center">{derivada ? "📨" : porArrancar ? "📝" : "🚀"}</p>
         <h2 className="text-xl font-bold text-caja text-center">{derivada ? "Propuesta enviada a tu gestor" : porArrancar ? "¡Plan aceptado! Falta tu primer pago" : "¡Tu plan está en marcha!"}</h2>
         {derivada && <p className="text-sm text-center">Un gestor la revisará y se comunicará contigo. Tranqui, no necesitas hacer nada más por ahora.</p>}
-        {porArrancar && <p className="text-sm text-center rounded-xl bg-amber-50 border border-amber-200 p-2">Tu plan arranca cuando hagas tu primer pago. Hasta entonces el Pacaso sigue pegando, ¡no lo dejes para después!</p>}
+        {porArrancar && <p className="text-sm text-center rounded-xl bg-amber-50 border border-amber-200 p-2">Tu plan arranca cuando hagas tu primer pago. Hasta entonces Pareas sigue pegando, ¡no lo dejes para después!</p>}
         <ul className="divide-y divide-caja-borde text-sm">
           {p.pagos.map((x: any) => (
             <li key={x.n} className="flex justify-between py-2">
@@ -34,7 +34,7 @@ export default function Plan({ sit, onPagar, onVolver }: { sit: Situacion; onPag
           <div className="card text-sm space-y-1">
             <h3 className="font-bold">Recordatorios</h3>
             <p>🔔 Te avisaremos 2 días antes y el mismo día de cada pago.</p>
-            <p>🦫 Cumplir tu plan te suma puntos. Si se te pasa un pago, vuelve el chicotazo y pierdes tus beneficios.</p>
+            <p>🦎 Cumplir tu plan te suma puntos. Si se te pasa un pago, vuelve el chicotazo y pierdes tus beneficios.</p>
           </div>
           {proximo && cobro?.qr && (
             <div className="card text-center space-y-2">

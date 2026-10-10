@@ -129,7 +129,7 @@ function sembrarActividad(db: Database.Database, rnd: () => number, hoy: string)
       const plan = v.aceptable ? { nCuotas: n, inicial: 0, fechaPrimerPago: sumarDias(hoy, 7) } : v.contrapropuesta;
       if (!plan) continue;
       const cron = generarCronograma({ deuda: v.limites.deuda, ...plan, hoy });
-      // Planes ya en marcha (hicieron su 1er pago) y algunos aceptados sin iniciar (el Pacaso sigue pegando)
+      // Planes ya en marcha (hicieron su 1er pago) y algunos aceptados sin iniciar (Pareas sigue pegando)
       const iniciado = aceptadas < 6 || plan.inicial > 0; // un plan con inicial sin pagar se incumpliría al día siguiente
       insProp.run(f.credito_id, plan.nCuotas, plan.inicial, plan.fechaPrimerPago, JSON.stringify(cron.pagos.map((p, i) => ({ ...p, pagado: iniciado && i === 0 }))), "aceptada", motivos[Math.floor(rnd() * 4)], haceMin(min));
       if (iniciado) { marcar.run(f.credito_id); diasCred.run(f.credito_id); }

@@ -10,6 +10,8 @@ No se instala el repositorio completo (≈100 MB): solo estos archivos de códig
 | `texture-button.tsx` | `registry/default/ui/texture-button.tsx` | variantes con los colores de la Caja, alto mínimo 48 px |
 | `texture-card.tsx` | `registry/default/ui/texture-card.tsx` | solo la variante `TextureCardStyled`, sin variables de shadcn |
 | `neumorph-eyebrow.tsx` | `registry/default/ui/neumorph-eyebrow.tsx` | intents de nivel (oro, plata, bronce) y alerta |
-| `speech-bubble.tsx` | `registry/default/ui/speech-bubble.tsx` | globo para el Pacaso: colores, texto normal, cola a la izquierda |
+| `speech-bubble.tsx` | `registry/default/ui/speech-bubble.tsx` | globo para Pareas: colores, texto normal, cola a la izquierda |
 
-Para agregar otro: copiar el archivo desde el repo de cult-ui a esta carpeta y revisar sus dependencias (`motion`, `class-variance-authority`, `@radix-ui/react-slot`).
+Las skills para agentes de cult-ui (`frontend-design`, `fixing-motion-performance`, `components-build`) están en `.claude/skills/`, y las decisiones de diseño del proyecto en `DESIGN.md`.
+
+Para agregar otro: copiar el archivo desde el repo de cult-ui a esta carpeta y revisar sus dependencias (`motion`, `class-variance-authority`, `@radix-ui/react-slot`, `lucide-react`, `react-use-measure`). Los tokens de shadcn (`bg-card`, `text-foreground`…) ya están definidos en `tailwind.config.ts`.

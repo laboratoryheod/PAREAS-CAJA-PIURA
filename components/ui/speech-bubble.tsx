@@ -1,4 +1,4 @@
-// Adaptado de cult-ui (MIT) · speech-bubble: globo de diálogo del Pacaso.
+// Adaptado de cult-ui (MIT) · speech-bubble: globo de diálogo de Pareas.
 import { cn } from "@/lib/utils";
 
 export function SpeechBubble({ children, className, tono = "info" }: { children: React.ReactNode; className?: string; tono?: "info" | "alerta" | "fiesta" }) {

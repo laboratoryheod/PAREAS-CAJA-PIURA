@@ -3,7 +3,7 @@ import { avanzarDia } from "@/lib/servicio";
 
 export const dynamic = "force-dynamic";
 
-/** Solo demo: avanza un día para ver el chicotazo del Pacaso y las promesas vencidas. */
+/** Solo demo: avanza un día para ver el chicotazo de Pareas y las promesas vencidas. */
 export async function POST() {
   return responder(() => avanzarDia());
 }

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { calcularScore, chicotazoDelDia, netoDiario, estadoPacaso, PARAMS_SCORE, puntosParaSiguienteNivel, recalcularScore, type Movimiento } from "@/lib/score";
+import { calcularScore, chicotazoDelDia, netoDiario, estadoPareas, PARAMS_SCORE, puntosParaSiguienteNivel, recalcularScore, type Movimiento } from "@/lib/score";
 
 const mov = (tipo: Movimiento["tipo"], puntos: number, fecha = "2026-10-10"): Movimiento => ({ tipo, puntos, fecha });
 
-describe("el chicotazo del Pacaso", () => {
+describe("el chicotazo de Pareas", () => {
   it("el castigo diario supera el tope de trivia", () => {
     expect(Math.abs(PARAMS_SCORE.chicotazoPorDia)).toBeGreaterThan(PARAMS_SCORE.topeTriviaDia);
   });
@@ -66,15 +66,15 @@ describe("topes y cotas", () => {
   });
 });
 
-describe("estado del Pacaso", () => {
+describe("estado de Pareas", () => {
   it("en mora: chicotazo con humor amable, sin amenazas", () => {
-    const e = estadoPacaso({ nombre: "Gengis", diasAtraso: 3, score: 60 });
+    const e = estadoPareas({ nombre: "Gengis", diasAtraso: 3, score: 60 });
     expect(e.humor).toBe("chicotazo");
     expect(e.mensaje).toMatch(/¡Chas!/);
     expect(e.mensaje.toLowerCase()).not.toMatch(/legal|embargo|demanda|amenaz/);
   });
   it("al día: feliz; al día con score bajo: serio", () => {
-    expect(estadoPacaso({ diasAtraso: 0, score: 80 }).humor).toBe("feliz");
-    expect(estadoPacaso({ diasAtraso: 0, score: 40 }).humor).toBe("serio");
+    expect(estadoPareas({ diasAtraso: 0, score: 80 }).humor).toBe("feliz");
+    expect(estadoPareas({ diasAtraso: 0, score: 40 }).humor).toBe("serio");
   });
 });
