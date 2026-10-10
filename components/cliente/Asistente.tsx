@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { TextureButton } from "@/components/ui/texture-button";
 import { api, type Situacion } from "@/lib/cliente-api";
 
 interface Msg { rol: "usuario" | "asistente"; texto: string }
-const SUGERENCIAS = ["¿Cuánto debo hoy?", "¿Qué opciones de plan tengo?", "¿Cómo puedo pagar?", "Quiero hablar con un gestor"];
+const SUGERENCIAS = ["¿Cuánto debo hoy?", "¿Qué plan puedo armar?", "¿Cómo pago?", "¿Qué es el Regalo Salvador?", "Quiero hablar con un gestor"];
 
 export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver: () => void }) {
-  const [msgs, setMsgs] = useState<Msg[]>([{ rol: "asistente", texto: `¡Hola, ${sit.cliente.nombre}! Soy el asistente del Pacaso. Puedo ayudarte con tu deuda, tus opciones de plan y cómo pagar. Nunca te pediré claves ni datos de tarjeta.` }]);
+  const [msgs, setMsgs] = useState<Msg[]>([{ rol: "asistente", texto: `¡Habla, ${sit.cliente.nombre}! Soy el asistente del Pacaso 🦫. Te ayudo con tu deuda, tu plan y cómo pagar. Ojo: nunca te voy a pedir claves ni datos de tarjeta.` }]);
   const [texto, setTexto] = useState("");
   const [esperando, setEsperando] = useState(false);
   const fin = useRef<HTMLDivElement>(null);
@@ -28,7 +29,7 @@ export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver:
     <section className="space-y-3">
       <button onClick={onVolver} className="text-sm text-caja underline min-h-[44px]">← Volver</button>
       <div className="card space-y-3">
-        <h2 className="text-xl font-bold text-caja">🦫 Asistente</h2>
+        <h2 className="text-xl font-extrabold text-caja">🦫 Asistente del Pacaso</h2><p className="text-xs text-gray-500">Solo temas de tu deuda, tu plan y la Caja.</p>
         <div className="space-y-2 max-h-[50vh] overflow-y-auto" aria-live="polite">
           {msgs.map((m, i) => (
             <div key={i} className={`flex ${m.rol === "usuario" ? "justify-end" : ""}`}>
@@ -42,8 +43,8 @@ export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver:
           {SUGERENCIAS.map((s) => <button key={s} onClick={() => enviar(s)} className="text-xs rounded-full border border-caja text-caja px-3 min-h-[36px]">{s}</button>)}
         </div>
         <form onSubmit={(e) => { e.preventDefault(); enviar(texto); }} className="flex gap-2">
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu pregunta…" maxLength={500} className="flex-1 min-h-[48px] rounded-full border border-caja-borde px-4" />
-          <button className="btn px-5" disabled={esperando}>Enviar</button>
+          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu pregunta…" maxLength={300} className="flex-1 min-w-0 min-h-[48px] rounded-full border border-caja-borde px-4" />
+          <TextureButton className="w-auto shrink-0" disabled={esperando}>Enviar</TextureButton>
         </form>
       </div>
     </section>

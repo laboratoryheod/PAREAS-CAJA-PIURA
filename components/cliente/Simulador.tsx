@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { TextureButton } from "@/components/ui/texture-button";
 import { api, soles, type Situacion } from "@/lib/cliente-api";
 
 export interface PlanElegido { nCuotas: number; inicial: number; fechaPrimerPago: string }
@@ -30,8 +31,8 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
       <button onClick={onVolver} className="text-sm text-caja underline min-h-[44px]">← Volver</button>
       <div className="card space-y-5">
         <div>
-          <h2 className="text-xl font-bold text-caja">Arma tu plan de pago</h2>
-          <p className="text-sm text-gray-600">Mueve los controles y mira al instante cómo queda. Tu deuda de hoy es <b>{soles(deuda)}</b>.</p>
+          <h2 className="text-xl font-extrabold text-caja">🧮 Arma tu plan, a tu ritmo</h2>
+          <p className="text-sm text-gray-600">Mueve los controles y mira al toque cómo queda. Hoy debes <b>{soles(deuda)}</b>.</p>
         </div>
 
         <label className="block">
@@ -62,9 +63,9 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
             <ul className="mt-2 list-disc pl-5 text-sm space-y-1">{v.motivos.map((m: string) => <li key={m}>{m}</li>)}</ul>
           )}
           {v.contrapropuesta && (
-            <button className="btn btn-acento mt-3 w-full" onClick={() => { setN(v.contrapropuesta.nCuotas || 1); setInicial(v.contrapropuesta.inicial); setFecha(v.contrapropuesta.fechaPrimerPago); }}>
-              Usar esta alternativa: {v.contrapropuesta.nCuotas} cuota{v.contrapropuesta.nCuotas === 1 ? "" : "s"}{v.contrapropuesta.inicial > 0 ? ` e inicial de ${soles(v.contrapropuesta.inicial)}` : ""}
-            </button>
+            <TextureButton variant="accent" className="mt-3" onClick={() => { setN(v.contrapropuesta.nCuotas || 1); setInicial(v.contrapropuesta.inicial); setFecha(v.contrapropuesta.fechaPrimerPago); }}>
+              ✨ Usar esta alternativa: {v.contrapropuesta.nCuotas} cuota{v.contrapropuesta.nCuotas === 1 ? "" : "s"}{v.contrapropuesta.inicial > 0 ? ` e inicial de ${soles(v.contrapropuesta.inicial)}` : ""}
+            </TextureButton>
           )}
         </div>
       )}
@@ -80,13 +81,13 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
             ))}
           </ul>
           <p className="flex justify-between border-t border-caja-borde pt-2 mt-1 font-bold"><span>Total a pagar</span><span>{soles(r.total)}</span></p>
-          <p className="text-xs text-gray-500 mt-1">Incluye tu deuda vencida y el interés moratorio a hoy. Sin costos adicionales por reprogramar.</p>
+          <p className="text-xs text-gray-500 mt-1">Incluye tu deuda vencida y el interés moratorio a hoy. Sin costos extra por reprogramar. Ojo: el plan arranca con tu primer pago.</p>
         </div>
       )}
 
-      <button className="btn w-full disabled:opacity-40" disabled={!puede} onClick={() => onContinuar({ nCuotas, inicial, fechaPrimerPago: fecha }, v.resultado, r.total)}>
-        Continuar
-      </button>
+      <TextureButton size="lg" disabled={!puede} onClick={() => onContinuar({ nCuotas, inicial, fechaPrimerPago: fecha }, v.resultado, r.total)}>
+        Continuar →
+      </TextureButton>
     </section>
   );
 }

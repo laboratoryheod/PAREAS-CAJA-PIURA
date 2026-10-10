@@ -2,6 +2,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, soles } from "@/lib/cliente-api";
+import { TextureButton } from "@/components/ui/texture-button";
 
 const MOTIVOS: Record<string, string> = { olvido: "Olvido", bajaron_ventas: "Bajaron las ventas", salud: "Salud", otro: "Otro" };
 
@@ -9,6 +10,11 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const [d, setD] = useState<any>(null);
   const [error, setError] = useState("");
+  const [aviso, setAviso] = useState("");
+  async function darRegalo() {
+    try { await api("/api/banco/regalo", { clienteId: Number(id) }); setAviso("🎁 Regalo Salvador otorgado. El cliente ya lo ve en su app."); setD(await api(`/api/banco/cliente/${id}`)); }
+    catch (e: any) { setAviso(e.message); }
+  }
   useEffect(() => {
     const cargar = () => api(`/api/banco/cliente/${id}`).then(setD).catch((e) => setError(e.message));
     cargar();
@@ -33,6 +39,23 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
           <div><p className="text-gray-600">Saldo capital</p><b>{soles(d.credito.saldoCapital)}</b></div>
           <div><p className="text-gray-600">TEA</p><b>{Math.round(d.credito.tea * 100)}%</b></div>
         </div>
+      </section>
+
+      <section className="card space-y-2 border-fuchsia-200">
+        <h2 className="font-bold text-fuchsia-700">🎁 Regalo Salvador (campaña de regularización)</h2>
+        {d.cliente.sinBeneficios && <p className="text-sm rounded-xl bg-rose-50 border border-rose-200 p-2">Incumplió un plan: está <b>sin beneficios</b> y no puede reprogramar. Solo una campaña lo reactiva.</p>}
+        {d.regaloVigente && (
+          <p className="text-sm">Vigente hasta el {d.regaloVigente.venceLargo}: paga <b>{soles(d.regaloVigente.montoHoy)}</b> hoy (en vez de {soles(d.regaloVigente.base)}) y recupera {soles(d.regaloVigente.descuento)} con recargos de {d.regaloVigente.recargos.map((r: any) => soles(r.monto)).join(" + ")}.</p>
+        )}
+        {d.puedeRecibirRegalo && d.vistaPreviaRegalo && (
+          <>
+            <p className="text-sm">Si se lo otorgas: paga <b>{soles(d.vistaPreviaRegalo.montoHoy)}</b> hoy (−{soles(d.vistaPreviaRegalo.descuento)}) y +{soles(d.vistaPreviaRegalo.recargos[0].monto)} en sus 3 cuotas siguientes. Vence en 7 días.</p>
+            <TextureButton variant="regalo" className="md:w-auto" onClick={darRegalo}>🎁 Otorgar Regalo Salvador</TextureButton>
+          </>
+        )}
+        {!d.puedeRecibirRegalo && !d.regaloVigente && <p className="text-sm text-gray-500">No aplica ahora (el cliente no está en mora o tiene un plan en marcha).</p>}
+        {aviso && <p className="text-sm font-semibold text-fuchsia-700">{aviso}</p>}
+        {d.campanas.length > 0 && <p className="text-xs text-gray-500">Historial: {d.campanas.map((c: any) => `${c.estado} (${soles(c.montoHoy)})`).join(" · ")}</p>}
       </section>
 
       <section className="card">

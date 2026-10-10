@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { TextureButton } from "@/components/ui/texture-button";
 import { api, type Situacion } from "@/lib/cliente-api";
 import Pacaso from "@/components/Pacaso";
 
@@ -29,7 +30,7 @@ export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onS
       <button onClick={onVolver} className="text-sm text-caja underline min-h-[44px]">← Volver</button>
       <div className="card space-y-3">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-caja">Trivia del día</h2>
+          <h2 className="text-xl font-extrabold text-caja">🎮 Trivia del día</h2>
           {pr && <span className="text-sm">{pr.respondidas}/{pr.total} · +{pr.puntosTriviaHoy}/{pr.topeDia} pts</span>}
         </div>
         {pr && <div className="h-2 rounded-full bg-caja-borde"><div className="h-2 rounded-full bg-caja-acento transition-all" style={{ width: `${(pr.respondidas / pr.total) * 100}%` }} /></div>}
@@ -55,11 +56,11 @@ export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onS
             {res.mensajeRacha && <p className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-sm">{res.mensajeRacha}</p>}
             <Pacaso humor={res.pacaso.humor} mensaje={res.pacaso.mensaje} />
             <p className="text-sm">Tus puntos: <b>{res.score}</b> · Nivel {res.nivel}</p>
-            {!res.progreso.completo && <button className="btn w-full" onClick={siguiente}>Siguiente pregunta</button>}
+            {!res.progreso.completo && <TextureButton onClick={siguiente}>Siguiente pregunta →</TextureButton>}
           </div>
         )}
         {t && !t.pregunta && !res && <p className="font-semibold">{t.mensaje}</p>}
-        {res?.progreso.completo && <p className="font-semibold">¡Completaste la trivia de hoy! Vuelve mañana por más puntos.</p>}
+        {res?.progreso.completo && <p className="font-semibold">¡Completaste la trivia de hoy, compare! Vuelve mañana por más puntos.</p>}
       </div>
     </section>
   );

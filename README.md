@@ -23,7 +23,9 @@ npm run build && npm start
 | Qué | Archivo |
 |---|---|
 | Nombre de la app | `lib/config.ts` (`APP_NOMBRE`) |
-| Reglas de reprogramación (tramos, inicial, cuota mínima, interés moratorio, beneficios por nivel) | `lib/reglas.ts` |
+| Reglas de reprogramación (tramos, inicial, cuota mínima, interés moratorio, beneficios por nivel, Regalo Salvador) | `lib/reglas.ts` |
+| Tono y apelativo | `lib/config.ts` (`APELATIVO`) |
+| Blindaje y cupos del asistente | `lib/asistente/guardia.ts` (`LIMITES_ASISTENTE`) |
 | Puntos del score y chicotazo | `lib/score.ts` (`PARAMS_SCORE`) |
 | Niveles Bronce/Plata/Oro | `lib/niveles.ts` |
 | Mascota (hoy emoji 🦫) | `components/Pacaso.tsx` |
@@ -31,18 +33,38 @@ npm run build && npm start
 
 Los montos y fechas siempre se calculan en el servidor (`lib/servicio.ts`); el navegador solo muestra.
 
-## Decisiones de diseño a tener presentes
-- **Chicotazo:** −12 por cada día que el cliente sigue en mora (una vez por día). La racha de +5 **no suma en mora**, así que aunque acierte toda la trivia (+10 máx.) el neto diario es −2.
-- **Plan aceptado:** las cuotas vencidas pasan a "reprogramadas" y el Pacaso deja de pegar. Si un pago del plan vence sin pagarse: promesa incumplida (−25) y vuelve la mora. Cumplir todo: +20. Cada pago a tiempo: +15.
+## Reglas clave (acordadas con el equipo)
+- **Chicotazo:** −12 por cada día que el cliente sigue en mora (una vez por día). En mora o impago **no hay racha**: aunque acierte toda la trivia (+10 máx.) el neto diario es −2.
+- **Plan de pago:** aceptarlo **no** detiene el chicotazo. Recién con el **primer pago** del plan la deuda vencida queda "en plan" y el Pacaso deja de pegar. Cada pago a tiempo: +15. Cumplir todo el plan: +20.
+- **Incumplir el plan:** no hay castigo fijo; vuelve el chicotazo diario y el cliente **pierde sus beneficios** (de nivel y de volver a reprogramar).
+- **🎁 Regalo Salvador:** campaña que otorga el gestor desde su panel (casos derivados o detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
 - Más de 60 días: la propuesta (con inicial ≥ 30 %) queda **derivada** al gestor; el cliente sigue en mora.
 - Interés moratorio simulado: TEA × 1,5 prorrateada por día (simple). Ajustable en `FACTOR_MORATORIO`.
-- Tiempo real del banco por polling cada 3 s (ROADMAP: Supabase Realtime sobre la misma interfaz de repositorio).
+
+## Asistente blindado (para no gastar tokens)
+Orden de filtros en `lib/asistente/` (todo lo que se filtra se responde **sin IA**):
+1. Datos sensibles (claves, tarjetas, token) → aviso fijo.
+2. Angustia o pedido de una persona → deriva a gestor.
+3. Intentos de sacarlo de su rol ("ignora tus instrucciones", "actúa como…") → negativa fija.
+4. Temas ajenos a la Caja / PAREAS (poemas, fútbol, tareas, código, política…) → negativa fija.
+5. Preguntas frecuentes (deuda, plan, pago, puntos, regalo, interés) → plantilla con cifras del servidor.
+6. Solo si queda una pregunta en tema que nada de lo anterior resuelve → Gemini, con cupo diario por cliente (`GEMINI_MAX_CLIENTE_DIA`, 15) y global (`GEMINI_MAX_DIA`, 300), mensaje ≤ 300 caracteres, 4 turnos de historial y ≤ 150 tokens de respuesta.
+
+## Tono
+Coloquial y cercano del norte ("¡Habla!", "compare", "chévere", "al toque", "tranqui"), sin faltar el respeto. El apelativo está en `APELATIVO` (`lib/config.ts`). El panel del gestor usa tono formal.
+
+## UI con cult-ui
+De https://github.com/nolly-studio/cult-ui (MIT) se copiaron **solo** los componentes usados a `components/ui/` (ver `components/ui/README.md`): `texture-button`, `texture-card`, `rolling-number`, `text-animate`, `neumorph-eyebrow` y `speech-bubble`. El repo completo pesa ~100 MB y no se sube.
+
+## Otras notas
+- Tiempo real del banco por polling cada 3 s (ROADMAP: Supabase Realtime sobre la misma interfaz de repositorio). El cliente refresca cada 5 s para ver al instante si el gestor le dio un regalo.
 - Seguridad (prototipo): DNI solo como hash SHA-256 y enmascarado en pantalla; `// ROADMAP` 2FA/biometría (passkeys) y Argon2/bcrypt para claves reales; el login real lo aporta la app de Caja Piura.
 
 ## Guion de demo (3 minutos)
-1. **(0:00) Landing** → "Entrar como cliente". Hola, Gengis: S/ 326.08 (cuota S/ 320 + mora), 12 días. El Pacaso da su chicotazo con humor: *"mientras siga pendiente, tus puntos bajan"*.
-2. **(0:30) Armar mi plan:** subir a 3 cuotas → semáforo ámbar, explica por qué y ofrece la alternativa más cercana → "Usar esta alternativa" → verde. Mover la inicial y la fecha; el cronograma cambia en vivo.
-3. **(1:15) Continuar:** motivo "Bajaron mis ventas", aceptar → plan listo con recordatorios y **QR** compartible para un familiar.
-4. **(1:40) Abrir en otra pestaña `/banco`** (gestor / caja2026): el feed muestra *"Gengis G. aceptó pagar en 2 cuotas"*, KPIs y monto comprometido suben; casos derivados (>60 días) y detalle con motivo del atraso y línea de tiempo.
-5. **(2:10) Pacaso en acción:** en el cliente, "Herramientas de la demo → Pasar un día" varias veces sin pagar: el plan se incumple, −25 y vuelve la mora; el banco lo ve. Pagar y ver cómo el score se recupera.
-6. **(2:40) Trivia y asistente:** una pregunta de trivia (+2, tope +10/día) y al asistente "¿Cuánto debo?" / "quiero una condonación" (no promete) / "mi clave es…" (no la acepta).
+1. **(0:00) Landing** → "Entrar como cliente". ¡Habla, Gengis!: S/ 326.08 (cuota S/ 320 + mora), 12 días. El Pacaso da su chicotazo con humor.
+2. **(0:25) Armar mi plan:** subir a 3 cuotas → semáforo ámbar con el porqué y la alternativa más cercana → "Usar esta alternativa" → verde. Poner el primer pago para mañana.
+3. **(0:55) Confirmar:** motivo "Bajaron mis ventas", aceptar → "¡Plan aceptado! Falta tu primer pago": el Pacaso sigue pegando hasta pagar.
+4. **(1:15) En otra pestaña `/banco`** (gestor / caja2026): el feed muestra *"Gengis G. aceptó pagar en 2 cuotas"* y suben los KPIs.
+5. **(1:35) Incumplir:** en el cliente, "Herramientas de la demo → Pasar un día" dos veces sin pagar → "Beneficios en pausa". El banco lo ve: *"Gengis G. incumplió su plan"*, y aparece en casos derivados como candidato a Regalo Salvador.
+6. **(2:00) 🎁 Regalo Salvador:** el gestor pulsa "Dar Regalo Salvador". En el celular del cliente aparece la tarjeta: paga 30 % menos hoy, +10 % en sus 3 cuotas siguientes → "Aprovechar mi regalo" → pago con QR → al día y con beneficios de vuelta.
+7. **(2:35) Asistente:** "¿Cuánto debo?" (cifras del servidor), "escríbeme un poema" (no responde: no gasta tokens), "mi clave es…" (no la acepta).

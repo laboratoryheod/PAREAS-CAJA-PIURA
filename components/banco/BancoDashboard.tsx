@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { APP_NOMBRE } from "@/lib/config";
 import { api, soles } from "@/lib/cliente-api";
+import { TextureButton } from "@/components/ui/texture-button";
 
-const ETIQ_ESTADO: Record<string, string> = { en_mora: "En mora", reprogramado: "Reprogramado", derivado: "Derivado a gestor", al_dia: "Al día" };
-const COLOR_ESTADO: Record<string, string> = { en_mora: "bg-amber-100", reprogramado: "bg-green-100", derivado: "bg-red-100", al_dia: "bg-blue-100" };
+const ETIQ_ESTADO: Record<string, string> = { en_mora: "En mora", plan_pendiente: "Plan sin 1er pago", reprogramado: "Plan en marcha", incumplido: "Incumplió (sin beneficios)", derivado: "Derivado a gestor", al_dia: "Al día" };
+const COLOR_ESTADO: Record<string, string> = { en_mora: "bg-amber-100", plan_pendiente: "bg-sky-100", reprogramado: "bg-green-100", incumplido: "bg-rose-200", derivado: "bg-red-100", al_dia: "bg-blue-100" };
 
 function hace(iso: string): string {
   const s = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 1000));
@@ -22,6 +23,13 @@ export default function BancoDashboard() {
   const [derivados, setDerivados] = useState<any[]>([]);
   const [f, setF] = useState({ q: "", tramo: "", tipo: "", estado: "", zona: "" });
   const [, tick] = useState(0);
+  const [aviso, setAviso] = useState("");
+
+  async function darRegalo(id: number, nombre: string) {
+    try { const r = await api("/api/banco/regalo", { clienteId: id }); setAviso(`🎁 Regalo Salvador otorgado a ${nombre}: paga ${soles(r.regalo.montoHoy)} hoy.`); }
+    catch (e: any) { setAviso(e.message); }
+    setTimeout(() => setAviso(""), 5000);
+  }
 
   // Tiempo real por polling cada 3 s (ROADMAP: Supabase Realtime)
   useEffect(() => {
@@ -62,8 +70,9 @@ export default function BancoDashboard() {
       </header>
 
       <div className="px-4 pt-4 space-y-5">
+        {aviso && <p className="rounded-2xl bg-fuchsia-50 border border-fuchsia-200 p-3 text-sm font-semibold sticky top-14 z-10">{aviso}</p>}
         {kpis && (
-          <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <section className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {kpi("Avisos enviados", kpis.avisosEnviados)}
             {kpi("Módulos abiertos", kpis.modulosAbiertos, `${Math.round((kpis.modulosAbiertos / Math.max(1, kpis.avisosEnviados)) * 100)}% de los avisos`)}
             {kpi("Propuestas aceptadas", kpis.propuestasAceptadas, `${kpis.propuestasDerivadas} derivadas a gestor`)}
@@ -71,7 +80,8 @@ export default function BancoDashboard() {
             {kpi("Promesas cumplidas", kpis.tasaPromesaCumplida === null ? "—" : `${kpis.tasaPromesaCumplida}%`, "de las ya resueltas")}
             {kpi("Cartera en mora", kpis.carteraEnMora, soles(kpis.deudaEnMora))}
             {kpi("Reprogramados", kpis.reprogramados)}
-            {kpi("Casos para gestor", kpis.derivados)}
+            {kpi("Casos para gestor", kpis.derivados, `${kpis.incumplidos} incumplieron su plan`)}
+            {kpi("🎁 Regalos Salvador", kpis.regalosOtorgados, `${kpis.regalosUsados} ya usados`)}
           </section>
         )}
 
@@ -98,6 +108,8 @@ export default function BancoDashboard() {
                   <Link href={`/banco/cliente/${d.id}`} className="font-semibold underline">{d.nombres}</Link>
                   <span className="text-gray-600"> · {d.diasAtraso} días · {soles(d.deuda)}</span>
                   <p className="text-xs text-gray-600">{d.motivos.join(" · ")}{d.propuesta ? ` · propuesta: ${d.propuesta.nCuotas} cuotas` : ""}</p>
+                  {d.puedeRecibirRegalo && <TextureButton variant="regalo" size="sm" className="mt-1 w-auto" onClick={() => darRegalo(d.id, d.nombres)}>🎁 Dar Regalo Salvador</TextureButton>}
+                  {d.regaloVigente && <span className="text-xs font-semibold text-fuchsia-700">🎁 Regalo vigente</span>}
                 </li>
               ))}
             </ul>
@@ -125,7 +137,7 @@ export default function BancoDashboard() {
                     <td className="text-right">{c.diasAtraso > 0 ? `${c.diasAtraso} d` : "—"}</td>
                     <td className="text-right">{c.deuda > 0 ? soles(c.deuda) : "—"}</td>
                     <td className="text-center">{c.score} <span className="text-xs text-gray-500">{c.nivel}</span></td>
-                    <td><span className={`rounded-full px-2 py-1 text-xs ${COLOR_ESTADO[c.estado]}`}>{ETIQ_ESTADO[c.estado]}</span>{c.pideAyuda && " 🙋"}</td>
+                    <td><span className={`rounded-full px-2 py-1 text-xs ${COLOR_ESTADO[c.estado]}`}>{ETIQ_ESTADO[c.estado]}</span>{c.pideAyuda && " 🙋"}{c.regaloVigente && " 🎁"}</td>
                   </tr>
                 ))}
               </tbody>
