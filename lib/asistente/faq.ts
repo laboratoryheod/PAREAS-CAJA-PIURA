@@ -1,11 +1,12 @@
-// Respuestas de respaldo (sin IA). Los montos y fechas SIEMPRE vienen de situacion() en el servidor.
+// Respuestas sin IA. Los montos y fechas SIEMPRE vienen de situacion() en el servidor.
+import { APELATIVO } from "@/lib/config";
 import { soles } from "@/lib/fecha";
 import type { situacion } from "@/lib/servicio";
+import { norm } from "./guardia";
 
 type Sit = ReturnType<typeof situacion>;
 export interface RespuestaAsistente { respuesta: string; derivar: boolean; fuente: "faq" | "gemini" | "filtro" }
 
-const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 const tiene = (t: string, ...palabras: string[]) => palabras.some((p) => t.includes(p));
 
 /** Datos sensibles: el asistente nunca los pide ni los procesa. */
@@ -13,52 +14,72 @@ export function mencionaDatosSensibles(texto: string): boolean {
   const t = norm(texto);
   return tiene(t, "contrasena", "clave", "password", "token", "cvv", "pin ") || /\d{13,19}/.test(texto.replace(/(?<=\d)[\s-]+(?=\d)/g, "")) || tiene(t, "numero de tarjeta", "nro de tarjeta");
 }
-export const RESPUESTA_SENSIBLE = "Por tu seguridad, nunca te pediremos ni debes compartir contraseñas, claves, número de tarjeta ni token digital, ni por aquí ni por teléfono. Puedo ayudarte con tu deuda o tu plan de pago.";
+export const RESPUESTA_SENSIBLE = `¡Ojo, ${APELATIVO}! Nunca te vamos a pedir contraseñas, claves, número de tarjeta ni token digital, ni por aquí ni por teléfono. No los compartas con nadie. ¿Te ayudo con tu deuda o tu plan?`;
 
 export function pideAyudaHumana(texto: string): boolean {
   const t = norm(texto);
-  return tiene(t, "hablar con una persona", "hablar con un gestor", "gestor", "asesor", "persona real", "humano", "no puedo mas", "desesper", "angusti", "me quiero morir", "abogado", "demanda", "me amenaz");
+  return tiene(t, "hablar con una persona", "hablar con un gestor", "con un asesor", "persona real", "humano", "no puedo mas", "desesper", "angusti", "me quiero morir", "me amenaz", "llorar", "deprimid");
 }
-export const RESPUESTA_DERIVAR = "Entiendo. Voy a avisar a un gestor para que se comunique contigo con calma y te acompañe. Mientras tanto, tu información está segura.";
+export const RESPUESTA_DERIVAR = `Te entiendo, ${APELATIVO}. Ya le avisé a un gestor para que te llame con calma y te acompañe. Tu información está segura.`;
 
-export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente {
+/**
+ * Intenta responder con plantillas. Devuelve null si no reconoce la pregunta
+ * (solo entonces, y si está en tema, se gasta IA).
+ */
+export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
   const t = norm(texto);
-  const ok = (respuesta: string, derivar = false): RespuestaAsistente => ({ respuesta, derivar, fuente: "faq" });
+  const ok = (respuesta: string): RespuestaAsistente => ({ respuesta, derivar: false, fuente: "faq" });
 
-  if (tiene(t, "condon", "perdon", "perdonar", "rebaja", "descuento", "bajar la tasa", "cambiar la tasa", "quitar el interes"))
-    return ok("No puedo prometer condonaciones ni cambios de tasa. Sí puedo mostrarte cómo armar un plan de pago con las condiciones vigentes. ¿Lo vemos?");
+  if (tiene(t, "condon", "perdon", "perdonar", "rebaja", "bajar la tasa", "cambiar la tasa", "quitar el interes", "quitar la mora"))
+    return ok(s.regalo
+      ? `Ahorita tienes un Regalo Salvador: pagas ${soles(s.regalo.montoHoy)} hoy en vez de ${soles(s.regalo.base)}. Es lo que te puedo ofrecer, ${APELATIVO}.`
+      : `No puedo prometerte condonaciones ni cambios de tasa, ${APELATIVO}. Lo que sí: armamos un plan de pago con las condiciones vigentes. ¿Le damos?`);
 
-  if (tiene(t, "cuanto debo", "mi deuda", "cuanto es", "saldo", "cuanto pago", "monto")) {
-    if (s.estado === "al_dia") return ok("Estás al día, no tienes cuotas vencidas. ¡Felicitaciones!");
-    if (s.estado === "reprogramado" && s.propuestaActiva) {
+  if (tiene(t, "regalo", "campana", "salvador", "descuento")) {
+    if (!s.regalo) return ok(`Las campañas como el Regalo Salvador las activa la Caja según cada caso. Si te sale una, la verás aquí, ${APELATIVO}.`);
+    const r = s.regalo;
+    return ok(`¡Te salió el Regalo Salvador! Pagas ${soles(r.montoHoy)} hoy (${r.descuentoPct}% menos) y lo recuperas con ${r.recargoPct}% más en tus 3 cuotas siguientes. Vence el ${r.venceLargo}.`);
+  }
+
+  if (tiene(t, "cuanto debo", "mi deuda", "cuanto es", "saldo", "cuanto pago", "monto", "cuanto tengo que")) {
+    if (s.estado === "al_dia") return ok(`Estás al día, no tienes cuotas vencidas. ¡Chévere, ${APELATIVO}!`);
+    if ((s.estado === "reprogramado" || s.estado === "plan_pendiente") && s.propuestaActiva) {
       const p = s.propuestaActiva.pagos.find((x) => !x.pagado);
-      return ok(p ? `Tienes un plan de pago activo por ${soles(s.propuestaActiva.total)}. Tu próximo pago es de ${soles(p.monto)} el ${p.fechaLarga}.` : "Tu plan de pago está completo. ¡Gracias!");
+      return ok(p ? `Tienes un plan por ${soles(s.propuestaActiva.total)}. Tu próximo pago es de ${soles(p.monto)} el ${p.fechaLarga}.${s.estado === "plan_pendiente" ? " Con ese primer pago arranca tu plan y el Pacaso deja de pegar." : ""}` : "Tu plan de pago está completo. ¡Gracias!");
     }
-    return ok(`Hoy debes ${soles(s.deuda.total)}: ${soles(s.deuda.montoVencido)} de cuotas vencidas y ${soles(s.deuda.interesMoratorio)} de interés moratorio, con ${s.diasAtraso} días de atraso. Si quieres, armamos un plan para pagarlo en cuotas.`);
+    return ok(`Hoy debes ${soles(s.deuda.total)}: ${soles(s.deuda.montoVencido)} de cuotas vencidas y ${soles(s.deuda.interesMoratorio)} de interés moratorio, con ${s.diasAtraso} días de atraso. ¿Lo pasamos a cuotas?`);
   }
 
-  if (tiene(t, "reprogram", "plan", "cuotas", "opcion", "fraccion", "pagar en partes", "facilidad")) {
-    if (!s.limites) return ok(s.estado === "reprogramado" ? "Ya tienes un plan activo; solo se permite uno a la vez. Puedes seguir pagándolo desde “Pagar”." : "No necesitas reprogramar: estás al día.");
+  if (tiene(t, "reprogram", "plan", "cuotas", "opcion", "fraccion", "en partes", "facilidad", "refinanc")) {
+    if (s.sinBeneficios) return ok(`Como se pasó un pago de tu plan anterior, por ahora no puedes armar otro, ${APELATIVO}. Puedes pagar lo pendiente desde “Pagar hoy” o esperar una campaña de la Caja.`);
+    if (!s.limites) return ok(s.propuestaActiva ? "Ya tienes un plan activo; solo se permite uno a la vez. Lo pagas desde “Pagar hoy”." : "No necesitas reprogramar: estás al día. ¡Bacán!");
     const l = s.limites;
-    const inicial = l.inicialMin > 0 ? `una inicial desde ${soles(l.inicialMin)}` : "sin inicial";
-    if (l.derivado) return ok(`Con ${s.diasAtraso} días de atraso, tu propuesta la revisa un gestor. Puedes dejarla desde “Armar mi plan” con una inicial de al menos ${soles(l.inicialMin)}.`);
-    return ok(`Para tu situación puedes pagar hasta en ${l.maxCuotas} cuotas, ${inicial}. En “Armar mi plan” lo ves al instante.`);
+    const inicial = l.inicialMin > 0 ? `con una inicial desde ${soles(l.inicialMin)}` : "sin inicial";
+    if (l.derivado) return ok(`Con ${s.diasAtraso} días de atraso, tu propuesta la revisa un gestor. Puedes dejarla en “Armar mi plan” con una inicial de al menos ${soles(l.inicialMin)}.`);
+    return ok(`Para tu caso puedes pagar hasta en ${l.maxCuotas} cuotas, ${inicial}. Ojo: el plan arranca con tu primer pago. Míralo al toque en “Armar mi plan”.`);
   }
 
-  if (tiene(t, "como pago", "donde pago", "pagar", "qr", "yape", "agente", "familiar", "transferencia"))
-    return ok("Puedes pagar desde “Pagar hoy”. Ahí aparece un código QR que también puede usar un familiar o amigo para pagar por ti.");
+  if (tiene(t, "como pago", "donde pago", "pagar", "qr", "yape", "agencia", "familiar", "transferencia"))
+    return ok(`Fácil, ${APELATIVO}: entra a “Pagar hoy”. Ahí sale un QR que también puede usar un familiar o un pata para pagar por ti.`);
 
-  if (tiene(t, "punto", "score", "pacaso", "nivel", "bronce", "plata", "oro", "chicotazo"))
-    return ok(`Tienes ${s.score} puntos, nivel ${s.nivel}. ${s.siguienteNivel.texto}. Pagar a tiempo y jugar la trivia suman puntos. ${s.beneficios}`);
+  if (tiene(t, "punto", "score", "pacaso", "nivel", "bronce", "plata", "oro", "chicotazo", "racha"))
+    return ok(`Tienes ${s.score} puntos, nivel ${s.nivel}. ${s.siguienteNivel.texto}. Pagar a tiempo y la trivia suman; en mora el Pacaso resta 12 por día y la racha no cuenta.`);
 
   if (tiene(t, "interes", "mora", "moratorio"))
-    return ok(`El interés moratorio se suma por cada día de atraso. Hoy suma ${soles(s.deuda.interesMoratorio)}. Mientras antes te pongas al día, menos se acumula.`);
+    return ok(`El interés moratorio se suma por cada día de atraso. Hoy va en ${soles(s.deuda.interesMoratorio)}. Mientras antes te pongas al día, menos pagas.`);
 
-  if (tiene(t, "presupuesto", "ahorro", "ahorrar", "gastos", "negocio", "educacion financiera"))
-    return ok("Un buen hábito: separa primero el dinero de tus cuotas apenas recibas tus ventas, y mantén tus gastos del negocio separados de los de tu casa. En la trivia de hoy puedes aprender más.");
+  if (tiene(t, "presupuesto", "ahorro", "ahorrar", "gastos", "negocio", "ventas"))
+    return ok("Un buen truco: apenas cobres tus ventas, separa primero la plata de tu cuota, y no mezcles la caja del negocio con los gastos de la casa. En la trivia de hoy hay más tips.");
 
-  if (tiene(t, "hola", "buenas", "buenos dias", "buenas tardes", "ayuda"))
-    return ok(`¡Hola, ${s.cliente.nombre}! Puedo contarte cuánto debes, qué opciones de plan tienes y cómo pagar. ¿Qué te gustaría saber?`);
+  if (tiene(t, "hola", "buenas", "habla", "que tal", "ayuda"))
+    return ok(`¡Habla, ${s.cliente.nombre}! Te puedo contar cuánto debes, qué plan puedes armar y cómo pagar. ¿Qué necesitas, ${APELATIVO}?`);
 
-  return ok("Puedo ayudarte con tu deuda, tus opciones de plan de pago, cómo pagar y tus puntos. Si prefieres hablar con una persona, dime “quiero hablar con un gestor”.");
+  if (tiene(t, "gracias", "chevere", "listo", "ok"))
+    return ok(`¡De nada, ${APELATIVO}! Aquí estoy para lo que necesites de tu deuda o tu plan.`);
+
+  return null;
+}
+
+export function respuestaGenerica(s: Sit): RespuestaAsistente {
+  return { respuesta: `Te puedo ayudar con tu deuda, tu plan de pago, cómo pagar y tus puntos, ${s.cliente.nombre}. Si prefieres hablar con una persona, dime “quiero hablar con un gestor”.`, derivar: false, fuente: "faq" };
 }
