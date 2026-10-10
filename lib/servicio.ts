@@ -145,7 +145,9 @@ export function simular(e: EntradaPlan) {
   const hoy = repo.fechaDemo();
   const plan = sanear(e, hoy);
   const v = validarPropuesta(reglasDe(credito, cuotas, propuestas), { score: cliente.score }, plan, hoy);
-  repo.insertarEvento(clienteId, "simulacion", { nCuotas: plan.nCuotas, inicial: plan.inicial });
+  // Un solo evento de simulación por minuto, para no inundar el feed del banco mientras mueve los sliders
+  const ultima = repo.eventosDeCliente(clienteId).find((x) => x.tipo === "simulacion");
+  if (!ultima || Date.now() - Date.parse(ultima.creado_en) > 60000) repo.insertarEvento(clienteId, "simulacion", { nCuotas: plan.nCuotas, inicial: plan.inicial });
   return {
     plan,
     fechaDemo: hoy,
