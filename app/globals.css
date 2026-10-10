@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body { background: #F7F7F7; color: #1A1A1A; font-family: Inter, system-ui, sans-serif; }
+.btn { @apply inline-flex items-center justify-center min-h-[48px] px-6 rounded-full font-semibold bg-caja text-white; }
+.btn-acento { @apply bg-caja-acento text-caja-texto; }
+.card { @apply bg-white border border-caja-borde rounded-tarjeta p-4; }
