@@ -3,6 +3,7 @@ import type Database from "better-sqlite3";
 import { FECHA_DEMO_INICIAL, sumarDias } from "@/lib/fecha";
 import { interesMoratorio } from "@/lib/reglas";
 import { TRIVIA } from "./trivia-data";
+import { nivelDe } from "@/lib/niveles";
 
 function mulberry32(a: number) {
   return () => {
@@ -27,9 +28,6 @@ const NEGOCIOS: { negocio: string; tipo: string }[] = [
   { negocio: "Taller mecánico", tipo: "Mype servicios" },
 ];
 
-export function nivelDe(score: number): "Bronce" | "Plata" | "Oro" {
-  return score >= 75 ? "Oro" : score >= 50 ? "Plata" : "Bronce";
-}
 
 export function seedSiVacio(db: Database.Database): boolean {
   const n = (db.prepare("SELECT COUNT(*) c FROM clientes").get() as { c: number }).c;
