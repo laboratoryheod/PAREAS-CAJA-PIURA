@@ -14,6 +14,8 @@ npm test             # reglas, score, servicio, Mis Finanzas, Excel y asistente
 npm run build && npm start
 ```
 
+Pruebas de calidad de punta a punta (API, interfaz y recorrido completo): ver [`scripts/qa/README.md`](scripts/qa/README.md). El plan de pruebas y el último diagnóstico están en [`docs/PLAN-DE-PRUEBAS.md`](docs/PLAN-DE-PRUEBAS.md).
+
 - La base SQLite (`data/ponte.db`) se crea y se llena sola la primera vez (100 deudores, trivia, actividad previa).
 - `npm run seed` la recrea de cero.
 - **Cartera en Excel** (también con botones en Panel del gestor › Cartera): `npm run plantilla:xlsx` crea `data/plantilla-cartera.xlsx` · `npm run importar:xlsx -- archivo.xlsx` agrega clientes nuevos y actualiza los existentes por ID sistema o DNI (nunca borra; "¿Ya pagó? = Sí" registra el pago) · `npm run export:xlsx` descarga la cartera actual a `data/cartera.xlsx`.

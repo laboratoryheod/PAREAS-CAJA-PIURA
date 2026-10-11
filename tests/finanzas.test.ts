@@ -1,11 +1,11 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { CATEGORIAS_BASE, gastoEnMes, ingresoMensual, resumenMensual, semaforoDe, validarMonto, validarNombre, type CuotaCredito, type Gasto, type Ingreso } from "@/lib/finanzas";
+import { CATEGORIAS_BASE, gastoEnMes, ingresoEnMes, ingresoMensual, numeroEscrito, resumenMensual, semaforoDe, validarFecha, validarMonto, validarNombre, type CuotaCredito, type Gasto, type Ingreso } from "@/lib/finanzas";
 import { consejosFinanzas } from "@/lib/consejos-finanzas";
 
 const HOY = "2026-10-10";
 const sinCredito: CuotaCredito = { proxima: null, vencido: 0, conRescate: false };
 const cuota = (monto: number, vencido = 0): CuotaCredito => ({ proxima: { monto, fecha: "2026-10-28", diasFaltan: 18, concepto: "cuota" }, vencido, conRescate: false });
-const ing = (monto: number, frecuencia: Ingreso["frecuencia"] = "mensual", id = 1): Ingreso => ({ id, nombre: "Ventas", monto, frecuencia });
+const ing = (monto: number, frecuencia: Ingreso["frecuencia"] = "mensual", id = 1, fecha = HOY): Ingreso => ({ id, nombre: "Ventas", monto, frecuencia, fecha });
 const gas = (monto: number, categoria = "alimentacion", extra: Partial<Gasto> = {}): Gasto => ({ id: Math.random(), nombre: "Gasto", monto, categoria, fecha: HOY, tipo: "variable", ambito: "personal", ...extra });
 
 describe("cálculos de Mis Finanzas", () => {
@@ -35,6 +35,30 @@ describe("cálculos de Mis Finanzas", () => {
   it("separa gastos personales y del negocio", () => {
     const r = resumenMensual({ ingresos: [ing(1000)], gastos: [gas(100), gas(250, "negocio", { ambito: "negocio" })], credito: sinCredito, hoy: HOY });
     expect(r.porAmbito).toEqual({ personal: 100, negocio: 250 });
+  });
+  it("un ingreso 'una sola vez' cuenta solo en su mes; los que se repiten, desde su mes", () => {
+    expect(ingresoEnMes({ frecuencia: "unico", fecha: "2026-10-05" }, "2026-10")).toBe(true);
+    expect(ingresoEnMes({ frecuencia: "unico", fecha: "2026-10-05" }, "2026-11")).toBe(false);
+    expect(ingresoEnMes({ frecuencia: "mensual", fecha: "2026-10-05" }, "2026-11")).toBe(true);
+    expect(ingresoEnMes({ frecuencia: "mensual", fecha: "2026-11-05" }, "2026-10")).toBe(false);
+    const r = resumenMensual({ ingresos: [ing(1000), ing(500, "unico", 2, "2026-09-01")], gastos: [], credito: sinCredito, hoy: HOY });
+    expect(r.ingresos).toBe(1000);
+  });
+  it("lee montos como los escribe la gente", () => {
+    expect(numeroEscrito("1,234.50")).toBe(1234.5);
+    expect(numeroEscrito("1.234,50")).toBe(1234.5);
+    expect(numeroEscrito("150,5")).toBe(150.5);
+    expect(numeroEscrito("1,234")).toBe(1234);
+    expect(numeroEscrito("S/ 2 400")).toBe(2400);
+    expect(numeroEscrito("abc")).toBeNaN();
+    expect(validarMonto("1,234.50")).toBe(1234.5);
+  });
+  it("valida fechas reales, no futuras y de los últimos 12 meses", () => {
+    expect(validarFecha("2026-10-10", HOY)).toBe("2026-10-10");
+    expect(() => validarFecha("2026-02-30", HOY)).toThrow(/fecha válida/);
+    expect(() => validarFecha("2026-10-11", HOY)).toThrow(/posterior a hoy/);
+    expect(() => validarFecha("2024-01-01", HOY)).toThrow(/antigua/);
+    expect(() => validarFecha("10/10/2026", HOY)).toThrow(/fecha válida/);
   });
   it("valida montos y nombres con mensajes claros", () => {
     expect(validarMonto("150,5")).toBe(150.5);

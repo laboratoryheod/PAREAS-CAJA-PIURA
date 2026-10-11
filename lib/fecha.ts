@@ -2,10 +2,11 @@
 // La herramienta "Pasar un día" suma días a esta fecha (desfase guardado en la tabla app_estado).
 export const ZONA_HORARIA = "America/Lima";
 
+const FORMATO_LIMA = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_HORARIA, year: "numeric", month: "2-digit", day: "2-digit" });
+
 /** Fecha de hoy en Perú, YYYY-MM-DD. */
 export function hoyReal(): string {
-  if (process.env.FECHA_SISTEMA) return process.env.FECHA_SISTEMA;
-  return new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_HORARIA, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  return process.env.FECHA_SISTEMA || FORMATO_LIMA.format(new Date());
 }
 
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];

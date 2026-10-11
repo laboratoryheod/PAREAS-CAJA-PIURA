@@ -77,5 +77,5 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
 }
 
 export function respuestaGenerica(s: Sit): RespuestaAsistente {
-  return { respuesta: `Puedo ayudarle con su deuda, su plan de pago, cómo pagar y sus puntos, ${s.cliente.nombre}. Si prefiere hablar con una persona, escriba “quiero hablar con un gestor”.`, derivar: false, fuente: "faq" };
+  return { respuesta: `Puedo ayudarle con su deuda, cómo pagar, sus puntos y sus finanzas, ${s.cliente.nombre}. Si prefiere hablar con una persona, escriba “quiero hablar con un gestor”.`, derivar: false, fuente: "faq" };
 }

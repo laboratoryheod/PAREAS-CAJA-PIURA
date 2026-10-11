@@ -221,7 +221,7 @@ export default function Finanzas({ clienteId, onVolver, onPagar, onAsistente }: 
             <li key={i.id} className="flex flex-wrap items-center gap-2 py-3">
               <div className="min-w-0 flex-1">
                 <p className="text-[17px] font-semibold">{i.nombre}</p>
-                <p className="text-[15px] text-neutral-600">{soles(i.monto)} · {i.frecuenciaTexto}{i.frecuencia === "semanal" || i.frecuencia === "quincenal" ? ` (≈ ${soles(i.mensual)} al mes)` : ""}</p>
+                <p className="text-[15px] text-neutral-600">{soles(i.monto)} · {i.frecuenciaTexto}{i.frecuencia === "semanal" || i.frecuencia === "quincenal" ? ` (≈ ${soles(i.mensual)} al mes)` : ""}{i.frecuencia === "unico" ? (i.delMes ? " · cuenta este mes" : ` · contó solo en su mes (${i.fechaLarga})`) : ""}</p>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setHoja({ tipo: "ingreso", ingreso: i })} className="flex min-h-[48px] items-center gap-1.5 rounded-xl px-3 text-[16px] font-semibold text-caja hover:bg-[#EAF2FC]" aria-label={`Editar ${i.nombre}`}><IcLapiz tam={18} />Editar</button>
@@ -236,7 +236,7 @@ export default function Finanzas({ clienteId, onVolver, onPagar, onAsistente }: 
       <p className="flex items-start gap-3 rounded-[20px] bg-[#EAF2FC] p-4 text-[16px] font-semibold text-caja">
         <IcCandado tam={22} className="mt-0.5 shrink-0" />Caja Piura nunca le pedirá su clave por mensaje o llamada. Aquí no guardamos claves, tarjetas ni su DNI.
       </p>
-      <button onClick={onAsistente} className="w-full text-center text-[16px] font-semibold text-caja-medio underline">¿Dudas? Pregúntele a Pareas</button>
+      <button onClick={onAsistente} className="min-h-[48px] w-full text-center text-[16px] font-semibold text-caja-medio underline">¿Dudas? Pregúntele a Pareas</button>
 
       <AnimatePresence>
         {aviso && <motion.p role="status" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} className="fixed inset-x-4 bottom-28 z-50 mx-auto max-w-md rounded-[20px] bg-black/85 p-4 text-center text-[17px] font-medium text-white">{aviso}</motion.p>}
@@ -275,8 +275,14 @@ function Linea({ titulo, valor, rojo }: { titulo: string; valor: string; rojo?: 
   );
 }
 
-/** Hoja inferior (modal) para los formularios. */
+/** Hoja inferior (modal) para los formularios. Se cierra con Escape, con la X o tocando fuera. */
 function Hoja({ abierta, titulo, onCerrar, children }: { abierta: boolean; titulo: string; onCerrar: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    if (!abierta) return;
+    const alTeclear = (e: KeyboardEvent) => { if (e.key === "Escape") onCerrar(); };
+    window.addEventListener("keydown", alTeclear);
+    return () => window.removeEventListener("keydown", alTeclear);
+  }, [abierta, onCerrar]);
   return (
     <AnimatePresence>
       {abierta && (
@@ -358,7 +364,7 @@ function FormGasto({ categorias, hoy, gasto, onGuardar, onNuevaEtiqueta }: { cat
           <button type="button" onClick={onNuevaEtiqueta} className="flex min-h-[56px] items-center gap-2 rounded-2xl border-2 border-dashed border-caja-borde px-2 text-[16px] font-semibold text-caja"><IcMas tam={22} />Crear etiqueta</button>
         </div>
       </fieldset>
-      <Campo etiqueta="¿Cuándo?"><input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className={claseInput} /></Campo>
+      <Campo etiqueta="¿Cuándo?"><input type="date" value={fecha} max={hoy} onChange={(e) => setFecha(e.target.value)} className={claseInput} /></Campo>
       <div><p className="mb-1.5 text-[17px] font-semibold">¿Se repite cada mes?</p><Opciones etiqueta="Tipo de gasto" valor={tipo} onChange={setTipo} opciones={[["variable", "No, fue esta vez"], ["fijo", "Sí, es fijo"]]} /></div>
       <div><p className="mb-1.5 text-[17px] font-semibold">¿Es de su casa o de su negocio?</p><Opciones etiqueta="Gasto personal o del negocio" valor={ambito} onChange={setAmbito} opciones={[["personal", "De mi casa"], ["negocio", "Del negocio"]]} /></div>
       <MensajeError texto={error} />

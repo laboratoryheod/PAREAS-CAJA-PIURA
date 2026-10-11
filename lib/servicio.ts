@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import QRCode from "qrcode";
 import { getRepo as repoBase, type CampanaRow, type ClienteRow, type CreditoRow, type CuotaRow, type EventoRow, type PagoPlan, type PropuestaRow, type Repo } from "./db/repo";
 import { diferenciaDias, fechaLarga, soles, sumarDias, sumarMeses } from "./fecha";
-import { CATEGORIAS_BASE, COLORES_ETIQUETA, DatoInvalido, FRECUENCIAS, ICONOS_ETIQUETA, resumenMensual, validarFecha, validarMonto, validarNombre, type Categoria, type CuotaCredito, type IconoCategoria } from "./finanzas";
+import { CATEGORIAS_BASE, COLORES_ETIQUETA, DatoInvalido, FRECUENCIAS, ICONOS_ETIQUETA, ingresoEnMes, resumenMensual, validarFecha, validarMonto, validarNombre, type Categoria, type CuotaCredito, type IconoCategoria } from "./finanzas";
 import { consejosFinanzas } from "./consejos-finanzas";
 import { calcularRegaloSalvador, interesMoratorio, limitesPara, REGALO_SALVADOR, validarPropuesta, type CreditoReglas, type PropuestaPlan } from "./reglas";
 import { APELATIVO } from "./config";
@@ -340,7 +340,8 @@ export function responderTrivia(clienteId: number, preguntaId: number, opcion: n
   const pregunta = del.find((p) => p.id === preguntaId);
   if (!pregunta) throw new ErrorNegocio("Esa pregunta no es parte de la trivia de hoy");
   if (repo.respuestasDelDia(clienteId, hoy).some((r) => r.pregunta_id === preguntaId)) throw new ErrorNegocio("Ya respondiste esta pregunta, compare");
-  const acerto = Number(opcion) === pregunta.correcta;
+  if (!Number.isInteger(opcion) || opcion < 0 || opcion >= pregunta.opciones.length) throw new ErrorNegocio("Elige una de las opciones, compare");
+  const acerto = opcion === pregunta.correcta;
   repo.registrarRespuesta(clienteId, preguntaId, acerto, hoy);
 
   let puntos = 0;
@@ -863,7 +864,7 @@ export function finanzasCliente(clienteId: number) {
     credito: { ...credito, proxima: credito.proxima ? { ...credito.proxima, fechaLarga: fechaLarga(credito.proxima.fecha) } : null },
     consejos: consejosFinanzas(resumen, categorias),
     categorias,
-    ingresos: ingresos.map((i) => ({ ...i, frecuenciaTexto: FRECUENCIAS[i.frecuencia].nombre, mensual: r2(i.monto * FRECUENCIAS[i.frecuencia].porMes) })),
+    ingresos: ingresos.map((i) => ({ ...i, frecuenciaTexto: FRECUENCIAS[i.frecuencia].nombre, mensual: r2(i.monto * FRECUENCIAS[i.frecuencia].porMes), delMes: ingresoEnMes(i, mes), fechaLarga: fechaLarga(i.fecha) })),
     gastos: gastos.map((g) => ({ ...g, fechaLarga: fechaLarga(g.fecha), delMes: g.tipo === "fijo" ? g.fecha.slice(0, 7) <= mes : g.fecha.slice(0, 7) === mes })),
   };
 }
@@ -879,7 +880,9 @@ export function accionFinanzas(clienteId: number, accion: AccionFinanzas, d: Rec
     switch (accion) {
       case "guardar_ingreso": {
         if (!(d.frecuencia in FRECUENCIAS)) throw new DatoInvalido("Elija cada cuánto recibe este ingreso.");
-        repo.guardarIngreso(clienteId, { id, nombre: validarNombre(d.nombre, "el ingreso"), monto: validarMonto(d.monto), frecuencia: d.frecuencia });
+        const previo = id ? repo.ingresos(clienteId).find((x) => x.id === id) : undefined;
+        if (id && !previo) throw new DatoInvalido("No encontramos ese ingreso.");
+        repo.guardarIngreso(clienteId, { id, nombre: validarNombre(d.nombre, "el ingreso"), monto: validarMonto(d.monto), frecuencia: d.frecuencia, fecha: previo?.fecha ?? repo.fechaHoy() });
         break;
       }
       case "borrar_ingreso":
@@ -889,7 +892,8 @@ export function accionFinanzas(clienteId: number, accion: AccionFinanzas, d: Rec
         if (!categoriasDe(repo, clienteId).some((c) => c.id === d.categoria)) throw new DatoInvalido("Elija una categoría para el gasto.");
         if (d.tipo !== "fijo" && d.tipo !== "variable") throw new DatoInvalido("Indique si el gasto es fijo o variable.");
         if (d.ambito !== "personal" && d.ambito !== "negocio") throw new DatoInvalido("Indique si el gasto es personal o del negocio.");
-        repo.guardarGasto(clienteId, { id, nombre: validarNombre(d.nombre), monto: validarMonto(d.monto), categoria: d.categoria, fecha: d.fecha ? validarFecha(d.fecha) : repo.fechaHoy(), tipo: d.tipo, ambito: d.ambito });
+        if (id && !repo.gastos(clienteId).some((x) => x.id === id)) throw new DatoInvalido("No encontramos ese gasto.");
+        repo.guardarGasto(clienteId, { id, nombre: validarNombre(d.nombre), monto: validarMonto(d.monto), categoria: d.categoria, fecha: d.fecha ? validarFecha(d.fecha, repo.fechaHoy()) : repo.fechaHoy(), tipo: d.tipo, ambito: d.ambito });
         break;
       }
       case "borrar_gasto":

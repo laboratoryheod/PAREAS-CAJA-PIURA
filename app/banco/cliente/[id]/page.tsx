@@ -6,7 +6,10 @@ import Link from "next/link";
 import { api, soles } from "@/lib/cliente-api";
 import { TextureButton } from "@/components/ui/texture-button";
 import { MarcoGestor } from "@/components/banco/MarcoGestor";
+import { ETIQ_ESTADO } from "@/components/banco/comun";
 
+const ESTADO_CAMPANA: Record<string, string> = { ofrecida: "Vigente", usada: "Usada", vencida: "Vencida" };
+const ESTADO_PROPUESTA: Record<string, string> = { aceptada: "Aceptada", derivada: "En revisión", cumplida: "Cumplida", incumplida: "Incumplida", rechazada: "Cerrada" };
 const MOTIVOS: Record<string, string> = { olvido: "Olvido", bajaron_ventas: "Bajaron las ventas", salud: "Salud", otro: "Otro" };
 
 export default function DetalleCliente({ params }: { params: Promise<{ id: string }> }) {
@@ -30,7 +33,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         <h1 className="text-2xl font-bold text-caja">{d.cliente.nombres}</h1>
         <p className="text-sm text-gray-600">DNI {d.cliente.dni} · {d.cliente.negocio} · {d.cliente.zona} · tel. {d.cliente.telefono}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 text-sm">
-          <div><p className="text-gray-600">Estado</p><b>{d.estado}</b></div>
+          <div><p className="text-gray-600">Estado</p><b>{ETIQ_ESTADO[d.estado] ?? d.estado}</b></div>
           <div><p className="text-gray-600">Atraso</p><b>{d.diasAtraso} días</b></div>
           <div><p className="text-gray-600">Deuda hoy</p><b>{soles(d.deuda.total)}</b></div>
           <div><p className="text-gray-600">Score</p><b>{d.cliente.score} · {d.cliente.nivel}</b></div>
@@ -55,7 +58,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         )}
         {!d.puedeRecibirRegalo && !d.regaloVigente && <p className="text-sm text-gray-500">No aplica ahora (el cliente no está en mora o tiene un plan en marcha).</p>}
         {aviso && <p className="text-sm font-semibold text-[#0047AB]">{aviso}</p>}
-        {d.campanas.length > 0 && <p className="text-xs text-gray-500">Historial: {d.campanas.map((c: any) => `${c.estado} (${soles(c.montoHoy)})`).join(" · ")}</p>}
+        {d.campanas.length > 0 && <p className="text-xs text-gray-500">Historial: {d.campanas.map((c: any) => `${ESTADO_CAMPANA[c.estado] ?? c.estado} (${soles(c.montoHoy)})`).join(" · ")}</p>}
       </section>
 
       <section className="card">
@@ -63,7 +66,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         {d.propuestas.length === 0 && <p className="text-sm text-gray-500">Aún no ha enviado una propuesta.</p>}
         {d.propuestas.map((p: any) => (
           <div key={p.id} className="border border-caja-borde rounded-xl p-3 mb-2 text-sm">
-            <p><b>{p.estado.toUpperCase()}</b> · {p.nCuotas} cuota(s) · inicial {soles(p.inicial)} · total {soles(p.total)} · motivo del atraso: <b>{MOTIVOS[p.motivo] ?? "—"}</b></p>
+            <p><b>{ESTADO_PROPUESTA[p.estado] ?? p.estado}</b> · {p.nCuotas} cuota(s) · inicial {soles(p.inicial)} · total {soles(p.total)} · motivo del atraso: <b>{MOTIVOS[p.motivo] ?? "—"}</b></p>
             <ul className="mt-1 text-gray-700">{p.pagos.map((x: any) => <li key={x.n} className="flex items-center gap-1.5">{x.pagado ? <IcCheck tam={14} className="text-[#34C759]" /> : <IcReloj tam={14} className="text-neutral-400" />}{x.tipo === "inicial" ? "Inicial" : `Cuota ${x.n}`} · {x.fechaLarga} · {soles(x.monto)}</li>)}</ul>
           </div>
         ))}

@@ -25,11 +25,15 @@ export function getDb(): Database.Database {
 function migrar(db: Database.Database) {
   const cols = (db.prepare("PRAGMA table_info(clientes)").all() as { name: string }[]).map((c) => c.name);
   if (!cols.includes("sin_beneficios")) db.exec("ALTER TABLE clientes ADD COLUMN sin_beneficios INTEGER NOT NULL DEFAULT 0");
-  // Bases creadas con la fecha fija: la última fecha usada pasa a ser la última procesada (desde ahí corre la fecha real)
-  const vieja = db.prepare("SELECT valor FROM app_estado WHERE clave='fecha_sistema'").get() as { valor: string } | undefined;
-  if (vieja) {
+  const colsIng = (db.prepare("PRAGMA table_info(fin_ingresos)").all() as { name: string }[]).map((c) => c.name);
+  if (!colsIng.includes("fecha")) db.exec("ALTER TABLE fin_ingresos ADD COLUMN fecha TEXT NOT NULL DEFAULT ''");
+  // Bases creadas con la fecha fija (claves fecha_sistema o fecha_demo): la última fecha usada pasa a ser la última
+  // procesada, así el sistema cobra la mora y el CHICOTAZO de los días transcurridos desde entonces.
+  for (const clave of ["fecha_sistema", "fecha_demo"]) {
+    const vieja = db.prepare("SELECT valor FROM app_estado WHERE clave=?").get(clave) as { valor: string } | undefined;
+    if (!vieja) continue;
     db.prepare("INSERT OR IGNORE INTO app_estado (clave,valor) VALUES ('fecha_procesada',?)").run(vieja.valor);
-    db.prepare("DELETE FROM app_estado WHERE clave='fecha_sistema'").run();
+    db.prepare("DELETE FROM app_estado WHERE clave=?").run(clave);
   }
 }
 

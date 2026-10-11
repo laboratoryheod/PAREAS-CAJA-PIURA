@@ -159,7 +159,7 @@ describe("chicotazo y trivia en servidor", () => {
 
   it("solo la trivia usa tono coloquial", async () => {
     const p = S.triviaSiguiente(GENGIS).pregunta!;
-    const r = S.responderTrivia(GENGIS, p.id, 99); // opción inexistente: falla a propósito
+    const r = S.responderTrivia(GENGIS, p.id, 0);
     expect(r.mensaje).toMatch(/compare/);
     expect(S.situacion(GENGIS).pareas.mensaje).not.toMatch(/compare/);
   });
@@ -265,5 +265,22 @@ describe("fecha real del sistema", () => {
       expect(s.score).toBe(antes.score - 12);
       expect(S.situacion(GENGIS).score).toBe(antes.score - 12); // no se repite
     } finally { process.env.FECHA_SISTEMA = "2026-10-10"; }
+  });
+});
+
+describe("casos de borde encontrados en pruebas", () => {
+  it("la trivia rechaza una opción fuera de rango sin gastar la pregunta", () => {
+    const p = S.triviaSiguiente(GENGIS).pregunta!;
+    expect(() => S.responderTrivia(GENGIS, p.id, 99)).toThrow(/opciones/);
+    expect(() => S.responderTrivia(GENGIS, p.id, NaN)).toThrow(/opciones/);
+    expect(S.responderTrivia(GENGIS, p.id, 0)).toBeTruthy(); // sigue disponible
+  });
+  it("Mis Finanzas: un ingreso único no se repite el mes siguiente y no acepta gastos futuros", () => {
+    const antes = S.finanzasCliente(GENGIS).resumen.ingresos;
+    expect(S.accionFinanzas(GENGIS, "guardar_ingreso", { nombre: "Bono", monto: 500, frecuencia: "unico" }).resumen.ingresos).toBe(antes + 500);
+    for (let i = 0; i < 31; i++) S.avanzarDia();
+    expect(S.finanzasCliente(GENGIS).resumen.ingresos).toBe(antes);
+    expect(() => S.accionFinanzas(GENGIS, "guardar_gasto", { nombre: "X", monto: 1, categoria: "otros", tipo: "variable", ambito: "personal", fecha: "2099-01-01" })).toThrow(/posterior a hoy/);
+    expect(() => S.accionFinanzas(GENGIS, "guardar_gasto", { id: 999999, nombre: "X", monto: 1, categoria: "otros", tipo: "variable", ambito: "personal" })).toThrow(/No encontramos/);
   });
 });

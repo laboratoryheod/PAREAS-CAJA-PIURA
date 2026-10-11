@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS fin_ingresos (
   nombre TEXT NOT NULL,
   monto REAL NOT NULL,
   frecuencia TEXT NOT NULL,        -- unico | semanal | quincenal | mensual
+  fecha TEXT NOT NULL DEFAULT '',  -- YYYY-MM-DD (fecha del sistema al registrarlo)
   creado_en TEXT NOT NULL
 );
 

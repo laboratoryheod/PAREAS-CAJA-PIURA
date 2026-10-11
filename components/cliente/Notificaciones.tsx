@@ -58,6 +58,14 @@ export function Notificaciones({ clienteId, firma, onAccion }: { clienteId: numb
     return () => { vivo = false; };
   }, [clienteId, firma, activas, encolarNuevas]);
 
+  // Escape cierra el centro de notificaciones
+  useEffect(() => {
+    if (!abierto) return;
+    const alTeclear = (e: KeyboardEvent) => { if (e.key === "Escape") setAbierto(false); };
+    window.addEventListener("keydown", alTeclear);
+    return () => window.removeEventListener("keydown", alTeclear);
+  }, [abierto]);
+
   // Un banner a la vez; se va solo. Con el centro abierto no se muestran banners (ahí ya se ven todas).
   const actual = abierto ? undefined : cola[0];
   useEffect(() => { if (!actual) return; const t = setTimeout(() => setCola((c) => c.slice(1)), DURACION_MS); return () => clearTimeout(t); }, [actual]);
@@ -76,13 +84,13 @@ export function Notificaciones({ clienteId, firma, onAccion }: { clienteId: numb
       {/* Campana de la barra superior (desactivadas: píldora para activarlas, como el botón Reiniciar) */}
       {activas ? (
         <button onClick={() => (abierto ? setAbierto(false) : abrirCentro())} aria-label={`Notificaciones (${items.length})`} aria-expanded={abierto}
-          className="relative grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25 active:scale-[0.96]">
+          className="relative grid h-11 w-11 place-items-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25 active:scale-[0.96]">
           <IcCampana tam={19} />
           {items.length > 0 && <span className="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#FF3B30] px-1 text-[11px] font-bold tabular-nums">{items.length}</span>}
         </button>
       ) : (
         <button onClick={activar} aria-label="Activar notificaciones"
-          className="flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#F9A825] px-3 text-[13px] font-semibold text-[#1A1A1A] transition-transform active:scale-[0.96]">
+          className="flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#F9A825] px-3 text-[13px] font-semibold text-[#1A1A1A] transition-transform active:scale-[0.96]">
           <IcCampana tam={16} /><span className="max-sm:hidden">Activar avisos</span>
         </button>
       )}

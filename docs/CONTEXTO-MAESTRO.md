@@ -220,6 +220,11 @@ Rendimiento:
    En cada pantalla se revisa que no haya emojis (regex `\p{Extended_Pictographic}` sobre `innerText`), que `scrollWidth` no pase de 375/390 px y que no haya errores de consola. Los scripts dependen de los textos de la interfaz, así que hay que actualizarlos tras cada renombre.
 5. Para matar el servidor, usar el PID que da `ps` (no `pkill -f`, que mata la propia shell).
 
+### Suites de QA (`scripts/qa/`, ver `docs/PLAN-DE-PRUEBAS.md`)
+- `node scripts/qa/api.mjs` corre 67 casos de API; `interfaz.cjs`, 54 de interfaz (320/390/1366 px); `recorrido.cjs`, 11 pasos de punta a punta.
+- Se ejecutan contra `next start` con `SQLITE_PATH=/tmp/qa.db`. En este contenedor: `CHROMIUM_PATH=/opt/pw-browsers/chromium NODE_PATH=$(npm root -g)`.
+- Las rutas `/api/pruebas/*` responden 404 con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` (las suites las necesitan activas).
+
 ## 9. Git
 - Rama de trabajo: **`claude/dreamy-hamilton-fz0ouj`**. Se sube con `git push -u origin claude/dreamy-hamilton-fz0ouj`. No crear PR salvo que se pida.
 - Los commits van en español y terminan con:
@@ -241,6 +246,7 @@ Rendimiento:
 9. Se optimizó el rendimiento de `/cliente` y `/banco`.
 10. Se agregaron las notificaciones del cliente y la barra con logo en el gestor.
 11. El gestor pasó a tener sidebar (Resumen, Cartera y Modo Rescate). El gráfico circular reemplazó al feed y llegó el Modo Rescate masivo por puntos. El Modo Rescate quedó en azul y blanco con icono de billete, y se corrigió la superposición de las notificaciones.
+13. Ronda de QA: 12 bugs corregidos (rutas de prueba abiertas, ingreso único que se repetía, trivia, fechas de gastos, montos con miles, migración `fecha_demo`, Escape, áreas táctiles, textos del asistente y del detalle del gestor).
 12. Modo Rescate masivo con "score mínimo o más". "Mi plan" se reemplazó por **Mis Finanzas**. Excel de cartera para importar y exportar (botones y scripts). La fecha real de Perú reemplazó a la fecha fija. Optimización de carga (fuente local, landing sin blur, statements preparados, índices, polling liviano) y pantalla de carga con Pareas.
 
 ## 11. Pendientes e ideas

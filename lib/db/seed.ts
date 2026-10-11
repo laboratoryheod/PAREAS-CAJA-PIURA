@@ -162,9 +162,9 @@ function sembrarActividad(db: Database.Database, rnd: () => number, hoy: string)
 /** Mis Finanzas de ejemplo para Gengis (id 1): ingresos y gastos del mes para ver el módulo funcionando. */
 function sembrarFinanzas(db: Database.Database, hoy: string) {
   const ahora = new Date().toISOString();
-  const insI = db.prepare("INSERT INTO fin_ingresos (cliente_id,nombre,monto,frecuencia,creado_en) VALUES (1,?,?,?,?)");
-  insI.run("Ventas de la bodega", 2400, "mensual", ahora);
-  insI.run("Ventas del fin de semana", 150, "semanal", ahora);
+  const insI = db.prepare("INSERT INTO fin_ingresos (cliente_id,nombre,monto,frecuencia,fecha,creado_en) VALUES (1,?,?,?,?,?)");
+  insI.run("Ventas de la bodega", 2400, "mensual", hoy, ahora);
+  insI.run("Ventas del fin de semana", 150, "semanal", hoy, ahora);
   const insG = db.prepare("INSERT INTO fin_gastos (cliente_id,nombre,monto,categoria,fecha,tipo,ambito,creado_en) VALUES (1,?,?,?,?,?,?,?)");
   const g: [string, number, string, "fijo" | "variable", "personal" | "negocio"][] = [
     ["Mercadería para la bodega", 700, "negocio", "variable", "negocio"],

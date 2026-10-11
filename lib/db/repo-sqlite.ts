@@ -116,10 +116,10 @@ export function crearRepoSqlite(): Repo {
       return r.c;
     },
     // Mis Finanzas
-    ingresos: (cid) => prep("SELECT id, nombre, monto, frecuencia FROM fin_ingresos WHERE cliente_id=? ORDER BY id").all(cid) as Ingreso[],
+    ingresos: (cid) => prep("SELECT id, nombre, monto, frecuencia, fecha FROM fin_ingresos WHERE cliente_id=? ORDER BY id").all(cid) as Ingreso[],
     guardarIngreso: (cid, i) => {
       if (i.id) { prep("UPDATE fin_ingresos SET nombre=?, monto=?, frecuencia=? WHERE id=? AND cliente_id=?").run(i.nombre, i.monto, i.frecuencia, i.id, cid); return i.id; }
-      return Number(prep("INSERT INTO fin_ingresos (cliente_id,nombre,monto,frecuencia,creado_en) VALUES (?,?,?,?,?)").run(cid, i.nombre, i.monto, i.frecuencia, new Date().toISOString()).lastInsertRowid);
+      return Number(prep("INSERT INTO fin_ingresos (cliente_id,nombre,monto,frecuencia,fecha,creado_en) VALUES (?,?,?,?,?,?)").run(cid, i.nombre, i.monto, i.frecuencia, i.fecha, new Date().toISOString()).lastInsertRowid);
     },
     borrarIngreso: (cid, id) => prep("DELETE FROM fin_ingresos WHERE id=? AND cliente_id=?").run(id, cid).changes > 0,
     gastos: (cid) => prep("SELECT id, nombre, monto, categoria, fecha, tipo, ambito FROM fin_gastos WHERE cliente_id=? ORDER BY fecha DESC, id DESC").all(cid) as Gasto[],

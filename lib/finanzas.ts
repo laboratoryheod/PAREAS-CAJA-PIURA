@@ -6,7 +6,8 @@ export type TipoGasto = "fijo" | "variable";
 export type Ambito = "personal" | "negocio";
 export type Semaforo = "verde" | "amarillo" | "rojo" | "sin_datos";
 
-export interface Ingreso { id: number; nombre: string; monto: number; frecuencia: Frecuencia }
+/** `fecha`: día en que se registró (un ingreso "una sola vez" solo cuenta en ese mes). */
+export interface Ingreso { id: number; nombre: string; monto: number; frecuencia: Frecuencia; fecha: string }
 export interface Gasto { id: number; nombre: string; monto: number; categoria: string; fecha: string; tipo: TipoGasto; ambito: Ambito }
 export interface Categoria { id: string; nombre: string; color: string; icono: IconoCategoria; propia: boolean }
 
@@ -70,6 +71,12 @@ export function ingresoMensual(i: Pick<Ingreso, "monto" | "frecuencia">): number
   return r2(i.monto * FRECUENCIAS[i.frecuencia].porMes);
 }
 
+/** Los ingresos que se repiten cuentan desde el mes en que se registraron; "una sola vez", solo en ese mes. */
+export function ingresoEnMes(i: Pick<Ingreso, "frecuencia" | "fecha">, mes: string): boolean {
+  const desde = (i.fecha ?? "").slice(0, 7);
+  return i.frecuencia === "unico" ? desde === mes : !desde || desde <= mes;
+}
+
 /**
  * ¿El gasto cuenta en el mes? Los gastos variables cuentan solo en su mes; los fijos (luz, alquiler, colegio)
  * se repiten cada mes desde su fecha.
@@ -87,7 +94,7 @@ export function semaforoDe(ingresos: number, sobra: number): Semaforo {
 /** Ingresos totales − gastos totales − cuota del crédito (− deuda vencida) = lo que sobra. */
 export function resumenMensual(p: { ingresos: Ingreso[]; gastos: Gasto[]; credito: CuotaCredito; hoy: string }): ResumenMensual {
   const mes = mesDe(p.hoy);
-  const ingresos = r2(p.ingresos.reduce((s, i) => s + ingresoMensual(i), 0));
+  const ingresos = r2(p.ingresos.filter((i) => ingresoEnMes(i, mes)).reduce((s, i) => s + ingresoMensual(i), 0));
   const delMes = p.gastos.filter((g) => gastoEnMes(g, mes));
   const gastos = r2(delMes.reduce((s, g) => s + g.monto, 0));
   const cuota = r2(p.credito.proxima?.monto ?? 0);
@@ -117,8 +124,23 @@ export function resumenMensual(p: { ingresos: Ingreso[]; gastos: Gasto[]; credit
 
 export class DatoInvalido extends Error {}
 
+/** Lee montos como los escribe la gente: "150", "150.5", "150,50", "1,234.50", "1.234,50", "S/ 1 234". */
+export function numeroEscrito(t: string): number {
+  let s = t.replace(/s\/|\s/gi, "");
+  if (!/^-?[\d.,]+$/.test(s)) return NaN;
+  const ultimoPunto = s.lastIndexOf("."), ultimaComa = s.lastIndexOf(",");
+  const sep = Math.max(ultimoPunto, ultimaComa);
+  // El último separador es decimal si le siguen 1 o 2 dígitos; si le siguen 3, es de miles ("1,234" = 1234)
+  const dosSeparadores = ultimoPunto >= 0 && ultimaComa >= 0;
+  if (sep >= 0 && s.length - sep - 1 <= 2) s = s.slice(0, sep).replace(/[.,]/g, "") + "." + s.slice(sep + 1);
+  // Tres dígitos tras el separador: es de miles con coma ("1,234") o si hay dos separadores ("1.234,000").
+  // "12.345" con un solo punto es ambiguo con dinero: se deja así y la validación pide como máximo 2 decimales.
+  else if (sep >= 0 && s.length - sep - 1 === 3 && (sep === ultimaComa || dosSeparadores)) s = s.replace(/[.,]/g, "");
+  return s === "" || s === "-" ? NaN : Number(s);
+}
+
 export function validarMonto(v: unknown): number {
-  const n = typeof v === "string" ? Number(v.replace(",", ".")) : Number(v);
+  const n = typeof v === "string" ? numeroEscrito(v) : Number(v);
   if (!Number.isFinite(n) || n <= 0) throw new DatoInvalido("Escriba un monto mayor a cero, por ejemplo 150.50.");
   if (Math.abs(n * 100 - Math.round(n * 100)) > 1e-6) throw new DatoInvalido("El monto puede tener como máximo 2 decimales, por ejemplo 150.50.");
   if (n > 1_000_000) throw new DatoInvalido("El monto es muy alto. Revise que no tenga ceros de más.");
@@ -132,8 +154,12 @@ export function validarNombre(v: unknown, que = "el gasto"): string {
   return s;
 }
 
-export function validarFecha(v: unknown): string {
+/** Fecha real del calendario (sin "30 de febrero"), no posterior a `hoy` y de los últimos 12 meses. */
+export function validarFecha(v: unknown, hoy?: string): string {
   const s = String(v ?? "");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || Number.isNaN(Date.parse(s + "T12:00:00Z"))) throw new DatoInvalido("Elija una fecha válida.");
+  const d = new Date(s + "T12:00:00Z");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== s) throw new DatoInvalido("Elija una fecha válida.");
+  if (hoy && s > hoy) throw new DatoInvalido("La fecha no puede ser posterior a hoy. Registre el gasto el día que lo haga.");
+  if (hoy && s < `${Number(hoy.slice(0, 4)) - 1}${hoy.slice(4)}`) throw new DatoInvalido("La fecha es muy antigua. Use una fecha de los últimos 12 meses.");
   return s;
 }
