@@ -8,7 +8,7 @@ export function PantallaCarga({ compacta = false }: { compacta?: boolean }) {
       <div className="flex flex-col items-center text-center">
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/pareas/pareas-carga.webp" alt="" width={compacta ? 88 : 132} height={compacta ? 86 : 128} fetchPriority="high" decoding="async" className="carga-pareas drop-shadow-[0_16px_20px_rgba(0,30,80,0.22)]" />
+          <img src="/pareas/pareas-carga.webp" alt="" width={compacta ? 88 : 132} height={compacta ? 86 : 128} decoding="async" className="carga-pareas drop-shadow-[0_16px_20px_rgba(0,30,80,0.22)]" />
           <span className="carga-sombra mx-auto mt-1 block h-2.5 w-20 rounded-[50%] bg-[#00347A]/15" aria-hidden />
         </div>
         <div className="relative mt-5 h-7 w-[19rem] overflow-hidden text-[17px] font-semibold text-[#00529B]">

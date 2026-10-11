@@ -1,7 +1,7 @@
 "use client";
 // Marco común del panel del gestor: barra con la marca de Caja Piura + sidebar de secciones.
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import BotonReinicio from "@/components/BotonReinicio";
 import { IcBillete, IcGraficoCircular, IcLista } from "@/components/iconos";
 import { cn } from "@/lib/utils";
@@ -15,13 +15,12 @@ const SECCIONES = [
 
 export function MarcoGestor({ children }: { children: React.ReactNode }) {
   const ruta = usePathname();
-  const router = useRouter();
   const activa = (href: string) => (href === "/banco" ? ruta === "/banco" : ruta.startsWith(href) || (href === "/banco/cartera" && ruta.startsWith("/banco/cliente")));
   return (
     <>
       <BarraGestor>
         <BotonReinicio claro destino="/banco" />
-        <button className="min-h-[44px] text-sm underline" onClick={async () => { await fetch("/api/banco/login", { method: "DELETE" }); router.push("/banco/login"); }}>Salir</button>
+        <button className="min-h-[44px] text-sm underline" onClick={async () => { await fetch("/api/banco/login", { method: "DELETE" }); window.location.assign("/banco/login"); }}>Salir</button>
       </BarraGestor>
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pb-16 pt-4 md:flex-row">
         <nav aria-label="Secciones del panel" className="md:sticky md:top-[76px] md:h-fit md:w-56 md:shrink-0">
