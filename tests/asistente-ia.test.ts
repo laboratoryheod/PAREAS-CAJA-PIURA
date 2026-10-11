@@ -33,7 +33,7 @@ describe("asistente con IA: solo se usa cuando hace falta", () => {
     await A.conversar(1, "¿mi historial en la caja mejora si cumplo?"); // 2.ª llamada: llega al cupo
     const r = await A.conversar(1, "¿mi historial en la caja mejora si cumplo?");
     expect(r.fuente).toBe("faq");
-    expect(r.respuesta).toMatch(/conversamos un montón/);
+    expect(r.respuesta).toMatch(/realizó muchas consultas/);
     expect(llamadas).toHaveLength(2);
   });
   it("recorta mensajes largos e historial", async () => {

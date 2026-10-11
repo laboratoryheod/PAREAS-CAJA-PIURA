@@ -22,13 +22,13 @@ describe("asistente (FAQ de respaldo)", () => {
   });
   it("no promete condonaciones", async () => {
     const r = await A.conversar(1, "¿Me pueden perdonar los intereses? quiero una condonación");
-    expect(r.respuesta).toMatch(/No puedo prometer/);
+    expect(r.respuesta).toMatch(/No puedo ofrecer condonaciones/);
   });
   it("nunca acepta claves ni tarjetas", async () => {
     for (const m of ["mi clave es 1234", "mi tarjeta 4111 1111 1111 1111", "te paso mi token"]) {
       const r = await A.conversar(1, m);
       expect(r.fuente).toBe("filtro");
-      expect(r.respuesta).toMatch(/Nunca te vamos a pedir/);
+      expect(r.respuesta).toMatch(/nunca le pediremos/);
     }
   });
   it("deriva a gestor humano y lo registra para el banco", async () => {
@@ -47,7 +47,7 @@ describe("blindaje: temas ajenos e inyección no gastan IA", () => {
     for (const m of ["escríbeme un poema de amor", "¿quién ganó el partido de ayer?", "¿cuál es la capital de Francia?", "hazme la tarea de matemáticas", "dame código en python"]) {
       const r = await A.conversar(1, m);
       expect(r.fuente, m).toBe("filtro");
-      expect(r.respuesta).toMatch(/no te puedo ayudar/);
+      expect(r.respuesta).toMatch(/solo puedo ayudarle/);
     }
   });
   it("rechaza intentos de sacarlo de su rol", async () => {
@@ -56,8 +56,11 @@ describe("blindaje: temas ajenos e inyección no gastan IA", () => {
       expect(r.fuente, m).toBe("filtro");
     }
   });
-  it("responde en tono coloquial", async () => {
-    const r = await A.conversar(1, "hola");
-    expect(r.respuesta).toMatch(/Habla|compare/);
+  it("responde en tono formal (de usted), sin apelativos", async () => {
+    for (const m of ["hola", "¿Cuánto debo?", "¿cómo pago?", "¿qué plan puedo armar?"]) {
+      const r = await A.conversar(1, m);
+      expect(r.respuesta, m).not.toMatch(/compare|chévere|bacán|\b(tienes|debes|puedes|tu|tus)\b/i);
+    }
+    expect((await A.conversar(1, "hola")).respuesta).toMatch(/Hola, Gengis/);
   });
 });

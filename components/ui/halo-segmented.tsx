@@ -1,4 +1,4 @@
-// Adaptado de cult-ui (MIT): el brillo animado usa transform en vez de `left` (rendimiento).
+// Adaptado de cult-ui (MIT): el brillo animado usa transform en vez de `left` (rendimiento) y colores institucionales de Caja Piura.
 "use client"
 
 /**
@@ -129,7 +129,7 @@ export function HaloSegmented({
             }}>
 <div className="-bottom-4 absolute h-14 w-44 blur-xl left-0" style={{
               background:
-                "linear-gradient(90deg, #ff0080, #7928ca, #00d4ff, #0070f3)",
+                "linear-gradient(90deg, #0047AB, #0072C6, #F9A825, #00529B)",
             }} />
 </motion.div>
           {/* Optimizado: se anima transform (x) del envoltorio de ancho completo en vez de `left` → sin layout por cuadro */}
@@ -139,7 +139,7 @@ export function HaloSegmented({
               repeat: reduceMotion ? 0 : Number.POSITIVE_INFINITY,
             }}>
 <div className="-bottom-3 absolute h-11 w-36 blur-lg left-0" style={{
-              background: "linear-gradient(90deg, #ff4d4d, #f9cb28, #ff0080)",
+              background: "linear-gradient(90deg, #F9A825, #FFD27A, #0072C6)",
             }} />
 </motion.div>
         </motion.div>
@@ -154,8 +154,8 @@ export function HaloSegmented({
         )}
         style={{
           background: translucent
-            ? "linear-gradient(to bottom, color-mix(in oklch, var(--card) 82%, transparent) 0%, color-mix(in oklch, var(--card) 70%, transparent) 100%)"
-            : "linear-gradient(to bottom, var(--card) 0%, color-mix(in oklch, var(--card) 94%, var(--muted)) 100%)",
+            ? "linear-gradient(to bottom, color-mix(in oklch, hsl(var(--card)) 82%, transparent) 0%, color-mix(in oklch, hsl(var(--card)) 70%, transparent) 100%)"
+            : "linear-gradient(to bottom, hsl(var(--card)) 0%, color-mix(in oklch, hsl(var(--card)) 94%, hsl(var(--muted))) 100%)",
         }}
       >
         <div className="relative p-1" ref={trackRef}>

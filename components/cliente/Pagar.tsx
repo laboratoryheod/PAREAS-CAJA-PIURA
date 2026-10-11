@@ -48,13 +48,13 @@ export default function Pagar({ sit, onPagado, onVolver }: { sit: Situacion; onP
       <div className="card space-y-3 text-center">
         <h2 className="text-xl font-extrabold text-caja">{cobro?.concepto === "regalo" ? "Pago con Regalo Salvador" : "Pagar hoy"}</h2>
         {!cobro && !error && <p>Cargando…</p>}
-        {cobro?.concepto === "nada" && <p>No tienes pagos pendientes. ¡Estás al día, compare!</p>}
+        {cobro?.concepto === "nada" && <p>No tiene pagos pendientes. Está al día.</p>}
         {cobro && cobro.concepto !== "nada" && (
           <>
             <p className="text-sm text-gray-600">{cobro.detalle}</p>
             <p className="text-4xl font-bold">{cobro.montoTexto}</p>
             {cobro.qr && <img src={cobro.qr} alt="Código QR de pago" width={200} height={200} className="mx-auto rounded-xl border border-caja-borde" />}
-            <p className="text-xs text-gray-500">Este QR también lo puede usar un familiar o un pata para pagar por ti.</p>
+            <p className="text-xs text-gray-500">Este código QR también puede usarlo un familiar para pagar por usted.</p>
             <TextureButton variant={cobro.concepto === "regalo" ? "regalo" : "accent"} size="lg" onClick={pagar} disabled={cargando}>{cargando ? "Procesando…" : "Hacer el pago (simulado)"}</TextureButton>
             <TextureButton variant="secondary" onClick={compartir}><IcCompartir tam={18} />{copiado ? "¡Copiado!" : "Compartir con un familiar"}</TextureButton>
           </>

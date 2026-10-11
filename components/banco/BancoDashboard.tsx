@@ -53,12 +53,23 @@ export default function BancoDashboard() {
   const sinSesion = useCallback((e: any) => { if (String(e?.message).includes("Sesión")) router.push("/banco/login"); }, [router]);
 
   // 1) Feed incremental cada 3 s (solo trae lo nuevo). Si hay eventos nuevos, pide refrescar lo demás.
+  const leyendo = useRef(false); // una sola lectura del feed a la vez (evita respuestas duplicadas)
   const leerFeed = useCallback(async () => {
+    if (leyendo.current) return;
+    leyendo.current = true;
     try {
-      const fd = await api(`/api/banco/feed?desde=${ultimo.current}`);
-      if (fd.items.length) setFeed((prev) => [...fd.items.reverse(), ...prev].slice(0, 40));
-      if (fd.ultimoId !== ultimo.current) { const primera = ultimo.current === 0; ultimo.current = fd.ultimoId; if (!primera) setVersion((v) => v + 1); }
+      const desde = ultimo.current;
+      const fd = await api(`/api/banco/feed?desde=${desde}`);
+      if (fd.items.length) {
+        setFeed((prev) => {
+          // Se deduplica por id: aunque llegara dos veces el mismo evento, la lista no repite claves
+          const vistos = new Set<number>();
+          return [...[...fd.items].reverse(), ...prev].filter((e) => (vistos.has(e.id) ? false : (vistos.add(e.id), true))).slice(0, 40);
+        });
+      }
+      if (fd.ultimoId > ultimo.current) { ultimo.current = fd.ultimoId; if (desde !== 0) setVersion((v) => v + 1); }
     } catch (e) { sinSesion(e); }
+    finally { leyendo.current = false; }
   }, [sinSesion]);
   useEffect(() => { leerFeed(); }, [leerFeed]);
   usarPolling(leerFeed, FEED_MS);

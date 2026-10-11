@@ -12,7 +12,7 @@ interface Marca { fecha: string; tipo: Tipo; texto: string; monto?: number }
 
 const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 const COLOR: Record<Tipo, string> = { vencida: "bg-[#FF3B30]", plan: "bg-[#0072C6]", pagado: "bg-[#34C759]", regalo: "bg-[#D6247A]", recargo: "bg-[#FF9F0A]" };
-const ETIQUETA: Record<Tipo, string> = { vencida: "Vencida", plan: "Pago del plan", pagado: "Pagado", regalo: "Vence tu regalo", recargo: "Recargo" };
+const ETIQUETA: Record<Tipo, string> = { vencida: "Vencida", plan: "Pago del plan", pagado: "Pagado", regalo: "Vence su regalo", recargo: "Recargo" };
 
 /** Todas las fechas vienen del servidor (situación del cliente); aquí solo se ubican en el mes. */
 function marcasDe(s: Situacion): Marca[] {
@@ -20,7 +20,7 @@ function marcasDe(s: Situacion): Marca[] {
   const plan = s.propuestaActiva ?? s.propuestaDerivada;
   plan?.pagos.forEach((p) => m.push({ fecha: p.fecha, tipo: p.pagado ? "pagado" : "plan", texto: p.tipo === "inicial" ? "Inicial del plan" : `Cuota ${p.n} del plan`, monto: p.monto }));
   if (s.regalo) {
-    m.push({ fecha: s.regalo.vence, tipo: "regalo", texto: "Vence tu Regalo Salvador", monto: s.regalo.montoHoy });
+    m.push({ fecha: s.regalo.vence, tipo: "regalo", texto: "Vence su Regalo Salvador", monto: s.regalo.montoHoy });
     s.regalo.recargos.forEach((r) => m.push({ fecha: r.fecha, tipo: "recargo", texto: "Recargo del regalo", monto: r.monto }));
   }
   return m;
@@ -89,7 +89,7 @@ export function Calendario({ sit, className }: { sit: Situacion; className?: str
       </div>
 
       <ul className="mt-3 divide-y divide-black/5 rounded-2xl bg-neutral-50">
-        {lista.length === 0 && <li className="px-3 py-3 text-sm text-neutral-500">{elegido ? "Nada para este día." : "No tienes fechas pendientes. ¡Vas bien!"}</li>}
+        {lista.length === 0 && <li className="px-3 py-3 text-sm text-neutral-500">{elegido ? "Nada para este día." : "No tiene fechas pendientes."}</li>}
         {lista.map((x, i) => (
           <li key={i} className="flex items-center gap-3 px-3 py-2.5">
             <span className={cn("h-8 w-1 rounded-full", COLOR[x.tipo])} />

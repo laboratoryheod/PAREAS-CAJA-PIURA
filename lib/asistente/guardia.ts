@@ -1,5 +1,4 @@
 // BLINDAJE DEL ASISTENTE — todo lo que se filtra aquí se responde SIN llamar a la IA (cero tokens).
-import { APELATIVO } from "@/lib/config";
 
 export const LIMITES_ASISTENTE = {
   maxCaracteres: 300, // lo que se lee del mensaje del cliente
@@ -53,6 +52,6 @@ export function clasificar(texto: string): Clase {
   return "sin_tema";
 }
 
-export const RESPUESTA_AJENO = `Uy ${APELATIVO}, de eso no te puedo ayudar. Yo solo veo tu deuda, tu plan de pago, tus puntos, temas de la Caja y tips de plata. ¿Vemos cuánto debes o armamos tu plan?`;
-export const RESPUESTA_INYECCION = `Eso no lo puedo hacer, ${APELATIVO}. Solo te ayudo con tu deuda, tu plan de pago y temas de la Caja. ¿En qué de eso te ayudo?`;
-export const RESPUESTA_CUPO = `Hoy ya conversamos un montón, ${APELATIVO}. Te sigo ayudando con las preguntas frecuentes: tu deuda, tu plan y cómo pagar.`;
+export const RESPUESTA_AJENO = "Disculpe, solo puedo ayudarle con su deuda, su plan de pago, sus puntos, temas de la Caja y consejos de finanzas personales. ¿Desea consultar su deuda o armar su plan?";
+export const RESPUESTA_INYECCION = "No puedo realizar esa acción. Solo puedo ayudarle con su deuda, su plan de pago y temas de la Caja. ¿En qué le ayudo?";
+export const RESPUESTA_CUPO = "Hoy ya realizó muchas consultas. Puedo seguir ayudándole con las preguntas frecuentes: su deuda, su plan y cómo pagar.";

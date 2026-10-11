@@ -32,8 +32,8 @@ export function TarjetaChicotazo({ ch, onPagar }: { ch: Situacion["chicotazo"]; 
       <div className="rounded-[22px] bg-gradient-to-br from-[#1E2A22] to-[#0E1511] p-4 text-white">
         <div className="flex items-center gap-2 text-[#5EE08A]"><IcCheck tam={20} /><span className="text-[13px] font-semibold uppercase tracking-[0.08em]">Látigo guardado</span></div>
         <p className="mt-2 text-[28px] font-black leading-none tracking-[-0.04em] text-white/90">CHICOTAZO</p>
-        <p className="mt-2 text-[14px] text-white/75">Estás al día: Pareas guardó el látigo. Si una cuota se vence, vuelve a pegar {ch.porDia} puntos por día.</p>
-        {ch.golpes > 0 && <p className="mt-2 text-[12px] text-white/50 tabular-nums">Golpes que recibiste en el módulo: {ch.golpes} ({ch.puntosPerdidos} pts)</p>}
+        <p className="mt-2 text-[14px] text-white/75">Está al día: Pareas guardó el látigo. Si una cuota vence, el CHICOTAZO vuelve a restar {ch.porDia} puntos por día.</p>
+        {ch.golpes > 0 && <p className="mt-2 text-[12px] text-white/50 tabular-nums">Golpes recibidos en el módulo: {ch.golpes} ({ch.puntosPerdidos} pts)</p>}
       </div>
     );
   }
@@ -54,8 +54,8 @@ export function TarjetaChicotazo({ ch, onPagar }: { ch: Situacion["chicotazo"]; 
           <div key={x.e} className="rounded-2xl bg-black/20 px-1 py-2 backdrop-blur"><p className="text-[22px] font-bold leading-none tabular-nums">{x.v}</p><p className="mt-1 text-[11px] text-white/75">{x.e}</p></div>
         ))}
       </div>
-      <p className="relative mt-3 text-[13px] text-white/85">Ni la trivia lo tapa: máximo +{ch.topeTriviaDia} al día contra {ch.porDia}. Solo pagando, Pareas guarda el látigo.</p>
-      {onPagar && <button onClick={onPagar} className="relative mt-3 min-h-[44px] w-full rounded-full bg-white text-[15px] font-semibold text-[#B3122A] active:scale-[0.96] transition-transform">Paga y guarda el látigo</button>}
+      <p className="relative mt-3 text-[13px] text-white/85">La trivia no lo compensa: máximo +{ch.topeTriviaDia} al día frente a {ch.porDia}. Solo al pagar, Pareas guarda el látigo.</p>
+      {onPagar && <button onClick={onPagar} className="relative mt-3 min-h-[44px] w-full rounded-full bg-white text-[15px] font-semibold text-[#B3122A] active:scale-[0.96] transition-transform">Pagar y detener el CHICOTAZO</button>}
     </motion.div>
   );
 }

@@ -18,19 +18,19 @@ export default function RegaloSalvador({ regalo, onPagar }: { regalo: NonNullabl
           <motion.span className="text-white" animate={{ rotate: [0, -10, 10, -6, 0], y: [0, -4, 0] }} transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 1 }}><IcRegalo tam={44} /></motion.span>
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-white/80">Campaña de la Caja</p>
-            <h2 className="text-2xl font-extrabold leading-tight">¡Te salió el Regalo Salvador!</h2>
+            <h2 className="text-2xl font-extrabold leading-tight">La Caja le otorgó el Regalo Salvador</h2>
           </div>
         </div>
-        <p className="relative mt-3 text-sm text-white/90">Paga hoy un <b>{regalo.descuentoPct}% menos</b> y ponte al día al toque. El descuento se recupera con un {regalo.recargoPct}% más en tus próximas 3 cuotas.</p>
+        <p className="relative mt-3 text-sm text-white/90">Paga hoy un <b>{regalo.descuentoPct}% menos</b> y póngase al día de inmediato. El descuento se recupera con un {regalo.recargoPct}% más en sus próximas 3 cuotas.</p>
         <div className="relative mt-3 grid grid-cols-2 gap-2 text-center">
-          <div className="rounded-2xl bg-white/15 p-2"><p className="text-xs text-white/80">Te tocaba</p><p className="text-lg font-bold line-through decoration-2">{soles(regalo.base)}</p></div>
-          <div className="rounded-2xl bg-white p-2 text-rose-700"><p className="text-xs">Pagas hoy</p><p className="text-2xl font-extrabold">{soles(regalo.montoHoy)}</p></div>
+          <div className="rounded-2xl bg-white/15 p-2"><p className="text-xs text-white/80">Monto original</p><p className="text-lg font-bold line-through decoration-2">{soles(regalo.base)}</p></div>
+          <div className="rounded-2xl bg-white p-2 text-rose-700"><p className="text-xs">Paga hoy</p><p className="text-2xl font-extrabold">{soles(regalo.montoHoy)}</p></div>
         </div>
         <ul className="relative mt-3 space-y-1 text-xs text-white/90">
-          {regalo.recargos.map((r) => <li key={r.n} className="flex justify-between"><span>Recargo en tu cuota del {r.fechaLarga}</span><b>+ {soles(r.monto)}</b></li>)}
+          {regalo.recargos.map((r) => <li key={r.n} className="flex justify-between"><span>Recargo en su cuota del {r.fechaLarga}</span><b>+ {soles(r.monto)}</b></li>)}
         </ul>
-        <p className="relative mt-2 text-xs text-white/80">Válido hasta el {regalo.venceLargo}. Al usarlo recuperas tus beneficios.</p>
-        <TextureButton variant="accent" size="lg" className="relative mt-3" onClick={onPagar}>Aprovechar mi regalo</TextureButton>
+        <p className="relative mt-2 text-xs text-white/80">Válido hasta el {regalo.venceLargo}. Al usarlo recupera sus beneficios.</p>
+        <TextureButton variant="accent" size="lg" className="relative mt-3" onClick={onPagar}>Usar mi Regalo Salvador</TextureButton>
       </div>
     </motion.section>
   );

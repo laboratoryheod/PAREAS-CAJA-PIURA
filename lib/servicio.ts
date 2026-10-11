@@ -96,12 +96,12 @@ export function situacion(clienteId: number) {
   const n = vencidas(cuotas).length;
   const pendiente = `${n === 1 ? "una cuota pendiente" : `${n} cuotas pendientes`} por ${soles(cr.montoVencido)} desde hace ${cr.diasAtraso} ${cr.diasAtraso === 1 ? "día" : "días"}`;
   let saludo: string;
-  if (regalo) saludo = `¡Habla, ${nombre}! Tienes ${pendiente}, pero hoy tienes una buena noticia: la Caja te dio un Regalo Salvador para ponerte al día.`;
-  else if (estado === "reprogramado") saludo = `¡Habla, ${nombre}! Tu plan de pago está en marcha. Cumplirlo te suma puntos y mejora tu nivel. ¡Chévere!`;
-  else if (estado === "plan_pendiente") saludo = `¡Habla, ${nombre}! Ya armaste tu plan, ${APELATIVO}. Haz tu primer pago para que arranque y Pareas deje de pegar.`;
-  else if (estado === "al_dia") saludo = `¡Habla, ${nombre}! Estás al día con tus pagos. ¡Gracias por tu puntualidad, ${APELATIVO}!`;
-  else if (estado === "incumplido") saludo = `Hola, ${nombre}. Se pasó un pago de tu plan y tienes ${pendiente}. Tranqui: paga lo pendiente y Pareas deja de pegar.`;
-  else saludo = `¡Habla, ${nombre}! Tienes ${pendiente}. Tranqui, ${APELATIVO}: veamos juntos cómo ponerte al día.`;
+  if (regalo) saludo = `Hola, ${nombre}. Tiene ${pendiente}. La Caja le otorgó un Regalo Salvador para ponerse al día.`;
+  else if (estado === "reprogramado") saludo = `Hola, ${nombre}. Su plan de pago está en marcha. Cumplirlo le suma puntos y mejora su nivel.`;
+  else if (estado === "plan_pendiente") saludo = `Hola, ${nombre}. Su plan está aceptado. Realice el primer pago para activarlo y detener el CHICOTAZO.`;
+  else if (estado === "al_dia") saludo = `Hola, ${nombre}. Está al día con sus pagos. Gracias por su puntualidad.`;
+  else if (estado === "incumplido") saludo = `Hola, ${nombre}. No se registró un pago de su plan y tiene ${pendiente}. Al pagar lo pendiente, Pareas deja de restar puntos.`;
+  else saludo = `Hola, ${nombre}. Tiene ${pendiente}. Veamos juntos cómo ponerse al día.`;
 
   return {
     fechaDemo: hoy,
@@ -119,7 +119,7 @@ export function situacion(clienteId: number) {
     },
     score: cliente.score,
     nivel: cliente.nivel,
-    siguienteNivel: sig.siguiente ? { nivel: sig.siguiente, faltan: sig.faltan, texto: `Estás a ${sig.faltan} puntos de ${sig.siguiente}` } : { nivel: null, faltan: 0, texto: "¡Estás en el nivel más alto!" },
+    siguienteNivel: sig.siguiente ? { nivel: sig.siguiente, faltan: sig.faltan, texto: `Le faltan ${sig.faltan} puntos para ${sig.siguiente}` } : { nivel: null, faltan: 0, texto: "¡Estás en el nivel más alto!" },
     sinBeneficios,
     beneficios: beneficiosDeNivel(cliente.nivel, sinBeneficios),
     pareas: estadoPareas({ nombre, diasAtraso: cr.diasAtraso, score: cliente.score, sinBeneficios, regaloDisponible: !!regalo }),
@@ -207,10 +207,10 @@ export function simular(e: EntradaPlan) {
 }
 
 function mensajeValidacion(resultado: string, motivos: string[]): string {
-  if (resultado === "automatica") return "¡Chévere! Tu plan cumple las condiciones y se aprueba al toque. Arranca con tu primer pago.";
-  if (resultado === "derivada") return "Tu propuesta cumple lo mínimo, pero por los días de atraso la revisará un gestor, que se comunicará contigo.";
+  if (resultado === "automatica") return "Su plan cumple las condiciones y se aprueba de inmediato. Se activa con el primer pago.";
+  if (resultado === "derivada") return "Su propuesta cumple lo mínimo, pero por los días de atraso la revisará un gestor, que se comunicará con usted.";
   if (resultado === "no_disponible") return motivos[0] ?? "No es posible reprogramar ahora.";
-  return `Uy ${APELATIVO}, así todavía no cumple, pero tenemos una alternativa bien parecida para ti.`;
+  return "Este plan aún no cumple las condiciones, pero le ofrecemos una alternativa muy cercana.";
 }
 
 // ------------------------------------------------------------------ propuesta
@@ -219,12 +219,12 @@ export async function registrarPropuesta(e: EntradaPlan & { motivo?: unknown; ac
   const repo = getRepo();
   const clienteId = e.clienteId ?? (e.creditoId ? clienteDeCredito(repo, e.creditoId) : NaN);
   if (!Number.isFinite(clienteId)) throw new ErrorNegocio("Falta creditoId o clienteId");
-  if (e.acepta !== true) throw new ErrorNegocio("Debes aceptar las condiciones para enviar tu propuesta");
+  if (e.acepta !== true) throw new ErrorNegocio("Debe aceptar las condiciones para enviar su propuesta");
   const motivo = MOTIVOS.includes(e.motivo as MotivoAtraso) ? (e.motivo as MotivoAtraso) : null;
-  if (!motivo) throw new ErrorNegocio("Cuéntanos qué pasó este mes para continuar");
+  if (!motivo) throw new ErrorNegocio("Indíquenos qué ocurrió este mes para continuar");
   const { cliente, credito, cuotas, propuestas } = cargar(repo, clienteId);
   const hoy = repo.fechaDemo();
-  if (propuestaDerivada(propuestas)) throw new ErrorNegocio("Tu propuesta ya fue enviada a un gestor. Pronto se comunicará contigo.");
+  if (propuestaDerivada(propuestas)) throw new ErrorNegocio("Su propuesta ya fue enviada a un gestor. Pronto se comunicará con usted.");
   const plan = sanear(e, hoy);
   const cr = reglasDe(credito, cuotas, propuestas);
   const v = validarPropuesta(cr, { score: cliente.score, sinBeneficios: !!cliente.sin_beneficios }, plan, hoy);
@@ -243,7 +243,7 @@ export function pedirAyudaHumana(clienteId: number, nota?: string) {
   const repo = getRepo();
   cargar(repo, clienteId);
   repo.insertarEvento(clienteId, "ayuda_humana", { nota: nota?.slice(0, 200) ?? "Quiere hablar con una persona" });
-  return { ok: true, mensaje: "Listo. Un gestor se comunicará contigo pronto." };
+  return { ok: true, mensaje: "Listo. Un gestor se comunicará con usted pronto." };
 }
 
 export function registrarEventoCliente(clienteId: number, tipo: "modulo_abierto" | "chat", detalle: Record<string, unknown> = {}) {
@@ -284,12 +284,19 @@ export function triviaSiguiente(clienteId: number) {
     progreso: { respondidas: resp.length, total: del.length, aciertos: resp.filter((r) => r.acerto).length, completo: !pendiente, puntosTriviaHoy: puntosHoy, topeDia: PARAMS_SCORE.topeTriviaDia },
     // La respuesta correcta NO viaja al cliente
     pregunta: pendiente ? { id: pendiente.id, categoria: pendiente.categoria, pregunta: pendiente.pregunta, opciones: pendiente.opciones } : null,
-    mensaje: pendiente ? null : "¡Completaste la trivia de hoy! Vuelve mañana por más puntos.",
+    mensaje: pendiente ? null : `¡Completaste la trivia de hoy, ${APELATIVO}! Vuelve mañana por más puntos.`,
   };
 }
 
 function triviaPuntosHoy(repo: Repo, clienteId: number, hoy: string): number {
   return repo.movimientos(clienteId).filter((m) => m.tipo === "trivia" && m.fecha === hoy).reduce((s, m) => s + m.puntos, 0);
+}
+
+function reaccionTrivia(acerto: boolean, enMora: boolean): string {
+  if (enMora) return acerto
+    ? `¡Eso, ${APELATIVO}! Pero ojo: con la cuota pendiente el CHICOTAZO sigue. Ponte al día y vuelan tus puntos.`
+    : `No pasa nada, ${APELATIVO}, a la próxima le atinas. Y no te olvides de tu cuota, que el CHICOTAZO no perdona.`;
+  return acerto ? `¡Bacán, ${APELATIVO}! Así se juega. Sigue sumando.` : `Tranqui, ${APELATIVO}, de los errores se aprende. ¡Dale con la siguiente!`;
 }
 
 export function responderTrivia(clienteId: number, preguntaId: number, opcion: number) {
@@ -299,7 +306,7 @@ export function responderTrivia(clienteId: number, preguntaId: number, opcion: n
   const del = preguntasDelDia(repo, clienteId, hoy);
   const pregunta = del.find((p) => p.id === preguntaId);
   if (!pregunta) throw new ErrorNegocio("Esa pregunta no es parte de la trivia de hoy");
-  if (repo.respuestasDelDia(clienteId, hoy).some((r) => r.pregunta_id === preguntaId)) throw new ErrorNegocio("Ya respondiste esta pregunta");
+  if (repo.respuestasDelDia(clienteId, hoy).some((r) => r.pregunta_id === preguntaId)) throw new ErrorNegocio("Ya respondiste esta pregunta, compare");
   const acerto = Number(opcion) === pregunta.correcta;
   repo.registrarRespuesta(clienteId, preguntaId, acerto, hoy);
 
@@ -313,7 +320,7 @@ export function responderTrivia(clienteId: number, preguntaId: number, opcion: n
   let racha = 0;
   if (completo) {
     racha = rachaPermitida(diasAtrasoDe(cuotas));
-    if (racha > 0) moverScore(repo, clienteId, "racha", racha, "Completaste la trivia de hoy");
+    if (racha > 0) moverScore(repo, clienteId, "racha", racha, "Trivia del día completada");
   }
   repo.insertarEvento(clienteId, "trivia_jugada", { acerto, categoria: pregunta.categoria });
   const sit = situacion(clienteId);
@@ -324,10 +331,12 @@ export function responderTrivia(clienteId: number, preguntaId: number, opcion: n
     puntosGanados: puntos,
     puntosRacha: racha,
     mensaje: acerto
-      ? puntos > 0 ? `¡Correcto! +${puntos} puntos.` : "¡Correcto! Hoy ya llegaste al tope de puntos por trivia."
-      : "No fue esta vez, pero ya aprendiste algo nuevo.",
-    mensajeRacha: completo ? (racha > 0 ? `¡Racha del día completada! +${racha} puntos.` : "Completaste la trivia de hoy. Mientras haya una cuota pendiente, la racha no suma puntos; al ponerte al día, vuelve a sumar.") : null,
-    score: sit.score, nivel: sit.nivel, pareas: sit.pareas,
+      ? puntos > 0 ? `¡Chévere, le diste! +${puntos} puntos.` : "¡Bien ahí! Pero hoy ya llegaste al tope de puntos de la trivia."
+      : `Uy, no era esa, ${APELATIVO}. Pero ya aprendiste algo nuevo.`,
+    mensajeRacha: completo ? (racha > 0 ? `¡Racha del día completada! +${racha} puntos.` : "Completaste la trivia de hoy. Ojo: con una cuota pendiente la racha no suma; apenas te pongas al día, vuelve a sumar.") : null,
+    score: sit.score, nivel: sit.nivel,
+    // Dentro del juego Pareas habla en tono coloquial (fuera de la trivia, el tono es formal)
+    pareas: { humor: sit.pareas.humor, mensaje: reaccionTrivia(acerto, sit.diasAtraso > 0) },
     progreso: triviaSiguiente(clienteId).progreso,
   };
 }
@@ -351,7 +360,7 @@ export async function cobroPendiente(clienteId: number) {
     detalle = `Regalo Salvador: pagas ${Math.round(REGALO_SALVADOR.descuentoPct * 100)}% menos hoy`;
   } else if (activa) {
     const p = proximoPago(activa);
-    if (p) { concepto = "cuota"; monto = p.monto; detalle = p.tipo === "inicial" ? "Inicial de tu plan de pago" : `Cuota ${p.n} de ${activa.n_cuotas} de tu plan de pago`; }
+    if (p) { concepto = "cuota"; monto = p.monto; detalle = p.tipo === "inicial" ? "Inicial de su plan de pago" : `Cuota ${p.n} de ${activa.n_cuotas} de su plan de pago`; }
   } else {
     const cr = reglasDe(credito, cuotas, propuestas);
     monto = r2(cr.montoVencido + cr.interesMoratorio);
@@ -373,8 +382,8 @@ export async function pagoSimulado(clienteId: number, concepto?: string) {
   const { credito, cuotas, propuestas, regalo } = cargar(repo, clienteId);
   const hoy = repo.fechaDemo();
   const cobro = await cobroPendiente(clienteId);
-  if (cobro.concepto === "nada") throw new ErrorNegocio(`No tienes pagos pendientes. ¡Estás al día, ${APELATIVO}!`);
-  if (concepto && concepto !== cobro.concepto) throw new ErrorNegocio("El pago pendiente cambió. Actualiza la pantalla.");
+  if (cobro.concepto === "nada") throw new ErrorNegocio("No tiene pagos pendientes. Está al día.");
+  if (concepto && concepto !== cobro.concepto) throw new ErrorNegocio("El pago pendiente cambió. Por favor, actualice la pantalla.");
 
   const mensajes: string[] = [];
   if (cobro.concepto === "regalo" && regalo) {
@@ -383,12 +392,12 @@ export async function pagoSimulado(clienteId: number, concepto?: string) {
     repo.setSinBeneficios(clienteId, false);
     for (const p of propuestas.filter((x) => x.estado === "aceptada" || x.estado === "derivada")) repo.actualizarPropuesta(p.id, { estado: "rechazada" });
     repo.insertarEvento(clienteId, "regalo_usado", { monto: regalo.monto_hoy, descuento: regalo.descuento });
-    mensajes.push(`¡Te pusiste al día con el Regalo Salvador! Ahorraste ${soles(regalo.descuento)} hoy.`);
-    mensajes.push(`Tus próximas ${regalo.recargos.length} cuotas tendrán un recargo de ${regalo.recargos.map((r) => soles(r.monto)).join(", ")} para recuperar el descuento.`);
-    mensajes.push("Recuperaste tus beneficios. ¡Pareas deja de pegar!");
+    mensajes.push(`Se puso al día con el Regalo Salvador y ahorró ${soles(regalo.descuento)} hoy.`);
+    mensajes.push(`Sus próximas ${regalo.recargos.length} cuotas tendrán un recargo de ${regalo.recargos.map((r) => soles(r.monto)).join(", ")} para recuperar el descuento.`);
+    mensajes.push("Recuperó sus beneficios y el CHICOTAZO se detuvo.");
   } else if (cobro.concepto === "deuda") {
     cancelarVencidas(repo, credito, cuotas);
-    mensajes.push(`¡Te pusiste al día, ${APELATIVO}! Pareas deja de pegar y tus puntos vuelven a subir con la trivia.`);
+    mensajes.push("Se puso al día. El CHICOTAZO se detuvo y su puntaje vuelve a subir con la trivia.");
     const der = propuestaDerivada(propuestas);
     if (der) repo.actualizarPropuesta(der.id, { estado: "cumplida" });
   } else {
@@ -401,7 +410,7 @@ export async function pagoSimulado(clienteId: number, concepto?: string) {
       // Recién con el primer pago la deuda vencida queda "en plan" y Pareas deja de pegar
       for (const c of vencidas(cuotas)) repo.actualizarCuota(c.id, { pagada: 2 });
       repo.actualizarDiasCredito(credito.id, 0);
-      mensajes.push("¡Arrancó tu plan! Pareas deja de pegar mientras cumplas tus fechas.");
+      mensajes.push("Su plan está activo. El CHICOTAZO se detiene mientras cumpla sus fechas.");
     }
     if (hoy <= p.fecha) {
       moverScore(repo, clienteId, "pago_puntual", PARAMS_SCORE.pagoPuntual, `Pago a tiempo (${p.tipo === "inicial" ? "inicial" : `cuota ${p.n}`})`);
@@ -409,9 +418,9 @@ export async function pagoSimulado(clienteId: number, concepto?: string) {
     }
     if (pagos.every((x) => x.pagado)) {
       repo.actualizarPropuesta(activa.id, { estado: "cumplida" });
-      moverScore(repo, clienteId, "promesa_cumplida", PARAMS_SCORE.promesaCumplida, "Cumpliste tu plan de pago");
+      moverScore(repo, clienteId, "promesa_cumplida", PARAMS_SCORE.promesaCumplida, "Plan de pago cumplido");
       for (const c of repo.cuotas(credito.id).filter((x) => x.pagada === 2)) repo.actualizarCuota(c.id, { pagada: 1 });
-      mensajes.push(`¡Cumpliste tu promesa de pago! +${PARAMS_SCORE.promesaCumplida} puntos. ¡Bacán, ${APELATIVO}!`);
+      mensajes.push(`Cumplió su promesa de pago: +${PARAMS_SCORE.promesaCumplida} puntos.`);
     }
   }
   repo.insertarEvento(clienteId, "pago_simulado", { concepto: cobro.concepto, monto: cobro.monto });

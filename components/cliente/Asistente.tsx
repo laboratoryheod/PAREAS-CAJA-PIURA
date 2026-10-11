@@ -8,7 +8,7 @@ interface Msg { rol: "usuario" | "asistente"; texto: string }
 const SUGERENCIAS = ["¿Cuánto debo hoy?", "¿Qué plan puedo armar?", "¿Cómo pago?", "¿Qué es el Regalo Salvador?", "Quiero hablar con un gestor"];
 
 export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver: () => void }) {
-  const [msgs, setMsgs] = useState<Msg[]>([{ rol: "asistente", texto: `¡Habla, ${sit.cliente.nombre}! Soy Pareas, tu pata de la Caja. Te ayudo con tu deuda, tu plan y cómo pagar. Ojo: nunca te voy a pedir claves ni datos de tarjeta.` }]);
+  const [msgs, setMsgs] = useState<Msg[]>([{ rol: "asistente", texto: `Hola, ${sit.cliente.nombre}. Soy Pareas, su asistente de la Caja. Puedo ayudarle con su deuda, su plan y cómo pagar. Nunca le pediré claves ni datos de tarjeta.` }]);
   const [texto, setTexto] = useState("");
   const [esperando, setEsperando] = useState(false);
   const fin = useRef<HTMLDivElement>(null);
@@ -30,7 +30,7 @@ export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver:
     <section className="space-y-3">
       <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-3">
-        <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcBurbuja} color="cielo" tam={34} />Habla con Pareas</h2><p className="text-xs text-gray-500">Solo temas de tu deuda, tu plan y la Caja.</p>
+        <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcBurbuja} color="cielo" tam={34} />Hablar con Pareas</h2><p className="text-xs text-gray-500">Solo temas de su deuda, su plan y la Caja.</p>
         <div className="space-y-2 max-h-[50vh] overflow-y-auto" aria-live="polite">
           {msgs.map((m, i) => (
             <div key={i} className={`flex ${m.rol === "usuario" ? "justify-end" : ""}`}>
@@ -44,7 +44,7 @@ export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver:
           {SUGERENCIAS.map((s) => <button key={s} onClick={() => enviar(s)} className="text-xs rounded-full border border-caja text-caja px-3 min-h-[36px]">{s}</button>)}
         </div>
         <form onSubmit={(e) => { e.preventDefault(); enviar(texto); }} className="flex gap-2">
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu pregunta…" maxLength={300} className="flex-1 min-w-0 min-h-[48px] rounded-full border border-caja-borde px-4" />
+          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escriba su consulta…" maxLength={300} className="flex-1 min-w-0 min-h-[48px] rounded-full border border-caja-borde px-4" />
           <TextureButton className="w-auto shrink-0" disabled={esperando}>Enviar</TextureButton>
         </form>
       </div>

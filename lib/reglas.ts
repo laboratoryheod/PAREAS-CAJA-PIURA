@@ -107,11 +107,11 @@ export function validarPropuesta(credito: CreditoReglas, cliente: ClienteReglas,
   }
   if (cliente.sinBeneficios) {
     return { aceptable: false, resultado: "no_disponible", contrapropuesta: null, limites: lim, cronograma: cron(propuesta),
-      motivos: ["Como no se cumplió tu plan anterior, por ahora no puedes armar otro plan. Puedes pagar tu deuda o esperar una campaña de la Caja."] };
+      motivos: ["Como no se cumplió su plan anterior, por ahora no puede armar otro plan. Puede pagar su deuda o esperar una campaña de la Caja."] };
   }
   if (credito.diasAtraso <= 0 || lim.deuda <= 0) {
     return { aceptable: false, resultado: "no_disponible", contrapropuesta: null, limites: lim, cronograma: cron(propuesta),
-      motivos: ["No tienes cuotas vencidas por reprogramar. ¡Estás al día!"] };
+      motivos: ["No tiene cuotas vencidas por reprogramar. Está al día."] };
   }
 
   const motivos: string[] = [];
@@ -119,13 +119,13 @@ export function validarPropuesta(credito: CreditoReglas, cliente: ClienteReglas,
   const inicial = r2(propuesta.inicial);
   const fecha = propuesta.fechaPrimerPago;
 
-  if (n < 1) motivos.push("Elige al menos 1 cuota.");
-  if (n > lim.maxCuotas) motivos.push(`Para tu situación el máximo es ${lim.maxCuotas} cuota${lim.maxCuotas === 1 ? "" : "s"}.`);
+  if (n < 1) motivos.push("Elija al menos 1 cuota.");
+  if (n > lim.maxCuotas) motivos.push(`Para su situación el máximo es ${lim.maxCuotas} cuota${lim.maxCuotas === 1 ? "" : "s"}.`);
   if (inicial < 0) motivos.push("La inicial no puede ser negativa.");
-  if (inicial > lim.deuda) motivos.push(`La inicial no puede superar tu deuda de ${fmt(lim.deuda)}.`);
+  if (inicial > lim.deuda) motivos.push(`La inicial no puede superar su deuda de ${fmt(lim.deuda)}.`);
   if (inicial < lim.inicialMin) {
     motivos.push(lim.inicialMin > 0
-      ? `Necesitas una inicial de al menos ${fmt(lim.inicialMin)} (${Math.round(lim.inicialMinPct * 100)}% de tu deuda).`
+      ? `Se requiere una inicial de al menos ${fmt(lim.inicialMin)} (${Math.round(lim.inicialMinPct * 100)}% de su deuda).`
       : "Inicial insuficiente.");
   }
   if (diferenciaDias(hoy, fecha) < 0) motivos.push("El primer pago no puede ser en una fecha pasada.");

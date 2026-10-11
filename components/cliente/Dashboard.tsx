@@ -82,9 +82,13 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
       <header className="sticky top-0 z-30 bg-[#00529B] text-white shadow-[0_1px_0_rgba(0,0,0,0.08)]">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
           <Link href="/" className="flex min-h-[44px] items-center gap-2 text-[17px] font-semibold tracking-[-0.01em]">
-            <Image src="/pareas/logo.png" alt="" width={30} height={30} className="rounded-[8px] bg-white" />Ponte al Día
+            <span className="relative h-[34px] w-[34px] overflow-hidden rounded-[9px] bg-white"><Image src="/pareas/pareas.png" alt="" fill sizes="34px" className="object-contain p-0.5" /></span>Ponte al Día
           </Link>
-          <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-white/90 hover:text-white">Salir</Link>
+          <div className="flex items-center gap-4">
+            <Image src="/caja/logo-caja-piura-blanco.png" alt="Caja Piura" width={110} height={26} className="h-[24px] w-auto" priority />
+            <span className="h-6 w-px bg-white/25" aria-hidden />
+            <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-white/90 hover:text-white">Salir</Link>
+          </div>
         </div>
       </header>
 
@@ -129,8 +133,8 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
       <div className="fixed bottom-[104px] right-3 z-40 md:right-[max(12px,calc(50%-500px))]">
         <FamilyButton etiqueta="Ayuda rápida">
           <div className="flex h-full flex-col items-stretch gap-2 p-3 pt-4">
-            <p className="px-1 text-[13px] font-semibold text-white/80">¿Te ayudo?</p>
-            <button onClick={() => irA("asistente")} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left text-[14px] font-semibold hover:bg-white/25"><IcBurbuja tam={18} />Habla con Pareas</button>
+            <p className="px-1 text-[13px] font-semibold text-white/80">¿En qué le ayudamos?</p>
+            <button onClick={() => irA("asistente")} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left text-[14px] font-semibold hover:bg-white/25"><IcBurbuja tam={18} />Hablar con Pareas</button>
             <button onClick={pedirGestor} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left text-[14px] font-semibold hover:bg-white/25"><IcGestor tam={18} />Llamar a mi gestor</button>
             {(hayDeuda || sit.propuestaActiva) && <button onClick={() => irA("pagar")} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left text-[14px] font-semibold hover:bg-white/25"><IcQR tam={18} />QR para un familiar</button>}
           </div>

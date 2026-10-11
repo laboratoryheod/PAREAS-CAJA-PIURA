@@ -41,4 +41,6 @@ El logo oficial de Caja Piura no se usa en el prototipo (solo texto); la marca v
 - `active:scale-[0.96]` en botones. Respetar `prefers-reduced-motion`.
 
 ## Tono
-Coloquial del norte ("¡Habla!", "compare", "chévere"), siempre respetuoso. El CHICOTAZO es con humor, nunca una amenaza.
+- **Formal (de usted)** en toda la app: inicio, pagos, plan, asistente, landing y panel del gestor.
+- **Solo dentro del juego de la trivia** se usa tono coloquial del norte ("compare", "chévere", "bacán"): la pantalla de la trivia, sus mensajes y sus preguntas.
+- El CHICOTAZO conserva su nombre y su humor, nunca una amenaza.

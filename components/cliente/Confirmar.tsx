@@ -34,12 +34,12 @@ export default function Confirmar({ sit, plan, resultado, total, onListo, onVolv
         <h2 className="text-xl font-extrabold text-caja">¿Cerramos trato?</h2>
         <p>{plan.inicial > 0 ? <>Pagarás una inicial de <b>{soles(plan.inicial)}</b> hoy y </> : "Pagarás "}el resto en <b>{plan.nCuotas} cuota{plan.nCuotas === 1 ? "" : "s"}</b>, empezando el <b>{plan.fechaPrimerPago.split("-").reverse().join("/")}</b>.</p>
         <p>Total: <b>{soles(total)}</b></p>
-        {derivada && <p className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm">Por los días de atraso, un gestor revisará tu propuesta y se comunicará contigo. Mientras tanto, puedes seguir usando el módulo.</p>}
+        {derivada && <p className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm">Por los días de atraso, un gestor revisará su propuesta y se comunicará con usted. Mientras tanto, puede seguir usando el módulo.</p>}
       </div>
 
       <fieldset className="card space-y-2">
         <legend className="font-bold px-1">¿Qué pasó este mes?</legend>
-        <p className="text-sm text-gray-600">Nos ayuda a acompañarte mejor, compare. No afecta tu plan.</p>
+        <p className="text-sm text-gray-600">Esta información nos ayuda a acompañarle mejor. No afecta su plan.</p>
         {MOTIVOS.map((m) => (
           <label key={m.id} className={`flex items-center gap-3 min-h-[48px] rounded-xl border px-3 cursor-pointer ${motivo === m.id ? "border-caja bg-caja-borde/40" : "border-caja-borde"}`}>
             <input type="radio" name="motivo" checked={motivo === m.id} onChange={() => setMotivo(m.id)} /> {m.texto}

@@ -31,5 +31,5 @@ Next.js 15 (App Router) + TypeScript 5 + Tailwind 3 + motion. SQLite local (`bet
 1. Nunca calcular montos/fechas en el navegador ni en el modelo de IA.
 2. Sin emojis ni stickers en la interfaz: usar `components/iconos.tsx`.
 3. El término **CHICOTAZO** se escribe así y se mantiene (−12 pts por día en mora; humor, nunca amenaza).
-4. Tono del cliente: coloquial del norte ("compare", "chévere"), respetuoso. Panel del gestor: formal.
+4. Tono: **formal (de usted)** en toda la app, incluido el asistente Pareas. **Solo dentro del juego de la trivia** se usa tono coloquial del norte ("compare", "chévere").
 5. Antes de entregar: `npm test` y `npm run build` en verde.

@@ -32,7 +32,7 @@ export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onS
       <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-3">
         <div className="flex justify-between items-center">
-          <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcMando} color="violeta" tam={34} />Trivia del día</h2>
+          <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcMando} color="violeta" tam={34} />¡A jugar, compare!</h2>
           {pr && <span className="text-sm">{pr.respondidas}/{pr.total} · +{pr.puntosTriviaHoy}/{pr.topeDia} pts</span>}
         </div>
         {pr && <HaloProgress value={Math.round((pr.respondidas / pr.total) * 100)} aria-label="Avance de la trivia de hoy" />}
@@ -57,8 +57,8 @@ export default function Trivia({ sit, onScore, onVolver }: { sit: Situacion; onS
             <p className="text-sm">{res.explicacion}</p>
             {res.mensajeRacha && <p className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-sm">{res.mensajeRacha}</p>}
             <Pareas humor={res.pareas.humor} mensaje={res.pareas.mensaje} />
-            <p className="text-sm">Tus puntos: <b>{res.score}</b> · Nivel {res.nivel}</p>
-            {!res.progreso.completo && <TextureButton onClick={siguiente}>Siguiente pregunta →</TextureButton>}
+            <p className="text-sm">Llevas <b>{res.score}</b> puntos · Nivel {res.nivel}</p>
+            {!res.progreso.completo && <TextureButton onClick={siguiente}>Dale, la siguiente →</TextureButton>}
           </div>
         )}
         {t && !t.pregunta && !res && <p className="font-semibold">{t.mensaje}</p>}

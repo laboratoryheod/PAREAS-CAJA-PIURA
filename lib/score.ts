@@ -2,7 +2,6 @@
 // Todos los valores se ajustan en PARAMS_SCORE.
 import { nivelDe, UMBRALES_NIVEL, type Nivel } from "./niveles";
 import { REGLAS } from "./reglas";
-import { APELATIVO } from "./config";
 
 export const PARAMS_SCORE = {
   inicial: 70,
@@ -100,29 +99,35 @@ export function puntosParaSiguienteNivel(score: number): { siguiente: Nivel | nu
 }
 
 export function beneficiosDeNivel(nivel: Nivel, sinBeneficios = false): string {
-  if (sinBeneficios) return "Por no cumplir tu plan anterior, tus beneficios están en pausa hasta que te regularices con una campaña de la Caja.";
+  if (sinBeneficios) return "Por no cumplir su plan anterior, sus beneficios están en pausa hasta que se regularice con una campaña de la Caja.";
   const b = REGLAS.beneficiosNivel[nivel];
   const partes: string[] = [];
   if (b.cuotasExtra) partes.push(`${b.cuotasExtra} cuota extra para reprogramar`);
   if (b.inicialMenosPct) partes.push(`${Math.round(b.inicialMenosPct * 100)}% menos de inicial`);
-  return partes.length ? `Beneficios de nivel ${nivel}: ${partes.join(" y ")}. ¡Chévere!` : `Sube de nivel para desbloquear más cuotas y menos inicial.`;
+  return partes.length ? `Beneficios de nivel ${nivel}: ${partes.join(" y ")}.` : `Suba de nivel para acceder a más cuotas y a una inicial menor.`;
 }
 
 export type HumorPareas = "feliz" | "serio" | "chicotazo";
 
+/** Mensajes de Pareas fuera del juego: tono formal (de usted). El CHICOTAZO conserva su nombre y su humor. */
 export function estadoPareas(c: { nombre?: string; diasAtraso: number; score: number; sinBeneficios?: boolean; regaloDisponible?: boolean }): { humor: HumorPareas; mensaje: string } {
-  const quien = c.nombre ?? APELATIVO;
+  const r = estadoPareasBase(c);
+  return { ...r, mensaje: r.mensaje.charAt(0).toUpperCase() + r.mensaje.slice(1) };
+}
+
+function estadoPareasBase(c: { nombre?: string; diasAtraso: number; score: number; sinBeneficios?: boolean; regaloDisponible?: boolean }): { humor: HumorPareas; mensaje: string } {
+  const quien = c.nombre ? `${c.nombre}, ` : "";
   if (c.regaloDisponible) {
-    return { humor: "feliz", mensaje: `¡Oe ${quien}, te salió el Regalo Salvador! La Caja te da una mano para ponerte al día. Aprovéchalo antes de que venza, ${APELATIVO}.` };
+    return { humor: "feliz", mensaje: `${quien}la Caja le otorgó el Regalo Salvador para que se ponga al día. Le recomendamos usarlo antes de su vencimiento.` };
   }
   if (c.diasAtraso > 0 && c.sinBeneficios) {
-    return { humor: "chicotazo", mensaje: `¡CHICOTAZO doble! ${quien}, se pasó un pago de tu plan y tus beneficios quedaron en pausa. Tranqui, ${APELATIVO}: paga lo pendiente y Pareas deja de pegar.` };
+    return { humor: "chicotazo", mensaje: `¡CHICOTAZO doble! ${quien}no se registró un pago de su plan y sus beneficios quedaron en pausa. Al pagar lo pendiente, Pareas deja de restar puntos.` };
   }
   if (c.diasAtraso > 0) {
-    return { humor: "chicotazo", mensaje: `¡CHICOTAZO! Oe ${quien}, Pareas te recuerda que tienes una cuota pendiente. Mientras siga pendiente, tus puntos bajan; apenas pagues, vuelven a subir. ¡Tú puedes, ${APELATIVO}!` };
+    return { humor: "chicotazo", mensaje: `¡CHICOTAZO! ${quien}Pareas le recuerda que tiene una cuota pendiente. Mientras siga pendiente, su puntaje baja; cuando pague, vuelve a subir.` };
   }
   if (c.score < UMBRALES_NIVEL.plata) {
-    return { humor: "serio", mensaje: `Pareas te tiene el ojo encima, ${quien}. Vas al día, ¡chévere! Suma puntos con la trivia para subir de nivel.` };
+    return { humor: "serio", mensaje: `${quien}está al día con sus pagos. Puede sumar puntos con la trivia para subir de nivel.` };
   }
-  return { humor: "feliz", mensaje: `¡Chévere, ${quien}! Estás al día con tus pagos y Pareas está feliz. ¡Sigue así, ${APELATIVO}!` };
+  return { humor: "feliz", mensaje: `${quien}está al día con sus pagos. Gracias por su puntualidad.` };
 }

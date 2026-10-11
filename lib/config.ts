@@ -2,6 +2,6 @@
 export const APP_NOMBRE = "Ponte al Día";
 export const APP_ENTIDAD = "Caja Piura (prototipo)";
 
-// Tono coloquial del módulo (norte del Perú): cálido y cercano, nunca irrespetuoso.
-// Los apelativos se usan con moderación; se cambian aquí (p. ej. "causa" si se prefiere uno neutro).
+// TONO: la app usa lenguaje formal (de usted). Solo el JUEGO DE LA TRIVIA usa tono coloquial del norte,
+// con este apelativo (se cambia aquí, p. ej. "causa" si se prefiere uno neutro).
 export const APELATIVO = "compare";

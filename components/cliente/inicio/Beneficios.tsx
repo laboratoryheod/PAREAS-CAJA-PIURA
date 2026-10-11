@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { soles, type Situacion } from "@/lib/cliente-api";
 import { REGLAS, REGALO_SALVADOR } from "@/lib/reglas";
@@ -35,7 +36,7 @@ export function Beneficios({ sit, className, onPagar }: { sit: Situacion; classN
           {tab === "beneficios" && (
             <div className="space-y-2">
               {sit.sinBeneficios && (
-                <div className="flex items-start gap-3 rounded-2xl bg-[#FFF1F0] p-3 text-[#B3122A]"><IcCandado tam={20} /><p className="text-[13px]">Tus beneficios están en pausa porque se pasó un pago de tu plan. Una campaña de la Caja te los devuelve.</p></div>
+                <div className="flex items-start gap-3 rounded-2xl bg-[#FFF1F0] p-3 text-[#B3122A]"><IcCandado tam={20} /><p className="text-[13px]">Sus beneficios están en pausa porque no se registró un pago de su plan. Una campaña de la Caja puede restituirlos.</p></div>
               )}
               {NIVELES.map((x) => {
                 const actual = sit.nivel === x.n;
@@ -46,7 +47,7 @@ export function Beneficios({ sit, className, onPagar }: { sit: Situacion; classN
                       <p className="text-[15px] font-semibold">{x.n} <span className={cn("text-[12px] font-normal", actual ? "text-white/60" : "text-neutral-500")}>· {x.rango} pts</span></p>
                       <p className={cn("truncate text-[13px]", actual ? "text-white/75" : "text-neutral-500")}>{textoBeneficio(x.n)}</p>
                     </div>
-                    {actual && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold">{sit.sinBeneficios ? "En pausa" : "Tu nivel"}</span>}
+                    {actual && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold">{sit.sinBeneficios ? "En pausa" : "Su nivel"}</span>}
                   </div>
                 );
               })}
@@ -57,23 +58,27 @@ export function Beneficios({ sit, className, onPagar }: { sit: Situacion; classN
             <div className="rounded-[22px] bg-gradient-to-br from-[#D6247A] via-[#E2405F] to-[#FF7A59] p-4 text-white">
               <div className="flex items-center gap-3"><FichaApp icono={IcRegalo} color="rosa" tam={40} className="ring-2 ring-white/30" /><div><p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-white/80">Campaña activa</p><p className="text-[20px] font-bold leading-tight">Regalo Salvador</p></div></div>
               <div className="mt-3 flex items-end justify-between rounded-2xl bg-white/15 p-3">
-                <div><p className="text-[12px] text-white/75">Te tocaba</p><p className="text-[16px] font-semibold line-through tabular-nums">{soles(sit.regalo.base)}</p></div>
+                <div><p className="text-[12px] text-white/75">Monto original</p><p className="text-[16px] font-semibold line-through tabular-nums">{soles(sit.regalo.base)}</p></div>
                 <IcDescuento tam={22} className="mb-1 text-white/80" />
-                <div className="text-right"><p className="text-[12px] text-white/75">Pagas hoy</p><p className="text-[24px] font-bold leading-none tabular-nums">{soles(sit.regalo.montoHoy)}</p></div>
+                <div className="text-right"><p className="text-[12px] text-white/75">Paga hoy</p><p className="text-[24px] font-bold leading-none tabular-nums">{soles(sit.regalo.montoHoy)}</p></div>
               </div>
-              <p className="mt-2 text-[12px] text-white/85">Descuento de {sit.regalo.descuentoPct}% hoy · +{sit.regalo.recargoPct}% en tus próximas {sit.regalo.recargos.length} cuotas · vence el {sit.regalo.venceLargo}</p>
+              <p className="mt-2 text-[12px] text-white/85">Descuento de {sit.regalo.descuentoPct}% hoy · +{sit.regalo.recargoPct}% en sus próximas {sit.regalo.recargos.length} cuotas · vence el {sit.regalo.venceLargo}</p>
               <button onClick={onPagar} className="mt-3 min-h-[44px] w-full rounded-full bg-white text-[15px] font-semibold text-[#D6247A] active:scale-[0.96] transition-transform">Usar mi regalo</button>
             </div>
           ) : (
             <div className="flex items-start gap-3 rounded-2xl bg-neutral-50 p-4">
               <FichaApp icono={IcRegalo} color="grafito" tam={40} />
-              <div><p className="text-[15px] font-semibold">Sin campañas por ahora</p><p className="text-[13px] text-neutral-500">Cuando la Caja te dé una mano (como el Regalo Salvador: {Math.round(REGALO_SALVADOR.descuentoPct * 100)}% menos hoy), aparecerá aquí.</p></div>
+              <div><p className="text-[15px] font-semibold">Sin campañas por ahora</p><p className="text-[13px] text-neutral-500">Cuando la Caja le otorgue un beneficio (como el Regalo Salvador: {Math.round(REGALO_SALVADOR.descuentoPct * 100)}% menos hoy), se mostrará aquí.</p></div>
             </div>
           ))}
 
           {tab === "chicotazo" && <TarjetaChicotazo ch={sit.chicotazo} onPagar={sit.chicotazo.activo ? onPagar : undefined} />}
         </motion.div>
       </AnimatePresence>
+      <div className="mt-4 flex flex-col items-center gap-1 border-t border-[#D6E4F5] pt-4">
+        <Image src="/caja/logo-caja-piura-dorado.png" alt="Caja Piura" width={160} height={38} className="h-[34px] w-auto" />
+        <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#9A6A12]">Beneficios exclusivos para clientes</p>
+      </div>
     </Widget>
   );
 }

@@ -32,8 +32,8 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
       <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-5">
         <div>
-          <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcCalculadora} color="sol" tam={34} />Arma tu plan, a tu ritmo</h2>
-          <p className="text-sm text-gray-600">Mueve los controles y mira al toque cómo queda. Hoy debes <b>{soles(deuda)}</b>.</p>
+          <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcCalculadora} color="sol" tam={34} />Arme su plan de pago</h2>
+          <p className="text-sm text-gray-600">Ajuste los controles y vea el resultado al instante. Su deuda de hoy es <b>{soles(deuda)}</b>.</p>
         </div>
 
         <label className="block">
@@ -49,7 +49,7 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
         </label>
 
         <label className="block text-sm font-semibold">
-          Fecha de tu primera cuota
+          Fecha de su primera cuota
           <input type="date" value={fecha} min={lim.primerPagoMin} max={lim.primerPagoMax} onChange={(e) => setFecha(e.target.value || lim.primerPagoMin)}
             className="mt-1 w-full min-h-[48px] rounded-xl border border-caja-borde px-3 font-normal" />
         </label>
@@ -73,7 +73,7 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
 
       {r && (
         <div className="card">
-          <h3 className="font-bold mb-2">Tu cronograma</h3>
+          <h3 className="font-bold mb-2">Su cronograma</h3>
           <ul className="divide-y divide-caja-borde text-sm">
             {r.cronograma.pagos.map((p: any) => (
               <li key={p.n} className="flex justify-between py-2">
@@ -82,7 +82,7 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
             ))}
           </ul>
           <p className="flex justify-between border-t border-caja-borde pt-2 mt-1 font-bold"><span>Total a pagar</span><span>{soles(r.total)}</span></p>
-          <p className="text-xs text-gray-500 mt-1">Incluye tu deuda vencida y el interés moratorio a hoy. Sin costos extra por reprogramar. Ojo: el plan arranca con tu primer pago.</p>
+          <p className="text-xs text-gray-500 mt-1">Incluye su deuda vencida y el interés moratorio a la fecha. Sin costos adicionales por reprogramar. El plan se activa con el primer pago.</p>
         </div>
       )}
 

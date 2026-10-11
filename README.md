@@ -65,7 +65,7 @@ Pareas es la iguana (el "pacaso" piurano) que acompaña al cliente y responde en
 Para cambiar una imagen basta con reemplazar el archivo con el mismo nombre. Para tener varias expresiones (feliz, seria, chicotazo), agrega `pareas-feliz.png`, etc. y elige la imagen según `humor` en `components/Pareas.tsx`.
 
 ## Tono
-Coloquial y cercano del norte ("¡Habla!", "compare", "chévere", "al toque", "tranqui"), sin faltar el respeto. El apelativo está en `APELATIVO` (`lib/config.ts`). El panel del gestor usa tono formal.
+Formal (de usted) en toda la app. Solo el juego de la trivia usa tono coloquial del norte ("compare", "chévere"); el apelativo está en `APELATIVO` (`lib/config.ts`). Si ya tenía la base creada, ejecute `npm run seed` para cargar las preguntas de la trivia actualizadas.
 
 ## Inicio del cliente
 Según el boceto del equipo, cada cliente ve primero:

@@ -1,4 +1,4 @@
-// Adaptado de cult-ui (MIT): el brillo animado usa transform en vez de `left` (rendimiento).
+// Adaptado de cult-ui (MIT): el brillo animado usa transform en vez de `left` (rendimiento) y colores institucionales de Caja Piura.
 "use client"
 
 /**
@@ -138,7 +138,7 @@ export function HaloProgress({
               }}>
 <div className="-bottom-3 absolute h-10 w-32 blur-xl left-0" style={{
                 background:
-                  "linear-gradient(90deg, #0070f3, #7928ca, #00d4ff, #ff0080)",
+                  "linear-gradient(90deg, #0047AB, #0072C6, #F9A825, #00529B)",
               }} />
 </motion.div>
           </motion.div>
@@ -154,8 +154,8 @@ export function HaloProgress({
           )}
           style={{
             background: translucent
-              ? "linear-gradient(to bottom, color-mix(in oklch, var(--muted) 55%, transparent) 0%, color-mix(in oklch, var(--muted) 40%, transparent) 100%)"
-              : "var(--muted)",
+              ? "linear-gradient(to bottom, color-mix(in oklch, hsl(var(--muted)) 55%, transparent) 0%, color-mix(in oklch, hsl(var(--muted)) 40%, transparent) 100%)"
+              : "hsl(var(--muted))",
           }}
         >
           {isIndeterminate ? (

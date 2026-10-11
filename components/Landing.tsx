@@ -104,7 +104,7 @@ export default function Landing() {
           Ponte al día.<br /><span className="bg-gradient-to-r from-[#0047AB] via-[#0072C6] to-[#F9A825] bg-clip-text text-transparent">Con Pareas.</span>
         </motion.h1>
         <motion.p {...ENTRA(2)} className="mx-auto mt-4 max-w-xl text-[19px] leading-relaxed text-[#6E6E73] md:text-[21px]">
-          Tu deuda clara, tu plan de pago a tu ritmo y un juego que te premia por pagar a tiempo. Y si te atrasas, el CHICOTAZO.
+          Su deuda clara, un plan de pago a su medida y un juego que premia la puntualidad. Y si hay atraso, el CHICOTAZO.
         </motion.p>
         <motion.div {...ENTRA(3)} className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <Link href="/cliente" className="flex min-h-[48px] items-center rounded-full bg-[#F9A825] px-6 text-[17px] font-semibold text-[#1A1A1A] transition-transform active:scale-[0.96] hover:bg-[#FFB733]">Entrar como cliente</Link>
@@ -146,7 +146,7 @@ export default function Landing() {
               <div>
                 <p className="text-[15px] font-semibold text-[#FF453A]">La regla de oro de Pareas</p>
                 <h3 className="mt-1 text-[34px] font-semibold leading-tight tracking-[-0.035em]">El CHICOTAZO.</h3>
-                <p className="mt-2 text-[17px] text-white/70">Cada día en mora, Pareas te quita 12 puntos. Ni acertando toda la trivia lo tapas. Solo pagando guarda el látigo.</p>
+                <p className="mt-2 text-[17px] text-white/70">Cada día en mora, Pareas resta 12 puntos. Ni acertando toda la trivia se compensa. Solo al pagar, guarda el látigo.</p>
               </div>
               <TarjetaChicotazo ch={CHICOTAZO_DEMO} />
             </div>
@@ -159,35 +159,35 @@ export default function Landing() {
           </Bento>
           <Bento className="md:col-span-2">
             <FichaApp icono={IcCalendario} color="rojo" tam={48} />
-            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Tu calendario</h3>
+            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Su calendario</h3>
             <p className="mt-1 text-[15px] text-[#6E6E73]">Cuotas vencidas, pagos del plan, recargos y vencimiento de campañas, día por día.</p>
           </Bento>
           <Bento className="md:col-span-2">
             <FichaApp icono={IcTarjeta} color="azul" tam={48} />
-            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Plan a tu medida</h3>
-            <p className="mt-1 text-[15px] text-[#6E6E73]">Eliges cuotas, inicial y fecha. Si no cumple, te damos la alternativa más cercana al toque.</p>
+            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Plan a su medida</h3>
+            <p className="mt-1 text-[15px] text-[#6E6E73]">Usted elige cuotas, inicial y fecha. Si no cumple las condiciones, le ofrecemos de inmediato la alternativa más cercana.</p>
           </Bento>
           <Bento className="md:col-span-2 bg-gradient-to-br from-[#D6247A] via-[#E2405F] to-[#FF7A59] text-white !shadow-none">
             <FichaApp icono={IcRegalo} color="rosa" tam={48} className="ring-2 ring-white/30" />
             <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Regalo Salvador</h3>
-            <p className="mt-1 text-[15px] text-white/85">La Caja te da una mano: pagas hoy 30% menos y lo recuperas en 3 cuotas.</p>
+            <p className="mt-1 text-[15px] text-white/85">La Caja le brinda una facilidad: paga hoy 30% menos y lo recupera en 3 cuotas.</p>
           </Bento>
           <Bento className="md:col-span-3">
             <FichaApp icono={IcBurbuja} color="cielo" tam={48} />
-            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Pareas, tu agente</h3>
-            <p className="mt-1 text-[15px] text-[#6E6E73]">Responde sobre tu deuda, tu plan y la Caja. Nada más: así es rápido, seguro y no te enreda.</p>
+            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Pareas, su asistente</h3>
+            <p className="mt-1 text-[15px] text-[#6E6E73]">Responde sobre su deuda, su plan y la Caja. Solo eso: así es rápido, seguro y preciso.</p>
             <div className="mt-4 space-y-2 text-[14px]">
               <p className="ml-auto w-fit rounded-[18px] rounded-br-[6px] bg-[#0072C6] px-3 py-2 text-white">¿Cuánto debo hoy?</p>
-              <p className="w-fit max-w-[85%] rounded-[18px] rounded-bl-[6px] bg-[#E9E9EB] px-3 py-2">Hoy debes S/ 326.08, compare. ¿Lo pasamos a cuotas?</p>
+              <p className="w-fit max-w-[85%] rounded-[18px] rounded-bl-[6px] bg-[#E9E9EB] px-3 py-2">Hoy su deuda es de S/ 326.08. ¿Desea pasarla a cuotas?</p>
             </div>
           </Bento>
           <Bento className="md:col-span-3">
             <div id="seguridad" className="scroll-mt-28">
               <FichaApp icono={IcEscudo} color="verde" tam={48} />
-              <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Tu plata, protegida</h3>
+              <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Su dinero, protegido</h3>
               <ul className="mt-2 space-y-2 text-[15px] text-[#6E6E73]">
-                <li className="flex items-start gap-2"><IcCandado tam={18} className="mt-0.5 text-[#1DA851]" />Pareas nunca te pide claves, tarjeta ni token.</li>
-                <li className="flex items-start gap-2"><IcEscudo tam={18} className="mt-0.5 text-[#1DA851]" />Tu DNI se guarda cifrado y siempre se muestra enmascarado.</li>
+                <li className="flex items-start gap-2"><IcCandado tam={18} className="mt-0.5 text-[#1DA851]" />Pareas nunca le pedirá claves, tarjeta ni token.</li>
+                <li className="flex items-start gap-2"><IcEscudo tam={18} className="mt-0.5 text-[#1DA851]" />Su DNI se guarda cifrado y siempre se muestra enmascarado.</li>
                 <li className="flex items-start gap-2"><IcCaja tam={18} className="mt-0.5 text-[#1DA851]" />Se integra a la app de Caja Piura: mismo ingreso y seguridad.</li>
               </ul>
             </div>

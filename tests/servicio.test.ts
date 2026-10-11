@@ -20,7 +20,8 @@ describe("Gengis Guerrero (demo)", () => {
     expect(s.deuda.total).toBeCloseTo(326.08, 2);
     expect(s.score).toBe(70);
     expect(s.pareas.humor).toBe("chicotazo");
-    expect(s.saludo).toContain("¡Habla, Gengis!");
+    expect(s.saludo).toContain("Hola, Gengis.");
+    expect(s.saludo).not.toMatch(/compare|¡Habla|\btienes\b/);
   });
 
   it("el simulador valida en servidor y propone la alternativa más cercana", () => {
@@ -35,7 +36,7 @@ describe("Gengis Guerrero (demo)", () => {
 
   it("no acepta una propuesta que incumple reglas, ni sin motivo ni sin aceptación", async () => {
     await expect(S.registrarPropuesta({ ...plan(3), motivo: "olvido", acepta: true })).rejects.toThrow();
-    await expect(S.registrarPropuesta({ ...plan(2), acepta: true })).rejects.toThrow(/qué pasó/);
+    await expect(S.registrarPropuesta({ ...plan(2), acepta: true })).rejects.toThrow(/qué ocurrió/);
     await expect(S.registrarPropuesta({ ...plan(2), motivo: "olvido" })).rejects.toThrow(/aceptar/);
   });
 
@@ -50,7 +51,7 @@ describe("Gengis Guerrero (demo)", () => {
     const pago = await S.pagoSimulado(GENGIS);
     expect(pago.situacion.estado).toBe("reprogramado");
     expect(pago.situacion.diasAtraso).toBe(0);
-    expect(pago.mensajes.join(" ")).toMatch(/Arrancó tu plan/);
+    expect(pago.mensajes.join(" ")).toMatch(/Su plan está activo/);
     S.avanzarDia();
     expect(S.situacion(GENGIS).score).toBe(70 - 12 + 15); // ya no pega
   });
@@ -82,7 +83,7 @@ describe("Gengis Guerrero (demo)", () => {
     expect(s.limites).toBeNull();
     expect(S.detalleCliente(GENGIS).historialScore.some((m) => m.tipo === "promesa_incumplida")).toBe(false);
     expect(S.simular(plan(2, 0, "2026-10-20")).validacion.resultado).toBe("no_disponible");
-    await expect(S.registrarPropuesta({ ...plan(2, 0, "2026-10-20"), motivo: "olvido", acepta: true })).rejects.toThrow(/no puedes armar otro plan/);
+    await expect(S.registrarPropuesta({ ...plan(2, 0, "2026-10-20"), motivo: "olvido", acepta: true })).rejects.toThrow(/no puede armar otro plan/);
     expect(S.feed(0, 80).items.some((i) => i.tipo === "promesa_incumplida" && i.texto.includes("Gengis G."))).toBe(true);
   });
 
@@ -154,6 +155,13 @@ describe("chicotazo y trivia en servidor", () => {
     S.avanzarDia();
     expect(S.situacion(GENGIS).score).toBe(tras - 12);
     expect(S.situacion(GENGIS).diasAtraso).toBe(13);
+  });
+
+  it("solo la trivia usa tono coloquial", async () => {
+    const p = S.triviaSiguiente(GENGIS).pregunta!;
+    const r = S.responderTrivia(GENGIS, p.id, 99); // opción inexistente: falla a propósito
+    expect(r.mensaje).toMatch(/compare/);
+    expect(S.situacion(GENGIS).pareas.mensaje).not.toMatch(/compare/);
   });
 
   it("no se puede responder dos veces la misma pregunta", async () => {

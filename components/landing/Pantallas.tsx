@@ -32,7 +32,7 @@ export function PantallaCliente() {
         </div>
       </div>
       <div className="rounded-[16px] bg-white p-2.5">
-        <p className="text-[8px] font-semibold uppercase tracking-[0.08em] text-neutral-500">Lo que debes hoy</p>
+        <p className="text-[8px] font-semibold uppercase tracking-[0.08em] text-neutral-500">Su deuda de hoy</p>
         <p className="text-[18px] font-bold tracking-[-0.03em] text-[#C9182B]">S/ 326.08</p>
         {[[IcTarjeta, "azul", "Pagar hoy"], [IcCalculadora, "sol", "Armar mi plan"]].map(([I, c, t]) => (
           <div key={t as string} className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-50 p-1.5"><FichaApp icono={I as typeof IcTarjeta} color={c as "azul"} tam={18} /><span className="text-[10px] font-medium">{t as string}</span></div>
@@ -40,7 +40,7 @@ export function PantallaCliente() {
       </div>
       <div className="mt-auto flex items-center gap-2 rounded-[14px] bg-neutral-900 p-2 text-white">
         <span className="relative h-6 w-6 overflow-hidden rounded-[7px] bg-white"><Image src="/pareas/logo.png" alt="" fill sizes="24px" className="object-cover" /></span>
-        <span className="text-[10px] font-semibold">Habla con Pareas</span><IcBurbuja tam={12} className="ml-auto text-[#5AC8FA]" />
+        <span className="text-[10px] font-semibold">Hablar con Pareas</span><IcBurbuja tam={12} className="ml-auto text-[#5AC8FA]" />
       </div>
     </div>
   );

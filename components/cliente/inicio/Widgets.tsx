@@ -89,15 +89,15 @@ export function WidgetPagos({ sit, progreso, ir, className }: { sit: Situacion; 
     <Widget className={cn("flex flex-col p-0", className)}>
       <div className="p-4 pb-2">
         <TituloWidget>Pagos y juegos</TituloWidget>
-        <p className="-mt-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-neutral-500">{sit.regalo ? "Con tu Regalo Salvador" : proximo ? `Próximo pago · ${proximo.fechaLarga}` : hayPago ? "Lo que debes hoy" : "Estás al día"}</p>
+        <p className="-mt-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-neutral-500">{sit.regalo ? "Con su Regalo Salvador" : proximo ? `Próximo pago · ${proximo.fechaLarga}` : hayPago ? "Su deuda de hoy" : "Está al día"}</p>
         <p className={cn("text-[34px] font-bold leading-tight tracking-[-0.03em] tabular-nums", sit.diasAtraso > 0 && !sit.regalo ? "text-[#C9182B]" : "text-neutral-900")}>{soles(monto)}</p>
         {sit.diasAtraso > 0 && <p className="text-[13px] text-neutral-500">{sit.diasAtraso} días de atraso · incluye {soles(sit.deuda.interesMoratorio)} de mora</p>}
       </div>
       <ul className="mx-3 mb-3 divide-y divide-black/5 overflow-hidden rounded-2xl bg-neutral-50">
         {hayPago && <Fila icono={sit.regalo ? IcRegalo : IcTarjeta} color={sit.regalo ? "rosa" : "azul"} titulo={sit.estado === "plan_pendiente" ? "Hacer mi primer pago" : "Pagar hoy"} sub="Pago simulado con QR" onClick={() => ir("pagar")} />}
         {sit.limites && !sit.propuestaActiva && !sit.propuestaDerivada && !sit.regalo && <Fila icono={IcCalculadora} color="sol" titulo="Armar mi plan" sub={`Hasta ${sit.limites.maxCuotas} cuotas`} onClick={() => ir("simulador")} />}
-        {(sit.propuestaActiva || sit.propuestaDerivada) && <Fila icono={IcCalendario} color="cielo" titulo="Ver mi plan" sub={sit.propuestaDerivada ? "En revisión del gestor" : sit.estado === "plan_pendiente" ? "Falta tu primer pago" : "En marcha"} onClick={() => ir("plan")} />}
-        {hayPago && <Fila icono={IcQR} color="grafito" titulo="QR para un familiar" sub="Que alguien pague por ti" onClick={() => ir("pagar")} />}
+        {(sit.propuestaActiva || sit.propuestaDerivada) && <Fila icono={IcCalendario} color="cielo" titulo="Ver mi plan" sub={sit.propuestaDerivada ? "En revisión del gestor" : sit.estado === "plan_pendiente" ? "Falta el primer pago" : "En marcha"} onClick={() => ir("plan")} />}
+        {hayPago && <Fila icono={IcQR} color="grafito" titulo="QR para un familiar" sub="Para que un familiar pague por usted" onClick={() => ir("pagar")} />}
         <Fila icono={IcMando} color="violeta" titulo="Trivia del día" sub={progreso?.completo ? "Completada" : `${progreso?.respondidas ?? 0}/${progreso?.total ?? 5} respondidas`} onClick={() => ir("trivia")} />
       </ul>
     </Widget>
@@ -106,13 +106,13 @@ export function WidgetPagos({ sit, progreso, ir, className }: { sit: Situacion; 
 
 // ---------------------------------------------------------------- consejos + agente
 const CONSEJOS = [
-  { t: "Separa primero tu cuota", d: "Apenas cobres tus ventas, guarda la plata de tu cuota antes de gastar en otra cosa." },
-  { t: "Caja del negocio aparte", d: "No mezcles el dinero del negocio con el de la casa: así sabes cuánto ganas de verdad." },
-  { t: "Una alarma, cero olvidos", d: "Pon un recordatorio dos días antes de cada fecha de pago." },
-  { t: "Un colchón para el mes flojo", d: "Ahorra un poquito cada semana. Una semana mala no debería atrasarte." },
-  { t: "Avisa antes de atrasarte", d: "Si ves que no llegas, arma tu plan antes: pagas menos mora y conservas beneficios." },
-  { t: "Ojo con prestar para pagar", d: "Pedir un préstamo para pagar otro suele crear una bola de deudas." },
-  { t: "Anota todo, aunque sea poco", d: "Un cuaderno de ingresos y gastos te muestra en qué se va la plata." },
+  { t: "Separe primero su cuota", d: "Al cobrar sus ventas, reserve el monto de su cuota antes de cualquier otro gasto." },
+  { t: "Separe las cuentas del negocio", d: "No mezcle el dinero del negocio con el del hogar: así sabrá cuánto gana realmente." },
+  { t: "Programe recordatorios", d: "Configure una alarma dos días antes de cada fecha de pago." },
+  { t: "Forme un fondo de emergencia", d: "Ahorre un monto pequeño cada semana para cubrir los meses de menores ventas." },
+  { t: "Anticípese al atraso", d: "Si prevé que no llegará a pagar, arme su plan antes: pagará menos mora y conservará sus beneficios." },
+  { t: "Evite pagar deudas con deudas", d: "Solicitar un préstamo para pagar otro suele aumentar el endeudamiento." },
+  { t: "Registre sus ingresos y gastos", d: "Un registro sencillo le muestra en qué se destina su dinero." },
 ];
 
 export function WidgetConsejos({ sit, onAgente, className }: { sit: Situacion; onAgente: () => void; className?: string }) {
@@ -136,7 +136,7 @@ export function WidgetConsejos({ sit, onAgente, className }: { sit: Situacion; o
       </AnimatePresence>
       <button onClick={onAgente} className="mt-4 flex min-h-[52px] items-center gap-3 rounded-2xl bg-neutral-900 px-3 text-left text-white transition-transform active:scale-[0.98]">
         <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-[10px] bg-white"><Image src="/pareas/logo.png" alt="" fill sizes="36px" className="object-cover" /></span>
-        <span className="min-w-0 flex-1"><span className="block text-[15px] font-semibold">Habla con Pareas</span><span className="block truncate text-[12px] text-white/60">Tu agente: deuda, plan y pagos</span></span>
+        <span className="min-w-0 flex-1"><span className="block text-[15px] font-semibold">Hablar con Pareas</span><span className="block truncate text-[12px] text-white/60">Su asistente: deuda, plan y pagos</span></span>
         <IcBurbuja tam={20} className="text-[#5AC8FA]" />
       </button>
     </Widget>

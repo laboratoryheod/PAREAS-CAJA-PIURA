@@ -16,7 +16,7 @@ export function IslaPareas({ humor, mensaje }: { humor: HumorPareas; mensaje: st
       className="mx-auto flex w-full max-w-md items-center gap-3 overflow-hidden bg-black px-3 py-2.5 text-left text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
       style={{ borderRadius: 26 }} transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}>
       <motion.span layout className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full bg-white">
-        <Image src="/pareas/pareas.png" alt="" fill sizes="36px" className="object-cover object-top scale-125" />
+        <Image src="/pareas/logo.png" alt="" fill sizes="36px" className="object-cover" />
       </motion.span>
       <motion.span layout className="min-w-0 flex-1">
         <span className={cn("flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.1em]", acento)}><Icono tam={13} />{humor === "chicotazo" ? "Chicotazo" : "Pareas"}</span>
