@@ -11,7 +11,8 @@
     "export:xlsx": "tsx scripts/export-xlsx.ts",
     "importar:xlsx": "tsx scripts/importar-xlsx.ts",
     "plantilla:xlsx": "tsx scripts/importar-xlsx.ts --plantilla",
-    "levantar": "node scripts/levantar.mjs"
+    "levantar": "node scripts/levantar.mjs",
+    "video:pitch": "node scripts/video/grabar.cjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

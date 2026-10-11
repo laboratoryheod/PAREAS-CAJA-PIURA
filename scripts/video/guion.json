@@ -1,0 +1,18 @@
+{
+  "duracion": 180,
+  "escenas": [
+    { "id": "E1", "inicio": 0, "fin": 12, "nombre": "Gancho", "texto": "En los tres minutos que dura esta presentación, Caja Piura dará por perdidos unos 5,700 soles. Casi todos empezaron igual: un cliente que se atrasó un día y nadie lo acompañó. Somos PAREAS." },
+    { "id": "E2", "inicio": 12, "fin": 28, "nombre": "Segmentos", "texto": "" },
+    { "id": "E3", "inicio": 28, "fin": 52, "nombre": "Problema", "texto": "" },
+    { "id": "E4", "inicio": 52, "fin": 72, "nombre": "Consecuencias", "texto": "" },
+    { "id": "E5", "inicio": 72, "fin": 87, "nombre": "Causa raíz", "texto": "" },
+    { "id": "E6", "inicio": 87, "fin": 99, "nombre": "Recordar", "texto": "", "rotulo": { "paso": 1, "ceja": "Propuesta de valor", "titulo": "Recordar antes de que duela", "texto": "Pareas avisa con humor norteño, como el pacaso que da un coletazo para avisar.", "chip": "Un recordatorio sube el pago puntual entre 7 y 9 puntos: como bajar la tasa 25 % (MIT y NBER, 2011)." } },
+    { "id": "E7", "inicio": 99, "fin": 111, "nombre": "Ordenar", "texto": "", "rotulo": { "paso": 2, "ceja": "Propuesta de valor", "titulo": "Ordenar sus finanzas", "texto": "El cliente ve cuánto gana, cuánto gasta y cuánto le sobra después de su cuota.", "chip": "" } },
+    { "id": "E8", "inicio": 111, "fin": 119, "nombre": "Acompañar", "texto": "", "rotulo": { "paso": 2, "ceja": "Canales · Pareas, su asistente", "titulo": "Acompañar a cualquier hora", "texto": "Pareas responde con los datos de la Caja: nunca inventa montos ni pide claves.", "chip": "" } },
+    { "id": "E9", "inicio": 119, "fin": 130, "nombre": "Rescatar", "texto": "", "rotulo": { "paso": 3, "ceja": "Panel del gestor", "titulo": "Rescatar a todo un segmento en un clic", "texto": "Elige un score mínimo y activa el Modo Rescate: paga hoy 30 % menos de lo vencido.", "chip": "Sin llamadas ni visitas a zonas de riesgo." } },
+    { "id": "E10", "inicio": 130, "fin": 140, "nombre": "Resultado", "texto": "", "rotulo": { "paso": 3, "ceja": "Resultado", "titulo": "Al día, sin una sola llamada", "texto": "Gengis recibe el Modo Rescate en vivo, paga con QR y recupera sus puntos.", "chip": "" } },
+    { "id": "E11", "inicio": 140, "fin": 155, "nombre": "Canvas", "texto": "" },
+    { "id": "E12", "inicio": 155, "fin": 170, "nombre": "Mejor solución", "texto": "" },
+    { "id": "E13", "inicio": 170, "fin": 180, "nombre": "Cierre", "texto": "" }
+  ]
+}

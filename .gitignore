@@ -5,3 +5,4 @@ data/*.db
 data/*.db-*
 next-env.d.ts
 *.tsbuildinfo
+/video-pitch/

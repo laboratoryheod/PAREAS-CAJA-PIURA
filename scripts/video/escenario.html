@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>PAREAS · Video del pitch</title>
+<style>
+@font-face { font-family: "Jakarta"; src: url("/__escenario/fuente.woff2") format("woff2"); font-weight: 200 800; }
+:root {
+  --azul-noche: #0B2547; --azul: #0047AB; --azul-claro: #E4EEFA; --fondo: #F3F7FC; --blanco: #FBFCFE;
+  --amarillo: #F9A825; --rojo: #C9182B; --gris: #46566E; --gris-claro: #6A7A92; --borde: #D6E4F5;
+  --t: 0.9s; --curva: cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; }
+body { font-family: "Jakarta", Arial, sans-serif; color: var(--azul-noche); background: var(--fondo); position: relative; -webkit-font-smoothing: antialiased; }
+b { font-weight: 800; }
+
+/* ---------- Fondos (se cruzan con opacidad) ---------- */
+.fondo { position: absolute; inset: 0; opacity: 0; transition: opacity var(--t) var(--curva); }
+#f-noche { background: radial-gradient(1200px 800px at 75% 30%, #0d3a7a 0%, var(--azul-noche) 60%); }
+#f-claro { background: linear-gradient(160deg, #F7FAFE 0%, #E3EDF9 100%); }
+#f-amarillo { background: linear-gradient(160deg, #FBB835 0%, var(--amarillo) 100%); }
+#f-cierre { background: linear-gradient(135deg, var(--azul) 0%, var(--azul-noche) 100%); }
+body[data-fondo="noche"] #f-noche, body[data-fondo="claro"] #f-claro, body[data-fondo="amarillo"] #f-amarillo, body[data-fondo="cierre"] #f-cierre { opacity: 1; }
+
+/* ---------- Dispositivos ---------- */
+.disp { position: absolute; left: 0; top: 0; transform-origin: 0 0; opacity: 0; transition: transform var(--t) var(--curva), opacity var(--t) var(--curva); will-change: transform, opacity; }
+#cel { width: 418px; height: 872px; padding: 14px; border-radius: 62px; background: #0E1116; box-shadow: 0 0 0 2px #2A2F38, 0 40px 80px rgba(0, 25, 60, 0.35); }
+#cel iframe { width: 390px; height: 844px; border: 0; border-radius: 48px; display: block; background: #fff; }
+#cel .isla { position: absolute; top: 24px; left: 50%; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #0E1116; z-index: 2; }
+#lap { width: 1224px; height: 798px; padding: 0 12px 12px; border-radius: 22px; background: #1B2230; box-shadow: 0 0 0 2px #2A3242, 0 40px 80px rgba(0, 25, 60, 0.30); }
+#lap .barra { height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 8px; }
+#lap .barra i { width: 13px; height: 13px; border-radius: 50%; background: #3A4456; display: block; }
+#lap .barra span { margin-left: 18px; flex: 1; height: 24px; border-radius: 8px; background: #2A3242; color: #9FB0C8; font-size: 14px; line-height: 24px; padding: 0 14px; }
+#lap iframe { width: 1200px; height: 750px; border: 0; border-radius: 4px; display: block; background: #fff; }
+
+/* Posición de los dispositivos en cada escena */
+body[data-esc="E2"] #cel { opacity: 1; transform: translate(150px, 220px) scale(0.76); }
+body[data-esc="E2"] #lap { opacity: 1; transform: translate(540px, 290px) scale(0.72); }
+body[data-esc="E3"] #lap { opacity: 1; transform: translate(96px, 236px) scale(0.8); }
+body[data-esc="E3"] #cel { opacity: 0; transform: translate(-500px, 232px) scale(0.72); }
+body[data-esc="E4"] #lap, body[data-esc="E5"] #lap { opacity: 0; transform: translate(96px, 1200px) scale(0.8); }
+body[data-esc="E6"] #cel, body[data-esc="E7"] #cel, body[data-esc="E8"] #cel, body[data-esc="E10"] #cel { opacity: 1; transform: translate(1080px, 112px) scale(1.05); }
+body[data-esc="E6"] #lap, body[data-esc="E7"] #lap, body[data-esc="E8"] #lap { opacity: 0; transform: translate(-1400px, 130px) scale(1); }
+body[data-esc="E9"] #lap { opacity: 1; transform: translate(610px, 108px) scale(1); }
+body[data-esc="E9"] #cel { opacity: 0; transform: translate(2000px, 112px) scale(1.05); }
+body[data-esc="E10"] #lap { opacity: 0; transform: translate(-1400px, 128px) scale(1); }
+body[data-esc="E11"] #cel { opacity: 0; transform: translate(2000px, 112px) scale(1.05); }
+
+/* ---------- Paneles por escena ---------- */
+.panel { position: absolute; inset: 0; opacity: 0; transition: opacity 0.7s var(--curva); pointer-events: none; }
+body[data-esc="E1"] #p-E1, body[data-esc="E2"] #p-E2, body[data-esc="E3"] #p-E3, body[data-esc="E4"] #p-E4, body[data-esc="E5"] #p-E5,
+body[data-esc="E11"] #p-E11, body[data-esc="E12"] #p-E12, body[data-esc="E13"] #p-E13 { opacity: 1; }
+.in { opacity: 0; transform: translateY(28px); transition: opacity 0.8s var(--curva), transform 0.8s var(--curva); transition-delay: 0s; }
+.panel.vivo .in { opacity: 1; transform: none; transition-delay: var(--d, 0s); }
+.pop { opacity: 0; transform: scale(0.85); transition: opacity 0.6s var(--curva), transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.panel.vivo .pop { opacity: 1; transform: none; transition-delay: var(--d, 0s); }
+
+.ceja { font-size: 26px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--azul); }
+.noche .ceja { color: var(--amarillo); }
+.h1 { font-size: 68px; font-weight: 800; line-height: 1.08; letter-spacing: -1.5px; }
+.fuente { position: absolute; left: 96px; bottom: 34px; width: 1500px; font-size: 19px; line-height: 1.35; color: var(--gris-claro); }
+.noche .fuente { color: #8FA8CC; }
+
+/* E1 gancho */
+#p-E1 { color: var(--blanco); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 22px; }
+#p-E1 .lema { font-size: 40px; font-weight: 600; color: #C9D8EE; }
+#p-E1 .grande { font-size: 210px; font-weight: 800; letter-spacing: -6px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--blanco); }
+#p-E1 .tasa { font-size: 30px; color: #A9C2E6; }
+#p-E1 .golpe { margin-top: 18px; font-size: 64px; font-weight: 800; color: var(--amarillo); }
+#p-E1 .marca { position: absolute; left: 50%; bottom: 120px; margin-left: -260px; width: 520px; display: flex; align-items: center; justify-content: center; gap: 22px; }
+#p-E1 .marca img { width: 120px; height: 120px; object-fit: contain; }
+#p-E1 .marca span { font-size: 84px; font-weight: 800; letter-spacing: -2px; }
+#p-E1.marcado .grupo { opacity: 0.0; transform: translateY(-40px); transition: opacity 0.6s, transform 0.6s; }
+
+/* Contador fijo */
+#contador { position: absolute; right: 56px; top: 36px; display: flex; flex-direction: column; align-items: flex-end; padding: 14px 24px; border-radius: 22px; background: rgba(11, 37, 71, 0.92); color: var(--blanco); box-shadow: 0 12px 30px rgba(0, 20, 50, 0.25); opacity: 0; transform: translateY(-16px); transition: opacity 0.6s, transform 0.6s var(--curva); }
+#contador b { font-size: 40px; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; line-height: 1.05; }
+#contador small { font-size: 15px; color: #A9C2E6; font-weight: 600; }
+body.con-contador #contador { opacity: 1; transform: none; }
+
+/* Mini lienzo BMC */
+#bmc { position: absolute; right: 56px; bottom: 30px; width: 236px; opacity: 0; transition: opacity 0.6s; }
+body.con-bmc #bmc { opacity: 1; }
+#bmc p { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gris-claro); margin-bottom: 6px; text-align: right; }
+#bmc .rejilla { display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: 26px 26px 20px; gap: 3px; padding: 6px; border-radius: 12px; background: rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 1px var(--borde); }
+#bmc .c { border-radius: 4px; background: #DCE6F3; transition: background 0.5s; }
+#bmc .c.on { background: var(--azul); }
+#bmc .nombre { margin-top: 6px; font-size: 16px; font-weight: 700; color: var(--azul); text-align: right; min-height: 22px; }
+body[data-fondo="noche"] #bmc .nombre { color: var(--amarillo); }
+body[data-fondo="noche"] #bmc p { color: #8FA8CC; }
+
+/* Rótulo de las escenas con dispositivos */
+#rot { position: absolute; left: 120px; top: 200px; width: 860px; display: flex; flex-direction: column; gap: 22px; opacity: 0; transition: opacity 0.5s var(--curva), transform 0.5s var(--curva); transform: translateY(20px); }
+#rot.vivo { opacity: 1; transform: none; }
+#rot .paso { display: flex; gap: 10px; }
+#rot .paso span { padding: 8px 18px; border-radius: 999px; font-size: 22px; font-weight: 700; background: #DCE6F3; color: #5B6E8A; }
+#rot .paso span.on { background: var(--azul); color: #fff; }
+#rot .h1 { font-size: 68px; }
+#rot .texto { font-size: 33px; line-height: 1.38; color: var(--gris); }
+#rot .chip { align-self: flex-start; display: flex; gap: 16px; align-items: center; padding: 20px 26px; border-radius: 22px; background: var(--azul-noche); color: var(--blanco); font-size: 27px; line-height: 1.35; max-width: 860px; }
+#rot .chip svg { flex: none; }
+#rot .chip:empty { display: none; }
+body[data-esc="E9"] #rot { left: 96px; top: 160px; width: 470px; }
+body[data-esc="E9"] #rot .h1 { font-size: 58px; }
+body[data-esc="E9"] #rot .texto { font-size: 29px; }
+body[data-esc="E9"] #rot .chip { font-size: 24px; }
+body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
+#rot .paso span { white-space: nowrap; }
+
+/* E2 segmentos */
+#p-E2 .tit { position: absolute; left: 150px; top: 70px; }
+#p-E2 .etq { position: absolute; top: 905px; display: flex; flex-direction: column; gap: 4px; }
+#p-E2 .etq b { font-size: 30px; }
+#p-E2 .etq span { font-size: 24px; line-height: 1.3; color: var(--gris); }
+#p-E2 .caja { position: absolute; left: 1480px; top: 290px; width: 360px; height: 575px; border-radius: 28px; background: var(--azul); color: var(--blanco); padding: 40px 34px; display: flex; flex-direction: column; justify-content: space-between; }
+#p-E2 .caja img { width: 240px; }
+#p-E2 .caja .n { font-size: 30px; font-weight: 800; line-height: 1.25; }
+#p-E2 .caja .s { font-size: 24px; line-height: 1.35; color: #DCE7F7; }
+
+/* E3 problema */
+#p-E3 .tit { position: absolute; left: 96px; top: 66px; width: 1340px; display: flex; flex-direction: column; gap: 12px; }
+#p-E3 .tit .h1 { color: var(--blanco); font-size: 56px; }
+#p-E3 .bajo { position: absolute; left: 96px; top: 890px; font-size: 22px; color: #A9C2E6; }
+#p-E3 .cifras { position: absolute; left: 1140px; top: 236px; width: 700px; display: flex; flex-direction: column; gap: 18px; }
+#p-E3 .cifra { border-top: 4px solid var(--amarillo); padding-top: 16px; color: var(--blanco); }
+#p-E3 .cifra .n { font-size: 84px; font-weight: 800; line-height: 1; letter-spacing: -2px; }
+#p-E3 .cifra .d { margin-top: 6px; font-size: 25px; line-height: 1.35; color: #C9D8EE; }
+#p-E3 .barras { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+#p-E3 .barra { height: 16px; border-radius: 8px; background: var(--amarillo); width: 0; transition: width 2.2s var(--curva); }
+#p-E3 .barra.b22 { background: #6F8DB8; }
+#p-E3.vivo .barra.b22 { width: 8.4%; transition-delay: 1.4s; }
+#p-E3.vivo .barra.b25 { width: 71%; transition-delay: 1.8s; }
+#p-E3 .barras small { font-size: 18px; color: #A9C2E6; }
+
+/* E4 consecuencias */
+#p-E4 .tit { position: absolute; left: 96px; top: 100px; display: flex; flex-direction: column; gap: 12px; }
+#p-E4 .tarjetas { position: absolute; left: 96px; top: 300px; width: 1728px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+#p-E4 .t { height: 560px; border-radius: 30px; background: var(--blanco); box-shadow: 0 0 0 2px var(--borde), 0 24px 50px rgba(0, 40, 90, 0.08); padding: 44px; display: flex; flex-direction: column; gap: 18px; }
+#p-E4 .t h3 { font-size: 42px; font-weight: 800; }
+#p-E4 .t .n { font-size: 84px; font-weight: 800; letter-spacing: -2px; line-height: 1; color: var(--azul); }
+#p-E4 .t .n.rojo { color: var(--rojo); }
+#p-E4 .t p { font-size: 31px; line-height: 1.4; color: var(--gris); }
+
+/* E5 causa raíz */
+#p-E5 { color: #14213D; }
+#p-E5 .tit { position: absolute; left: 120px; top: 110px; width: 1680px; display: flex; flex-direction: column; gap: 18px; }
+#p-E5 .ceja { color: #3A2A00; }
+#p-E5 .h1 { font-size: 76px; }
+#p-E5 .linea { position: absolute; left: 120px; top: 560px; width: 1680px; height: 220px; }
+#p-E5 .riel { position: absolute; left: 0; right: 0; top: 80px; height: 22px; border-radius: 11px; background: rgba(20, 33, 61, 0.18); }
+#p-E5 .zona { position: absolute; left: 0; top: 70px; height: 42px; width: 0; border-radius: 21px; background: var(--azul); transition: width 2s var(--curva); }
+#p-E5.vivo .zona { width: 52%; transition-delay: 1.2s; }
+#p-E5 .zona-txt { position: absolute; left: 0; top: 0; width: 52%; text-align: center; font-size: 30px; font-weight: 800; color: var(--azul-noche); }
+#p-E5 .hito { position: absolute; top: 128px; font-size: 26px; font-weight: 700; }
+#p-E5 .hito small { display: block; font-size: 22px; font-weight: 600; color: #3A2A00; }
+#p-E5 .marca31 { position: absolute; left: 52%; top: 56px; width: 6px; height: 70px; margin-left: -3px; border-radius: 3px; background: var(--rojo); }
+#p-E5 .dato { position: absolute; left: 120px; top: 840px; display: flex; gap: 22px; align-items: baseline; }
+#p-E5 .dato b { font-size: 84px; letter-spacing: -2px; }
+#p-E5 .dato span { font-size: 32px; }
+#p-E5 .fuente { color: #3A2A00; }
+
+/* E11 lienzo */
+#p-E11 .tit { position: absolute; left: 96px; top: 64px; display: flex; flex-direction: column; gap: 10px; }
+#p-E11 .lienzo { position: absolute; left: 96px; top: 230px; width: 1728px; height: 790px; display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: 1fr 1fr 0.72fr; gap: 14px; }
+#p-E11 .b { border-radius: 20px; background: var(--blanco); box-shadow: 0 0 0 2px var(--borde); padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+#p-E11 .b h4 { font-size: 21px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--azul); }
+#p-E11 .b p { font-size: 25px; line-height: 1.32; color: #2E3E58; }
+#p-E11 .b.pv { background: var(--azul); box-shadow: none; }
+#p-E11 .b.pv h4 { color: var(--amarillo); }
+#p-E11 .b.pv p { color: var(--blanco); font-size: 29px; font-weight: 700; }
+#p-E11 .b.val { background: var(--azul-claro); box-shadow: 0 0 0 2px #B9D3F0; }
+
+/* E12 mejor solución */
+#p-E12 .tit { position: absolute; left: 96px; top: 64px; display: flex; flex-direction: column; gap: 10px; }
+#p-E12 .tabla { position: absolute; left: 96px; top: 230px; width: 1728px; display: flex; flex-direction: column; gap: 10px; }
+#p-E12 .fila { display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr 1fr; gap: 10px; }
+#p-E12 .fila > div { padding: 18px 22px; border-radius: 14px; background: var(--blanco); box-shadow: 0 0 0 1px var(--borde); font-size: 25px; line-height: 1.3; color: #2E3E58; }
+#p-E12 .fila.cab > div { background: transparent; box-shadow: none; font-size: 19px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gris-claro); padding: 4px 22px; }
+#p-E12 .fila.nos > div { background: var(--azul); color: var(--blanco); font-weight: 700; box-shadow: none; font-size: 27px; }
+#p-E12 .fila .no { color: var(--rojo); font-weight: 700; }
+#p-E12 .golpe { position: absolute; left: 96px; top: 690px; width: 1728px; display: flex; align-items: center; gap: 30px; padding: 30px 40px; border-radius: 26px; background: var(--azul-noche); color: var(--blanco); }
+#p-E12 .golpe b.n { font-size: 74px; color: var(--amarillo); letter-spacing: -2px; white-space: nowrap; }
+#p-E12 .golpe p { font-size: 30px; line-height: 1.35; }
+
+/* E13 cierre */
+#p-E13 { color: var(--blanco); }
+#p-E13 img.pacaso { position: absolute; right: 120px; top: 170px; width: 600px; height: 600px; object-fit: contain; }
+#p-E13 .txt { position: absolute; left: 120px; top: 200px; width: 1080px; display: flex; flex-direction: column; gap: 30px; }
+#p-E13 .h1 { font-size: 100px; letter-spacing: -2.5px; line-height: 1.02; }
+#p-E13 .sub { font-size: 40px; line-height: 1.3; color: #DCE7F7; }
+#p-E13 .final { margin-top: 20px; display: flex; flex-direction: column; gap: 6px; }
+#p-E13 .final b { font-size: 96px; letter-spacing: -2px; color: var(--amarillo); font-variant-numeric: tabular-nums; line-height: 1; }
+#p-E13 .final span { font-size: 30px; color: #C9D8EE; }
+#p-E13 .pie { position: absolute; left: 120px; bottom: 60px; display: flex; align-items: center; gap: 28px; font-size: 26px; color: #A9C2E6; }
+#p-E13 .pie img { height: 54px; }
+
+/* Aviso grande del escenario */
+.aviso { position: absolute; z-index: 40; display: flex; align-items: center; gap: 20px; padding: 24px 32px; border-radius: 24px; background: var(--azul-noche); color: var(--blanco); font-size: 32px; font-weight: 700; line-height: 1.25; box-shadow: 0 24px 60px rgba(0, 20, 50, 0.35); opacity: 0; transform: translateY(24px) scale(0.96); transition: opacity 0.5s var(--curva), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.aviso.vivo { opacity: 1; transform: none; }
+.aviso svg { flex: none; }
+
+/* Toque */
+.toque { position: absolute; width: 74px; height: 74px; margin: -37px 0 0 -37px; border-radius: 50%; background: rgba(249, 168, 37, 0.35); box-shadow: 0 0 0 4px rgba(249, 168, 37, 0.95); pointer-events: none; z-index: 50; animation: toque 0.75s var(--curva) forwards; }
+@keyframes toque { 0% { transform: scale(0.4); opacity: 0; } 25% { opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
+</style>
+</head>
+<body data-esc="E0" data-fondo="noche">
+<div class="fondo" id="f-noche"></div>
+<div class="fondo" id="f-claro"></div>
+<div class="fondo" id="f-amarillo"></div>
+<div class="fondo" id="f-cierre"></div>
+
+<!-- E1 · Gancho -->
+<section class="panel noche" id="p-E1">
+  <div class="grupo" style="display:flex;flex-direction:column;align-items:center;gap:22px">
+    <p class="lema in" style="--d:0.2s">Mientras dura este pitch, Caja Piura da por perdidos</p>
+    <p class="grande in" style="--d:0.4s" data-contador>S/ 0.00</p>
+    <p class="tasa in" style="--d:1.2s">S/ 31.7 por segundo: el promedio de créditos castigados en 2025</p>
+    <p class="golpe in" style="--d:4.5s">En 3 minutos: S/ 5,700.</p>
+  </div>
+  <div class="marca pop" style="--d:8.6s"><img src="/pareas/pareas.png" alt=""><span>PAREAS</span></div>
+  <p class="fuente" style="color:#8FA8CC">S/ 999.2 millones castigados en 2025 ÷ 365 días. Fuente: Microfinanzas.pe con datos de la SBS.</p>
+</section>
+
+<!-- E2 · Segmentos -->
+<section class="panel" id="p-E2">
+  <div class="tit in" style="--d:0.2s;display:flex;flex-direction:column;gap:10px"><p class="ceja">Segmentos de clientes</p><p class="h1" data-rot="E2">¿A quién le duele?</p></div>
+  <div class="etq in" style="--d:0.9s;left:150px;width:400px"><b>El emprendedor</b><span>9 de cada 10 mypes de Piura son informales: un mal mes y ya está atrasado.</span></div>
+  <div class="etq in" style="--d:5.5s;left:560px;width:880px"><b>El gestor de cobranza</b><span>Llama, visita y se expone. En zonas con extorsión arriesga hasta su seguridad.</span></div>
+  <div class="caja in" style="--d:10.5s"><img src="/caja/logo-caja-piura-blanco.png" alt=""><p class="n">La Caja</p><p class="s">Cada cliente que se rinde es un crédito castigado y un emprendedor que termina en el gota a gota.</p></div>
+</section>
+
+<!-- E3 · Problema -->
+<section class="panel noche" id="p-E3">
+  <div class="tit in" style="--d:0.1s"><p class="ceja">El problema · cuánto cuesta</p><p class="h1" data-rot="E3">La mora le cuesta a Caja Piura millones cada día</p></div>
+  <div class="cifras">
+    <div class="cifra in" style="--d:0.8s"><p class="n">S/ 999 M</p><p class="d">castigados en 2025: <b style="color:#fff">S/ 2.7 millones cada día</b></p>
+      <div class="barras"><small>2022 · S/ 118 M</small><div class="barra b22"></div><small>2025 · S/ 999 M</small><div class="barra b25"></div></div></div>
+    <div class="cifra in" style="--d:9s"><p class="n">24×</p><p class="d">S/ 727.6 M en provisiones al cierre de 2024: 24 veces su utilidad de ese año (S/ 30.1 M)</p></div>
+    <div class="cifra in" style="--d:15.5s"><p class="n">9.53 %</p><p class="d">de morosidad en 2025: 1.6 veces la del sistema de cajas municipales (menos de 6 %)</p></div>
+  </div>
+  <p class="bajo in" style="--d:1.2s">Panel del gestor en PAREAS: así se ve una cartera en mora</p>
+  <p class="fuente">Fuentes: Microfinanzas.pe con datos de la SBS (castigos 2022–2025 y morosidad); informe de clasificación de riesgo publicado por la SBS, abril de 2025 (provisiones y utilidad 2024).</p>
+</section>
+
+<!-- E4 · Consecuencias -->
+<section class="panel" id="p-E4">
+  <div class="tit in" style="--d:0.1s"><p class="ceja">Y no solo cuesta dinero</p><p class="h1" data-rot="E4">Reputación, personas e industria</p></div>
+  <div class="tarjetas">
+    <div class="t in" style="--d:0.6s">
+      <svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#C9182B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4.5"/><path d="M12 17.4v.1"/></svg>
+      <h3>Reputación</h3><p class="n rojo">33.1 UIT</p><p>Multa de Indecopi a una caja municipal por cobranza abusiva. Cobrar mal también cuesta.</p></div>
+    <div class="t in" style="--d:6.5s">
+      <svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#0047AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 1.9 5 4.9"/></svg>
+      <h3>Personas</h3><p class="n">Extorsión</p><p>Gestores expuestos en la calle: hay microfinancieras que evalúan cerrar agencias para proteger a su personal.</p></div>
+    <div class="t in" style="--d:12.5s">
+      <svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#0047AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>
+      <h3>Industria</h3><p class="n">250 agencias</p><p>en riesgo de cierre. Y el gota a gota ya mueve más de S/ 4,000 millones con 2 millones de deudores.</p></div>
+  </div>
+  <p class="fuente">Fuentes: Indecopi vía prensa (Caja Municipal de Crédito Popular de Lima, 33.1 UIT); Fepcmac, declaraciones de su presidente (octubre de 2025, Infobae y Exitosa).</p>
+</section>
+
+<!-- E5 · Causa raíz -->
+<section class="panel" id="p-E5">
+  <div class="tit in" style="--d:0.1s"><p class="ceja">La causa de fondo</p><p class="h1" data-rot="E5">Nadie deja de pagar porque quiera. Deja de pagar porque nadie lo acompañó a tiempo.</p></div>
+  <div class="linea in" style="--d:0.8s">
+    <p class="zona-txt">Del día 1 al 30: aquí se gana la batalla</p>
+    <div class="riel"></div><div class="zona"></div><div class="marca31"></div>
+    <p class="hito" style="left:0">Día 1<small>primer atraso</small></p>
+    <p class="hito" style="left:52%;margin-left:-60px;color:#C9182B">Día 31<small>la SBS lo califica deficiente</small></p>
+    <p class="hito" style="right:0;text-align:right">Castigo<small>crédito perdido</small></p>
+  </div>
+  <div class="dato in" style="--d:6s"><b>41 %</b><span>de los peruanos no tiene capacidades financieras básicas</span></div>
+  <p class="fuente">Fuentes: SBS, Encuesta Nacional de Capacidades Financieras 2022; SBS, Reglamento para la Evaluación y Clasificación del Deudor (Res. 11356-2008).</p>
+</section>
+
+<!-- E11 · Lienzo -->
+<section class="panel" id="p-E11">
+  <div class="tit in" style="--d:0.1s"><p class="ceja">Business Model Canvas</p><p class="h1" data-rot="E11">El modelo en una página</p></div>
+  <div class="lienzo">
+    <div class="b in" style="--d:1.0s;grid-column:span 2;grid-row:span 2"><h4>Socios clave</h4><p>Caja Piura: core, app y gestores</p><p>SBS e Indecopi: reglas de cobranza</p><p>Proveedor de IA y nube</p></div>
+    <div class="b in" style="--d:2.2s;grid-column:span 2"><h4>Actividades clave</h4><p>Avisar antes de vencer y segmentar por score</p></div>
+    <div class="b pv in" style="--d:0.4s;grid-column:span 2;grid-row:span 2"><h4>Propuesta de valor</h4><p>Actuar en los primeros 30 días: recordar, ordenar y rescatar, con humor y sin hostigar.</p></div>
+    <div class="b in" style="--d:3.4s;grid-column:span 2"><h4>Relación</h4><p>De cobrar a acompañar: juego, puntos y Pareas</p></div>
+    <div class="b in" style="--d:4.6s;grid-column:span 2;grid-row:span 2"><h4>Segmentos</h4><p>Mypes con 1 a 30 días de atraso</p><p>Gestores de cobranza</p><p>Caja Piura</p></div>
+    <div class="b in" style="--d:5.8s;grid-column:span 2"><h4>Recursos clave</h4><p>Datos de cartera e identidad de Pareas</p></div>
+    <div class="b in" style="--d:7.0s;grid-column:span 2"><h4>Canales</h4><p>App de la Caja, avisos, chatbot y QR</p></div>
+    <div class="b in" style="--d:8.4s;grid-column:span 5"><h4>Estructura de costos</h4><p>Desarrollo e integración con el core; nube e IA por consulta: centavos por cliente.</p></div>
+    <div class="b val in" style="--d:9.8s;grid-column:span 5"><h4>Valor para la Caja</h4><p>Menos castigos y provisiones, menos llamadas y visitas, y clientes que se quedan.</p></div>
+  </div>
+</section>
+
+<!-- E12 · Mejor solución -->
+<section class="panel" id="p-E12">
+  <div class="tit in" style="--d:0.1s"><p class="ceja">Por qué somos la mejor solución</p><p class="h1" data-rot="E12">Eficaz donde las demás llegan tarde</p></div>
+  <div class="tabla">
+    <div class="fila cab in" style="--d:0.4s"><div>Alternativa</div><div>¿Llega a tiempo?</div><div>Costo</div><div>Relación</div><div>¿Ataca la causa?</div></div>
+    <div class="fila in" style="--d:1.2s"><div><b>Call center y visitas</b></div><div>Tarde: ya está en mora</div><div>Alto: horas de gestor</div><div>Riesgo de multa</div><div class="no">No</div></div>
+    <div class="fila in" style="--d:3.2s"><div><b>SMS genérico</b></div><div>Sí, si llega antes</div><div>Bajo</div><div>Neutra</div><div class="no">En parte: avisa, pero no ordena ni rescata</div></div>
+    <div class="fila in" style="--d:5.0s"><div><b>Reprogramar</b></div><div>Tarde</div><div>Posterga la pérdida</div><div>Buena</div><div class="no">No: 13.8 % ya reprogramado</div></div>
+    <div class="fila nos in" style="--d:7.0s"><div>PAREAS</div><div>Antes de vencer y del día 1 al 30</div><div>Centavos por cliente</div><div>Humor, sin hostigar</div><div>Sí: educa y ordena</div></div>
+  </div>
+  <div class="golpe in" style="--d:9.5s"><b class="n">1 % = S/ 10 M</b><p>Si PAREAS evitara solo el 1 % de lo castigado en 2025, la Caja retendría cerca de S/ 10 millones al año: un tercio de su utilidad de 2024.</p></div>
+  <p class="fuente" style="bottom:20px">Escenario ilustrativo: 1 % de S/ 999.2 M castigados en 2025 frente a S/ 30.1 M de utilidad 2024. Cartera reprogramada a dic. 2024: Moody's Local.</p>
+</section>
+
+<!-- E13 · Cierre -->
+<section class="panel" id="p-E13">
+  <img class="pacaso pop" style="--d:0.3s" src="/pareas/pareas.png" alt="">
+  <div class="txt">
+    <p class="ceja in" style="--d:0.1s;color:#F9A825">Para cerrar</p>
+    <p class="h1 in" style="--d:0.3s" data-rot="E13">El pacaso no ataca: avisa con la cola.</p>
+    <p class="sub in" style="--d:2.2s">PAREAS avisa a tiempo, para que ningún emprendedor piurano llegue al día 31.</p>
+    <div class="final in" style="--d:5.5s"><b data-contador>S/ 0.00</b><span>Esto dio por perdido la Caja mientras hablábamos.</span></div>
+  </div>
+  <div class="pie in" style="--d:1.2s"><img src="/caja/logo-caja-piura-blanco.png" alt=""><span>PAREAS · Equipo Novax · Hecho en Piura, para Piura</span></div>
+</section>
+
+<!-- Rótulo de las escenas con la plataforma -->
+<div id="rot">
+  <div class="paso"><span data-paso="1">1 · Recordar</span><span data-paso="2">2 · Ordenar</span><span data-paso="3">3 · Rescatar</span></div>
+  <p class="ceja" id="rot-ceja"></p>
+  <p class="h1" id="rot-tit"></p>
+  <p class="texto" id="rot-txt"></p>
+  <div class="chip" id="rot-chip"></div>
+</div>
+
+<div class="disp" id="lap"><div class="barra"><i></i><i></i><i></i><span>Caja Piura · PAREAS · Panel del gestor</span></div><iframe id="app-lap" title="Panel del gestor"></iframe></div>
+<div class="disp" id="cel"><div class="isla"></div><iframe id="app-cel" title="App del cliente"></iframe></div>
+
+<div id="contador"><b data-contador>S/ 0.00</b><small>dados por perdidos desde que empezamos</small></div>
+<div id="bmc"><p>Business Model Canvas</p>
+  <div class="rejilla">
+    <div class="c" data-b="socios" style="grid-row:span 2"></div><div class="c" data-b="actividades"></div><div class="c" data-b="propuesta" style="grid-row:span 2"></div><div class="c" data-b="relacion"></div><div class="c" data-b="segmentos" style="grid-row:span 2"></div>
+    <div class="c" data-b="recursos"></div><div class="c" data-b="canales"></div>
+    <div class="c" data-b="costos" style="grid-column:span 3"></div><div class="c" data-b="valor" style="grid-column:span 2"></div>
+  </div>
+  <p class="nombre" id="bmc-nombre"></p>
+</div>
+
+<script>
+// Tasa del contador: S/ 999.2 millones castigados en 2025 ÷ (365 × 86,400 s) = S/ 31.68 por segundo
+const TASA = 999.2e6 / (365 * 86400);
+const fmt = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+let t0 = null;
+function tic() {
+  const s = t0 === null ? 0 : (performance.now() - t0) / 1000;
+  const v = "S/ " + fmt.format(Math.min(s, 180) * TASA);
+  document.querySelectorAll("[data-contador]").forEach((el) => { if (el.textContent !== v) el.textContent = v; });
+  requestAnimationFrame(tic);
+}
+requestAnimationFrame(tic);
+
+const FONDO = { E1: "noche", E2: "claro", E3: "noche", E4: "claro", E5: "amarillo", E6: "claro", E7: "claro", E8: "claro", E9: "claro", E10: "claro", E11: "claro", E12: "claro", E13: "cierre" };
+const BMC = {
+  E2: [["segmentos"], "Segmentos de clientes"],
+  E3: [["costos", "valor"], "Lo que cuesta no actuar"],
+  E4: [["costos", "valor"], "Lo que cuesta no actuar"],
+  E5: [["propuesta", "segmentos"], "El dolor de fondo"],
+  E6: [["propuesta", "canales"], "Propuesta de valor · Canales"],
+  E7: [["propuesta", "relacion"], "Propuesta de valor · Relación"],
+  E8: [["canales", "recursos"], "Canales · Recursos clave"],
+  E9: [["actividades", "socios"], "Actividades clave · Socios"],
+  E10: [["valor", "relacion"], "Valor para la Caja · Relación"],
+  E12: [["propuesta", "costos"], "Propuesta de valor · Costos"],
+};
+// Rótulos de las escenas en las que se ve la plataforma (se reemplazan con el guion final)
+const ROT = window.ROTULOS || {};
+const IC_DATO = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F9A825" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3Z"/></svg>';
+
+function escena(id) {
+  document.body.dataset.esc = id;
+  document.body.dataset.fondo = FONDO[id] || "claro";
+  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("vivo", p.id === "p-" + id));
+  document.body.classList.toggle("con-contador", !["E0", "E1", "E13"].includes(id));
+  const b = BMC[id];
+  document.body.classList.toggle("con-bmc", !!b);
+  document.querySelectorAll("#bmc .c").forEach((c) => c.classList.toggle("on", !!b && b[0].includes(c.dataset.b)));
+  document.getElementById("bmc-nombre").textContent = b ? b[1] : "";
+  const r = ROT[id], rot = document.getElementById("rot");
+  if (r) {
+    rot.classList.remove("vivo");
+    setTimeout(() => {
+      document.getElementById("rot-ceja").textContent = r.ceja || "";
+      document.getElementById("rot-tit").textContent = r.titulo || "";
+      document.getElementById("rot-txt").textContent = r.texto || "";
+      document.getElementById("rot-chip").innerHTML = r.chip ? IC_DATO + "<span>" + r.chip + "</span>" : "";
+      document.querySelectorAll("#rot [data-paso]").forEach((s) => s.classList.toggle("on", String(r.paso) === s.dataset.paso));
+      document.querySelector("#rot .paso").style.display = r.paso ? "flex" : "none";
+      rot.classList.add("vivo");
+    }, 380);
+  } else rot.classList.remove("vivo");
+}
+function marcar() { document.getElementById("p-E1").classList.add("marcado"); }
+
+// ---------- Utilidades sobre la app dentro de los marcos ----------
+const marco = (id) => document.getElementById(id);
+function buscar(id, sel, texto) {
+  const doc = marco(id).contentDocument; if (!doc) return null;
+  const t = (texto || "").toLowerCase();
+  const visibles = [...doc.querySelectorAll(sel)].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; })
+    .filter((el) => !t || ((el.textContent || "") + " " + (el.getAttribute("aria-label") || "")).toLowerCase().includes(t));
+  // El elemento más pequeño que coincide (el más específico)
+  const area = (el) => { const r = el.getBoundingClientRect(); return r.width * r.height; };
+  return visibles.sort((a, b) => area(a) - area(b))[0] || null;
+}
+function aEscenario(id, el) {
+  const f = marco(id), rf = f.getBoundingClientRect(), s = rf.width / f.offsetWidth, r = el.getBoundingClientRect();
+  return { x: rf.left + (r.left + r.width / 2) * s, y: rf.top + (r.top + r.height / 2) * s };
+}
+function toque(id, sel, texto) {
+  const el = buscar(id, sel, texto); if (!el) return false;
+  const p = aEscenario(id, el), d = document.createElement("div");
+  d.className = "toque"; d.style.left = p.x + "px"; d.style.top = p.y + "px";
+  document.body.appendChild(d); setTimeout(() => d.remove(), 900);
+  setTimeout(() => el.click(), 260);
+  return true;
+}
+function desplazar(id, sel, texto, margen = 90, ms = 1400) {
+  const w = marco(id).contentWindow, el = sel ? buscar(id, sel, texto) : null;
+  const ini = w.scrollY, fin = el ? Math.max(0, ini + el.getBoundingClientRect().top - margen) : margen;
+  const t1 = performance.now();
+  return new Promise((ok) => {
+    (function paso(now) {
+      const k = Math.min(1, (now - t1) / ms), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      w.scrollTo(0, ini + (fin - ini) * e);
+      if (k < 1) requestAnimationFrame(paso); else ok(sel ? !!el : true);
+    })(t1);
+  });
+}
+// Oculta las herramientas de prueba de la app (Reiniciar, Pasar un día, Volver a enviar)
+function limpiar(id) {
+  const doc = marco(id).contentDocument; if (!doc) return;
+  const ocultar = () => {
+    doc.querySelectorAll("button[aria-label^='Reiniciar']").forEach((b) => (b.style.display = "none"));
+    doc.querySelectorAll("p").forEach((p) => { if (/^Herramientas de prueba/i.test(p.textContent.trim()) && p.parentElement) p.parentElement.style.display = "none"; });
+    doc.querySelectorAll("button").forEach((b) => { if (b.textContent.trim() === "Volver a enviar") b.style.display = "none"; });
+  };
+  ocultar();
+  if (!doc.__observado) { new MutationObserver(ocultar).observe(doc.body, { childList: true, subtree: true }); doc.__observado = true; }
+}
+function aviso(texto, x, y, ms = 3400) {
+  const d = document.createElement("div");
+  d.className = "aviso"; d.style.left = x + "px"; d.style.top = y + "px";
+  d.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#F9A825" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="m7.5 12.3 3 3 6-6.3"/></svg><span></span>';
+  d.querySelector("span").textContent = texto;
+  document.body.appendChild(d);
+  requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("vivo")));
+  setTimeout(() => { d.classList.remove("vivo"); setTimeout(() => d.remove(), 700); }, ms);
+}
+const textoDe = (id, sel, texto) => { const el = buscar(id, sel, texto); return el ? el.textContent.trim() : ""; };
+window.E = { escena, aviso, textoDe, marcar, toque, desplazar, limpiar, buscar: (id, sel, texto) => !!buscar(id, sel, texto), iniciar: () => { t0 = performance.now(); } };
+</script>
+</body>
+</html>
