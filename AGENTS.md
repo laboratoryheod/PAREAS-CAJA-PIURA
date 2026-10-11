@@ -24,7 +24,6 @@ Next.js 15 (App Router) + TypeScript 5 + Tailwind 3 + motion. SQLite local (`bet
 - `lib/excel-cartera.ts`: formato del Excel de cartera (la lógica de importación está en `servicio.ts` → `importarCartera`).
 - `lib/db/`: esquema, seed y repositorio (interfaz `Repo` + implementación SQLite).
 - `lib/asistente/`: blindaje (`guardia.ts`), FAQ, reglas y HECHOS para la IA (`prompt.ts`), OpenAI (`openai.ts`) y Gemini (`gemini.ts`).
-- `components/BarraCaja.tsx`: barra superior institucional (logo de la Caja y menú a la izquierda; PAREAS y el usuario a la derecha; línea naranja).
 - `components/cliente/ChatPareas.tsx`: burbuja y panel del chatbot.
 - `components/iconos.tsx`: **iconos propios** (no usar emojis ni librerías de iconos en la app).
 - `components/ui/`: componentes copiados de cult-ui (MIT), ver su README.

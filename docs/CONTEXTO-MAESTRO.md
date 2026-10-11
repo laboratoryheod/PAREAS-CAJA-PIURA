@@ -255,7 +255,7 @@ Rendimiento:
 9. Se optimizó el rendimiento de `/cliente` y `/banco`.
 10. Se agregaron las notificaciones del cliente y la barra con logo en el gestor.
 11. El gestor pasó a tener sidebar (Resumen, Cartera y Modo Rescate). El gráfico circular reemplazó al feed y llegó el Modo Rescate masivo por puntos. El Modo Rescate quedó en azul y blanco con icono de billete, y se corrigió la superposición de las notificaciones.
-14. Nombre de la app: **PAREAS**. Barra institucional de la Caja (logo a la izquierda, menú ☰, píldoras PAREAS/usuario, línea naranja) en el cliente y el gestor. Mis Finanzas agrega el ámbito "Otros". Chatbot de Pareas con OpenAI y FAQ de vencimiento de cuota y Modo Rescate.
+14. Nombre de la app: **PAREAS**. (Se probó una barra con la distribución institucional de la Caja y al usuario no le gustó: se mantiene la barra anterior.) Mis Finanzas agrega el ámbito "Otros". Chatbot de Pareas con OpenAI y FAQ de vencimiento de cuota y Modo Rescate.
 13. Ronda de QA: 12 bugs corregidos (rutas de prueba abiertas, ingreso único que se repetía, trivia, fechas de gastos, montos con miles, migración `fecha_demo`, Escape, áreas táctiles, textos del asistente y del detalle del gestor).
 12. Modo Rescate masivo con "score mínimo o más". "Mi plan" se reemplazó por **Mis Finanzas**. Excel de cartera para importar y exportar (botones y scripts). La fecha real de Perú reemplazó a la fecha fija. Optimización de carga (fuente local, landing sin blur, statements preparados, índices, polling liviano) y pantalla de carga con Pareas.
 

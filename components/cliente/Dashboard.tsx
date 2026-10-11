@@ -8,8 +8,7 @@ import { usarPolling } from "@/lib/usar-polling";
 import { MOSTRAR_HERRAMIENTAS_PRUEBA } from "@/lib/config";
 import BotonReinicio, { reiniciarTodo } from "@/components/BotonReinicio";
 import { Dock, DockCard } from "@/components/ui/dock";
-import { IcInicio, IcTarjeta, IcBilletera, IcMando, IcBurbuja, IcReloj, IcReiniciar, IcAtras } from "@/components/iconos";
-import { BarraCaja } from "@/components/BarraCaja";
+import { IcInicio, IcTarjeta, IcBilletera, IcMando, IcBurbuja, IcReloj, IcReiniciar } from "@/components/iconos";
 import { APP_NOMBRE } from "@/lib/config";
 import { BurbujaChat, usarConversacion } from "./ChatPareas";
 import dynamic from "next/dynamic";
@@ -38,7 +37,6 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
   const [progreso, setProgreso] = useState<ProgresoTrivia | null>(inicial.progreso);
   const [vista, setVista] = useState<Vista>(vistaInicial);
   const [error, setError] = useState("");
-  const [menu, setMenu] = useState(false);
   const [chatAbierto, setChatAbierto] = useState(false);
   const chat = usarConversacion(inicial.sit);
 
@@ -71,35 +69,24 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
     { v: "trivia", e: "Juego", I: IcMando, ok: true },
     { v: "asistente", e: "Pareas", I: IcBurbuja, ok: true },
   ];
-  const irDesdeMenu = (v: Vista) => { setMenu(false); if (v === "asistente") setChatAbierto(true); else irA(v); };
 
   return (
     <main className="min-h-screen pb-36 text-[#1C1C1E]">
-      {/* Barra superior con la distribución de Caja Piura: logo y menú a la izquierda; PAREAS y el usuario a la derecha */}
-      <BarraCaja pagina={APP_NOMBRE} usuario={sit.cliente.nombre} onMenu={() => setMenu((x) => !x)} menuAbierto={menu} ancho="max-w-5xl">
-        <Notificaciones clienteId={clienteId} firma={`${sit.fechaHoy}|${sit.estado}|${sit.score}|${sit.regalo?.id ?? 0}|${sit.propuestaActiva?.pagos.filter((x) => x.pagado).length ?? -1}|${progreso?.respondidas ?? 0}`} onAccion={(a) => irA(a)} />
-        <BotonReinicio claro />
-        <Link href="/" className="flex min-h-[44px] items-center px-1 text-[16px] text-white/90 hover:text-white max-sm:hidden">Salir</Link>
-      </BarraCaja>
-
-      {/* Menú de secciones (botón ☰) */}
-      <AnimatePresence>
-        {menu && (
-          <>
-            <motion.div className="fixed inset-0 z-[28] bg-black/20" onClick={() => setMenu(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-            <motion.nav aria-label="Menú" className="fixed left-3 top-[70px] z-[29] w-[min(300px,calc(100vw-24px))] overflow-hidden rounded-[22px] bg-white p-2 shadow-[0_20px_50px_rgba(0,30,80,0.3)] md:left-[max(12px,calc(50%-500px))]"
-              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              onKeyDown={(e) => { if (e.key === "Escape") setMenu(false); }}>
-              {ITEMS.filter((x) => x.ok).map((x) => (
-                <button key={x.e} onClick={() => irDesdeMenu(x.v)} className={`flex min-h-[48px] w-full items-center gap-3 rounded-xl px-3 text-left text-[16px] font-semibold ${vista === x.v ? "bg-[#EAF2FC] text-caja" : "text-[#1C1C1E] hover:bg-black/[0.04]"}`}>
-                  <x.I tam={20} className="text-caja-medio" />{x.v === "asistente" ? "Chat con Pareas" : x.v === "trivia" ? "Juego del día" : x.v === "finanzas" ? "Mis Finanzas" : x.e}
-                </button>
-              ))}
-              <Link href="/" className="mt-1 flex min-h-[48px] items-center gap-3 rounded-xl border-t border-black/5 px-3 text-[16px] font-semibold text-neutral-600 hover:bg-black/[0.04]"><IcAtras tam={20} />Salir</Link>
-            </motion.nav>
-          </>
-        )}
-      </AnimatePresence>
+      {/* barra superior estilo iOS */}
+      <header className="sticky top-0 z-30 bg-[#00529B] text-white shadow-[0_1px_0_rgba(0,0,0,0.08)]">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
+          <Link href="/" className="flex min-h-[44px] items-center gap-2 text-[17px] font-semibold tracking-[0.02em]">
+            <span className="relative h-[34px] w-[34px] overflow-hidden rounded-[9px] bg-white"><Image src="/pareas/pareas.png" alt="" fill sizes="34px" className="object-contain p-0.5" /></span><span className="max-sm:hidden">{APP_NOMBRE}</span>
+          </Link>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Notificaciones clienteId={clienteId} firma={`${sit.fechaHoy}|${sit.estado}|${sit.score}|${sit.regalo?.id ?? 0}|${sit.propuestaActiva?.pagos.filter((x) => x.pagado).length ?? -1}|${progreso?.respondidas ?? 0}`} onAccion={(a) => irA(a)} />
+            <BotonReinicio claro />
+            <Image src="/caja/logo-caja-piura-blanco.png" alt="Caja Piura" width={110} height={26} className="h-[24px] w-auto max-[400px]:hidden" priority />
+            <span className="h-6 w-px max-[400px]:hidden bg-white/25" aria-hidden />
+            <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-white/90 hover:text-white">Salir</Link>
+          </div>
+        </div>
+      </header>
 
       <div className="mx-auto max-w-5xl px-4 pt-3">
         <AnimatePresence mode="wait" initial={false}>
