@@ -3,7 +3,7 @@
 Módulo web mobile-first (Next.js + TypeScript + Tailwind) para integrarse en la app de Caja Piura, con **dos interfaces**: `/cliente` y `/banco`. Incluye una cartera de ejemplo de 100 clientes; la conexión al core bancario se hace implementando la interfaz `Repo` (`lib/db/repo.ts`).
 
 ## Abrirlo en Antigravity
-Ver [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md). El contexto para agentes está en `AGENTS.md`, `.agents/rules/` y `.agents/workflows/`.
+Ver [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md). El contexto para agentes está en [`docs/CONTEXTO-MAESTRO.md`](docs/CONTEXTO-MAESTRO.md), `AGENTS.md`, `.agents/rules/` y `.agents/workflows/`.
 
 ## Cómo correrlo
 
