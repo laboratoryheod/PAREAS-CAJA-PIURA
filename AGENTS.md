@@ -5,7 +5,7 @@ Contexto para agentes (Antigravity, Claude Code, Codex, etc.). Las reglas detall
 ## Qué es
 Módulo web mobile-first de autogestión de deuda para clientes con 1–30+ días de atraso. Tiene dos interfaces:
 - `/cliente`: inicio en widgets (juego/trivia, score, calendario, pagos y juegos, beneficios/campañas/CHICOTAZO, consejos + agente Pareas), simulador de plan, pagos con QR, trivia y asistente.
-- `/banco`: panel del gestor (usuario `gestor`, clave `caja2026`) con KPIs, feed en tiempo real (polling de 3 s), cartera, casos derivados y el **Regalo Salvador**.
+- `/banco`: panel del gestor (usuario `gestor`, clave `caja2026`) con KPIs, feed en tiempo real (polling de 3 s), cartera, casos derivados y el **Modo Rescate**.
 Usa una cartera de ejemplo en SQLite; la conexión al core bancario se hace implementando la interfaz `Repo`.
 
 ## Stack
@@ -17,7 +17,7 @@ Next.js 15 (App Router) + TypeScript 5 + Tailwind 3 + motion. SQLite local (`bet
 - `npm run seed` (recrea la base) · `npm run export:xlsx`
 
 ## Mapa del código
-- `lib/reglas.ts`: reglas de reprogramación, interés moratorio, beneficios por nivel y Regalo Salvador (un solo archivo editable).
+- `lib/reglas.ts`: reglas de reprogramación, interés moratorio, beneficios por nivel y Modo Rescate (un solo archivo editable).
 - `lib/score.ts`: `PARAMS_SCORE`, CHICOTAZO, niveles y estado de Pareas.
 - `lib/servicio.ts`: toda la lógica de negocio. **Montos y fechas se calculan solo aquí (servidor).**
 - `lib/db/`: esquema, seed y repositorio (interfaz `Repo` + implementación SQLite).
@@ -31,7 +31,7 @@ Next.js 15 (App Router) + TypeScript 5 + Tailwind 3 + motion. SQLite local (`bet
 1. Nunca calcular montos/fechas en el navegador ni en el modelo de IA.
 2. Sin emojis ni stickers en la interfaz: usar `components/iconos.tsx`.
 3. El término **CHICOTAZO** se escribe así y se mantiene (−12 pts por día en mora; humor, nunca amenaza).
-4. Tono: **formal (de usted)** en toda la app, incluido el asistente Pareas. **Solo dentro del juego de la trivia** se usa tono coloquial del norte ("compare", "chévere").
+4. Tono: **formal (de usted)** en toda la app, incluido el asistente Pareas. **Solo dentro del juego de la trivia y en las notificaciones** (avisos del cliente, `lib/servicio.ts` → `notificacionesCliente`) se usa tono coloquial del norte ("compare", "chévere", "sino te caerá el CHICOTAZO").
 5. Antes de entregar: `npm test` y `npm run build` en verde.
 6. Redactar textos, comentarios y documentación como producto entregado a Caja Piura (sin menciones a maquetas ni concursos).
 7. Las herramientas de prueba (Reiniciar, Pasar un día) se controlan con `MOSTRAR_HERRAMIENTAS_PRUEBA` en `lib/config.ts`.

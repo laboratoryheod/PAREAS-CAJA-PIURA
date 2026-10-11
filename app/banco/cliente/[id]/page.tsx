@@ -1,10 +1,11 @@
 "use client";
 import { use, useCallback, useEffect, useState } from "react";
 import { usarPolling } from "@/lib/usar-polling";
-import { IcRegalo, IcCheck, IcReloj } from "@/components/iconos";
+import { IcSalvavidas, IcCheck, IcReloj } from "@/components/iconos";
 import Link from "next/link";
 import { api, soles } from "@/lib/cliente-api";
 import { TextureButton } from "@/components/ui/texture-button";
+import { BarraGestor } from "@/components/banco/BarraGestor";
 
 const MOTIVOS: Record<string, string> = { olvido: "Olvido", bajaron_ventas: "Bajaron las ventas", salud: "Salud", otro: "Otro" };
 
@@ -14,7 +15,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
   async function darRegalo() {
-    try { await api("/api/banco/regalo", { clienteId: Number(id) }); setAviso("Regalo Salvador otorgado. El cliente ya lo ve en su app."); setD(await api(`/api/banco/cliente/${id}`)); }
+    try { await api("/api/banco/regalo", { clienteId: Number(id) }); setAviso("Modo Rescate activado. El cliente ya lo ve en su app."); setD(await api(`/api/banco/cliente/${id}`)); }
     catch (e: any) { setAviso(e.message); }
   }
   const cargar = useCallback(() => api(`/api/banco/cliente/${id}`).then(setD).catch((e) => setError(e.message)), [id]);
@@ -23,8 +24,9 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
   if (error) return <main className="p-6"><p className="text-red-700">{error}</p></main>;
   if (!d) return <main className="p-6">Cargando…</main>;
   return (
+    <>
+    <BarraGestor><Link href="/banco" className="text-sm underline min-h-[44px] flex items-center">Volver al panel</Link></BarraGestor>
     <main className="max-w-4xl mx-auto p-4 space-y-4 pb-16">
-      <Link href="/banco" className="text-sm text-caja underline min-h-[44px] inline-flex items-center">← Volver al panel</Link>
       <section className="card">
         <h1 className="text-2xl font-bold text-caja">{d.cliente.nombres}</h1>
         <p className="text-sm text-gray-600">DNI {d.cliente.dni} · {d.cliente.negocio} · {d.cliente.zona} · tel. {d.cliente.telefono}</p>
@@ -41,7 +43,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
       </section>
 
       <section className="card space-y-2 border-fuchsia-200">
-        <h2 className="flex items-center gap-2 font-bold text-fuchsia-700"><IcRegalo tam={18} />Regalo Salvador (campaña de regularización)</h2>
+        <h2 className="flex items-center gap-2 font-bold text-fuchsia-700"><IcSalvavidas tam={18} />Modo Rescate (campaña de regularización)</h2>
         {d.cliente.sinBeneficios && <p className="text-sm rounded-xl bg-rose-50 border border-rose-200 p-2">Incumplió un plan: está <b>sin beneficios</b> y no puede reprogramar. Solo una campaña lo reactiva.</p>}
         {d.regaloVigente && (
           <p className="text-sm">Vigente hasta el {d.regaloVigente.venceLargo}: paga <b>{soles(d.regaloVigente.montoHoy)}</b> hoy (en vez de {soles(d.regaloVigente.base)}) y recupera {soles(d.regaloVigente.descuento)} con recargos de {d.regaloVigente.recargos.map((r: any) => soles(r.monto)).join(" + ")}.</p>
@@ -49,7 +51,7 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         {d.puedeRecibirRegalo && d.vistaPreviaRegalo && (
           <>
             <p className="text-sm">Si se lo otorgas: paga <b>{soles(d.vistaPreviaRegalo.montoHoy)}</b> hoy (−{soles(d.vistaPreviaRegalo.descuento)}) y +{soles(d.vistaPreviaRegalo.recargos[0].monto)} en sus 3 cuotas siguientes. Vence en 7 días.</p>
-            <TextureButton variant="regalo" className="md:w-auto" onClick={darRegalo}><IcRegalo tam={18} />Otorgar Regalo Salvador</TextureButton>
+            <TextureButton variant="regalo" className="md:w-auto" onClick={darRegalo}><IcSalvavidas tam={18} />Activar Modo Rescate</TextureButton>
           </>
         )}
         {!d.puedeRecibirRegalo && !d.regaloVigente && <p className="text-sm text-gray-500">No aplica ahora (el cliente no está en mora o tiene un plan en marcha).</p>}
@@ -83,5 +85,6 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         </section>
       </div>
     </main>
+    </>
   );
 }

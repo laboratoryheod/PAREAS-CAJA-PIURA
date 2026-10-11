@@ -1,13 +1,13 @@
 "use client";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { usarDebounce, usarPolling } from "@/lib/usar-polling";
-import { IcEnVivo, IcGestor, IcRegalo } from "@/components/iconos";
+import { IcEnVivo, IcGestor, IcSalvavidas } from "@/components/iconos";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { APP_NOMBRE } from "@/lib/config";
 import { api, soles } from "@/lib/cliente-api";
 import { TextureButton } from "@/components/ui/texture-button";
 import BotonReinicio from "@/components/BotonReinicio";
+import { BarraGestor } from "./BarraGestor";
 
 const ETIQ_ESTADO: Record<string, string> = { en_mora: "En mora", plan_pendiente: "Plan sin 1er pago", reprogramado: "Plan en marcha", incumplido: "Incumplió (sin beneficios)", derivado: "Derivado a gestor", al_dia: "Al día" };
 const COLOR_ESTADO: Record<string, string> = { en_mora: "bg-amber-100", plan_pendiente: "bg-sky-100", reprogramado: "bg-green-100", incumplido: "bg-rose-200", derivado: "bg-red-100", al_dia: "bg-blue-100" };
@@ -46,7 +46,7 @@ export default function BancoDashboard() {
   const [version, setVersion] = useState(0); // sube cuando el feed trae eventos nuevos
 
   const darRegalo = useCallback(async (id: number, nombre: string) => {
-    try { const r = await api("/api/banco/regalo", { clienteId: id }); setAviso(`Regalo Salvador otorgado a ${nombre}: paga ${soles(r.regalo.montoHoy)} hoy.`); setVersion((v) => v + 1); }
+    try { const r = await api("/api/banco/regalo", { clienteId: id }); setAviso(`Modo Rescate activado a ${nombre}: paga ${soles(r.regalo.montoHoy)} hoy.`); setVersion((v) => v + 1); }
     catch (e: any) { setAviso(e.message); }
     setTimeout(() => setAviso(""), 5000);
   }, []);
@@ -106,16 +106,13 @@ export default function BancoDashboard() {
   );
 
   return (
-    <main className="max-w-6xl mx-auto pb-16">
-      <header className="bg-caja-header text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <span className="font-bold">{APP_NOMBRE} · Panel del gestor</span>
-        <div className="flex items-center gap-3">
-          <BotonReinicio claro destino="/banco" />
-          <button className="text-sm underline min-h-[44px]" onClick={async () => { await fetch("/api/banco/login", { method: "DELETE" }); router.push("/banco/login"); }}>Salir</button>
-        </div>
-      </header>
+    <main className="pb-16">
+      <BarraGestor>
+        <BotonReinicio claro destino="/banco" />
+        <button className="text-sm underline min-h-[44px]" onClick={async () => { await fetch("/api/banco/login", { method: "DELETE" }); router.push("/banco/login"); }}>Salir</button>
+      </BarraGestor>
 
-      <div className="px-4 pt-4 space-y-5">
+      <div className="mx-auto max-w-6xl px-4 pt-4 space-y-5">
         {aviso && <p className="rounded-2xl bg-fuchsia-50 border border-fuchsia-200 p-3 text-sm font-semibold sticky top-14 z-10">{aviso}</p>}
         {kpis && (
           <section className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -127,7 +124,7 @@ export default function BancoDashboard() {
             {kpi("Cartera en mora", kpis.carteraEnMora, soles(kpis.deudaEnMora))}
             {kpi("Reprogramados", kpis.reprogramados)}
             {kpi("Casos para gestor", kpis.derivados, `${kpis.incumplidos} incumplieron su plan`)}
-            {kpi("Regalos Salvador", kpis.regalosOtorgados, `${kpis.regalosUsados} ya usados`)}
+            {kpi("Modo Rescate", kpis.regalosOtorgados, `${kpis.regalosUsados} ya usados`)}
           </section>
         )}
 
@@ -143,8 +140,8 @@ export default function BancoDashboard() {
                   <Link href={`/banco/cliente/${d.id}`} className="font-semibold underline">{d.nombres}</Link>
                   <span className="text-gray-600"> · {d.diasAtraso} días · {soles(d.deuda)}</span>
                   <p className="text-xs text-gray-600">{d.motivos.join(" · ")}{d.propuesta ? ` · propuesta: ${d.propuesta.nCuotas} cuotas` : ""}</p>
-                  {d.puedeRecibirRegalo && <TextureButton variant="regalo" size="sm" className="mt-1 w-auto" onClick={() => darRegalo(d.id, d.nombres)}><IcRegalo tam={16} />Dar Regalo Salvador</TextureButton>}
-                  {d.regaloVigente && <span className="flex items-center gap-1 text-xs font-semibold text-fuchsia-700"><IcRegalo tam={14} />Regalo vigente</span>}
+                  {d.puedeRecibirRegalo && <TextureButton variant="regalo" size="sm" className="mt-1 w-auto" onClick={() => darRegalo(d.id, d.nombres)}><IcSalvavidas tam={16} />Activar Modo Rescate</TextureButton>}
+                  {d.regaloVigente && <span className="flex items-center gap-1 text-xs font-semibold text-fuchsia-700"><IcSalvavidas tam={14} />Regalo vigente</span>}
                 </li>
               ))}
             </ul>
@@ -213,7 +210,7 @@ const FilaCartera = memo(function FilaCartera({ c, onAbrir }: { c: any; onAbrir:
       <td className="text-right">{c.diasAtraso > 0 ? `${c.diasAtraso} d` : "—"}</td>
       <td className="text-right">{c.deuda > 0 ? soles(c.deuda) : "—"}</td>
       <td className="text-center">{c.score} <span className="text-xs text-gray-500">{c.nivel}</span></td>
-      <td><span className={`rounded-full px-2 py-1 text-xs ${COLOR_ESTADO[c.estado]}`}>{ETIQ_ESTADO[c.estado]}</span>{c.pideAyuda && <IcGestor tam={14} className="ml-1 inline text-neutral-500" aria-label="Pidió ayuda" />}{c.regaloVigente && <IcRegalo tam={14} className="ml-1 inline text-fuchsia-600" aria-label="Regalo vigente" />}</td>
+      <td><span className={`rounded-full px-2 py-1 text-xs ${COLOR_ESTADO[c.estado]}`}>{ETIQ_ESTADO[c.estado]}</span>{c.pideAyuda && <IcGestor tam={14} className="ml-1 inline text-neutral-500" aria-label="Pidió ayuda" />}{c.regaloVigente && <IcSalvavidas tam={14} className="ml-1 inline text-fuchsia-600" aria-label="Regalo vigente" />}</td>
     </tr>
   );
 });

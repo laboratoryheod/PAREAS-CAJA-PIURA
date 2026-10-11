@@ -31,13 +31,13 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
 
   if (tiene(t, "condon", "perdon", "perdonar", "rebaja", "bajar la tasa", "cambiar la tasa", "quitar el interes", "quitar la mora"))
     return ok(s.regalo
-      ? `Actualmente tiene un Regalo Salvador: paga ${soles(s.regalo.montoHoy)} hoy en lugar de ${soles(s.regalo.base)}. Es la condición que puedo ofrecerle.`
+      ? `Actualmente tiene un Modo Rescate: paga ${soles(s.regalo.montoHoy)} hoy en lugar de ${soles(s.regalo.base)}. Es la condición que puedo ofrecerle.`
       : "No puedo ofrecer condonaciones ni cambios de tasa. Sí puedo ayudarle a armar un plan de pago con las condiciones vigentes. ¿Desea verlo?");
 
-  if (tiene(t, "regalo", "campana", "salvador", "descuento")) {
-    if (!s.regalo) return ok("Las campañas como el Regalo Salvador las activa la Caja según cada caso. Si se le otorga una, la verá aquí.");
+  if (tiene(t, "regalo", "campana", "salvador", "rescate", "descuento")) {
+    if (!s.regalo) return ok("Las campañas como el Modo Rescate las activa la Caja según cada caso. Si se le otorga una, la verá aquí.");
     const r = s.regalo;
-    return ok(`Tiene un Regalo Salvador: paga ${soles(r.montoHoy)} hoy (${r.descuentoPct}% menos) y el descuento se recupera con ${r.recargoPct}% más en sus 3 cuotas siguientes. Vence el ${r.venceLargo}.`);
+    return ok(`Tiene un Modo Rescate: paga ${soles(r.montoHoy)} hoy (${r.descuentoPct}% menos) y el descuento se recupera con ${r.recargoPct}% más en sus 3 cuotas siguientes. Vence el ${r.venceLargo}.`);
   }
 
   if (tiene(t, "cuanto debo", "mi deuda", "cuanto es", "saldo", "cuanto pago", "monto", "cuanto tengo que")) {

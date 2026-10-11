@@ -16,7 +16,7 @@ const tiene = (t: string, ...p: string[]) => p.some((x) => t.includes(x));
 const TEMA = [
   "deuda", "debo", "deber", "cuota", "pago", "pagar", "pague", "plan", "reprogram", "refinanc", "interes", "mora", "atras", "vencid",
   "caja", "piura", "pareas", "ponte al dia", "credito", "prestamo", "ahorro", "ahorrar", "presupuesto", "gasto", "ingreso", "negocio",
-  "venta", "puntos", "punto", "score", "nivel", "bronce", "plata", "oro", "pareas", "pacaso", "iguana", "chicotazo", "trivia", "racha", "regalo", "campana",
+  "venta", "puntos", "punto", "score", "nivel", "bronce", "plata", "oro", "pareas", "pacaso", "iguana", "chicotazo", "trivia", "racha", "regalo", "rescate", "campana",
   "descuento", "gestor", "asesor", "qr", "tasa", "tea", "fecha", "plazo", "inicial", "cronograma", "beneficio", "condon", "perdon",
   "dinero", "soles", "s/", "plata", "cuenta", "deposit", "agencia", "yape", "transferencia", "familiar", "finanz", "economia", "emprend",
   "bodega", "mototaxi", "mercado", "cobr", "saldo", "monto", "cuanto", "recibo", "comprobante", "seguro", "fraude", "estafa",

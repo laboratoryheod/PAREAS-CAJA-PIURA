@@ -144,7 +144,7 @@ function sembrarActividad(db: Database.Database, rnd: () => number, hoy: string)
       derivadas++;
     }
   }
-  // Dos clientes incumplieron un plan anterior: sin beneficios (candidatos a Regalo Salvador)
+  // Dos clientes incumplieron un plan anterior: sin beneficios (candidatos a Modo Rescate)
   const conPropuesta = new Set((db.prepare("SELECT credito_id FROM propuestas").all() as { credito_id: number }[]).map((r) => r.credito_id));
   for (const f of filas.filter((x) => x.dias_atraso >= 16 && x.dias_atraso <= 45 && !conPropuesta.has(x.credito_id)).slice(0, 2)) {
     insProp.run(f.credito_id, 2, 0, sumarDias(hoy, -10), JSON.stringify([{ n: 1, fecha: sumarDias(hoy, -10), monto: 100, tipo: "cuota", pagado: false }]), "incumplida", "bajaron_ventas", haceMin(600));

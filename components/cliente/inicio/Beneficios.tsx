@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { soles, type Situacion } from "@/lib/cliente-api";
 import { REGLAS, REGALO_SALVADOR } from "@/lib/reglas";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
-import { FichaApp, IcCandado, IcDescuento, IcMedalla, IcRegalo, IcCaja } from "@/components/iconos";
+import { FichaApp, IcCandado, IcDescuento, IcMedalla, IcSalvavidas, IcCaja } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 import { Widget, TituloWidget } from "./Widget";
 import { TarjetaChicotazo } from "./Chicotazo";
@@ -56,19 +56,19 @@ export function Beneficios({ sit, className, onPagar }: { sit: Situacion; classN
 
           {tab === "campanas" && (sit.regalo ? (
             <div className="rounded-[22px] bg-gradient-to-br from-[#D6247A] via-[#E2405F] to-[#FF7A59] p-4 text-white">
-              <div className="flex items-center gap-3"><FichaApp icono={IcRegalo} color="rosa" tam={40} className="ring-2 ring-white/30" /><div><p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-white/80">Campaña activa</p><p className="text-[20px] font-bold leading-tight">Regalo Salvador</p></div></div>
+              <div className="flex items-center gap-3"><FichaApp icono={IcSalvavidas} color="rosa" tam={40} className="ring-2 ring-white/30" /><div><p className="text-[12px] font-semibold uppercase tracking-[0.1em] text-white/80">Campaña activa</p><p className="text-[20px] font-bold leading-tight">Modo Rescate</p></div></div>
               <div className="mt-3 flex items-end justify-between rounded-2xl bg-white/15 p-3">
                 <div><p className="text-[12px] text-white/75">Monto original</p><p className="text-[16px] font-semibold line-through tabular-nums">{soles(sit.regalo.base)}</p></div>
                 <IcDescuento tam={22} className="mb-1 text-white/80" />
                 <div className="text-right"><p className="text-[12px] text-white/75">Paga hoy</p><p className="text-[24px] font-bold leading-none tabular-nums">{soles(sit.regalo.montoHoy)}</p></div>
               </div>
               <p className="mt-2 text-[12px] text-white/85">Descuento de {sit.regalo.descuentoPct}% hoy · +{sit.regalo.recargoPct}% en sus próximas {sit.regalo.recargos.length} cuotas · vence el {sit.regalo.venceLargo}</p>
-              <button onClick={onPagar} className="mt-3 min-h-[44px] w-full rounded-full bg-white text-[15px] font-semibold text-[#D6247A] active:scale-[0.96] transition-transform">Usar mi regalo</button>
+              <button onClick={onPagar} className="mt-3 min-h-[44px] w-full rounded-full bg-white text-[15px] font-semibold text-[#D6247A] active:scale-[0.96] transition-transform">Usar mi Modo Rescate</button>
             </div>
           ) : (
             <div className="flex items-start gap-3 rounded-2xl bg-neutral-50 p-4">
-              <FichaApp icono={IcRegalo} color="grafito" tam={40} />
-              <div><p className="text-[15px] font-semibold">Sin campañas por ahora</p><p className="text-[13px] text-neutral-500">Cuando la Caja le otorgue un beneficio (como el Regalo Salvador: {Math.round(REGALO_SALVADOR.descuentoPct * 100)}% menos hoy), se mostrará aquí.</p></div>
+              <FichaApp icono={IcSalvavidas} color="grafito" tam={40} />
+              <div><p className="text-[15px] font-semibold">Sin campañas por ahora</p><p className="text-[13px] text-neutral-500">Cuando la Caja le otorgue un beneficio (como el Modo Rescate: {Math.round(REGALO_SALVADOR.descuentoPct * 100)}% menos hoy), se mostrará aquí.</p></div>
             </div>
           ))}
 

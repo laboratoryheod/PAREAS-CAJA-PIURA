@@ -27,7 +27,7 @@ npm run build && npm start
 | Qué | Archivo |
 |---|---|
 | Nombre de la app | `lib/config.ts` (`APP_NOMBRE`) |
-| Reglas de reprogramación (tramos, inicial, cuota mínima, interés moratorio, beneficios por nivel, Regalo Salvador) | `lib/reglas.ts` |
+| Reglas de reprogramación (tramos, inicial, cuota mínima, interés moratorio, beneficios por nivel, Modo Rescate) | `lib/reglas.ts` |
 | Tono y apelativo | `lib/config.ts` (`APELATIVO`) |
 | Blindaje y cupos del asistente | `lib/asistente/guardia.ts` (`LIMITES_ASISTENTE`) |
 | Puntos del score y chicotazo | `lib/score.ts` (`PARAMS_SCORE`) |
@@ -45,7 +45,7 @@ Los montos y fechas siempre se calculan en el servidor (`lib/servicio.ts`); el n
 - **Chicotazo:** −12 por cada día que el cliente sigue en mora (una vez por día). En mora o impago **no hay racha**: aunque acierte toda la trivia (+10 máx.) el neto diario es −2.
 - **Plan de pago:** aceptarlo **no** detiene el chicotazo. Recién con el **primer pago** del plan la deuda vencida queda "en plan" y Pareas deja de pegar. Cada pago a tiempo: +15. Cumplir todo el plan: +20.
 - **Incumplir el plan:** no hay castigo fijo; vuelve el chicotazo diario y el cliente **pierde sus beneficios** (de nivel y de volver a reprogramar).
-- **🎁 Regalo Salvador:** campaña que otorga el gestor desde su panel (casos derivados o detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
+- **Modo Rescate:** campaña que otorga el gestor desde su panel (casos derivados o detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
 - Más de 60 días: la propuesta (con inicial ≥ 30 %) queda **derivada** al gestor; el cliente sigue en mora.
 - Interés moratorio: TEA × 1,5 prorrateada por día (simple). Ajustable en `FACTOR_MORATORIO`.
 
@@ -66,13 +66,21 @@ Pareas es la iguana (el "pacaso" piurano) que acompaña al cliente y responde en
 Para cambiar una imagen basta con reemplazar el archivo con el mismo nombre. Para tener varias expresiones (feliz, seria, chicotazo), agrega `pareas-feliz.png`, etc. y elige la imagen según `humor` en `components/Pareas.tsx`.
 
 ## Tono
-Formal (de usted) en toda la app. Solo el juego de la trivia usa tono coloquial del norte ("compare", "chévere"); el apelativo está en `APELATIVO` (`lib/config.ts`). Si ya tenía la base creada, ejecute `npm run seed` para cargar las preguntas de la trivia actualizadas.
+Formal (de usted) en toda la app. Solo el juego de la trivia y las notificaciones usan tono coloquial del norte ("compare", "chévere"); el apelativo está en `APELATIVO` (`lib/config.ts`). Si ya tenía la base creada, ejecute `npm run seed` para cargar las preguntas de la trivia actualizadas.
+
+## Notificaciones del cliente
+Campana en la barra superior del cliente (`components/cliente/Notificaciones.tsx`), con banners estilo iOS y centro de avisos. Se encienden con la píldora **Activar avisos** y se apagan desde el propio centro. El servidor decide qué avisar (`notificacionesCliente` en `lib/servicio.ts`, API `GET /api/notificaciones?clienteId=`):
+- **Modo Rescate** vigente otorgado por el gestor.
+- **Pago cerca**: un pago del plan vence en 3 días o menos (`DIAS_AVISO_PAGO`).
+- **CHICOTAZO**: el cliente sigue en mora hoy.
+- **Trivia pendiente**: aún puede ganar puntos hoy.
+Con `MOSTRAR_HERRAMIENTAS_PRUEBA` el centro muestra **Volver a enviar** para repetir los banners.
 
 ## Inicio del cliente
 Según el boceto del equipo, cada cliente ve primero:
 1. **Juego del día** (botón para empezar la trivia) y **Score** (anillos tipo Actividad de Apple).
 2. **Calendario de pagos** (cuotas vencidas, pagos del plan, recargos, días con CHICOTAZO) y **Pagos y juegos**.
-3. **Beneficios de la Caja**: beneficios por nivel, mis campañas (Regalo Salvador / descuento) y el **CHICOTAZO**; y **Consejos** con el botón para hablar con Pareas.
+3. **Beneficios de la Caja**: beneficios por nivel, mis campañas (Modo Rescate / descuento) y el **CHICOTAZO**; y **Consejos** con el botón para hablar con Pareas.
 La primera vez aparece la hoja **"Empieza el juego"** con las reglas.
 
 ## UI con cult-ui
@@ -87,6 +95,6 @@ De https://github.com/nolly-studio/cult-ui (MIT) se copiaron **solo** los compon
 2. **(0:25) Armar mi plan:** subir a 3 cuotas → semáforo ámbar con el porqué y la alternativa más cercana → "Usar esta alternativa" → verde. Poner el primer pago para mañana.
 3. **(0:55) Confirmar:** motivo "Bajaron mis ventas", aceptar → "¡Plan aceptado! Falta tu primer pago": Pareas sigue pegando hasta pagar.
 4. **(1:15) En otra pestaña `/banco`** (gestor / caja2026): el feed muestra *"Gengis G. aceptó pagar en 2 cuotas"* y suben los KPIs.
-5. **(1:35) Incumplir:** en el cliente, "Herramientas de prueba → Pasar un día" dos veces sin pagar → "Beneficios en pausa". El banco lo ve: *"Gengis G. incumplió su plan"*, y aparece en casos derivados como candidato a Regalo Salvador.
-6. **(2:00) 🎁 Regalo Salvador:** el gestor pulsa "Dar Regalo Salvador". En el celular del cliente aparece la tarjeta: paga 30 % menos hoy, +10 % en sus 3 cuotas siguientes → "Aprovechar mi regalo" → pago con QR → al día y con beneficios de vuelta.
+5. **(1:35) Incumplir:** en el cliente, "Herramientas de prueba → Pasar un día" dos veces sin pagar → "Beneficios en pausa". El banco lo ve: *"Gengis G. incumplió su plan"*, y aparece en casos derivados como candidato a Modo Rescate.
+6. **(2:00) 🎁 Modo Rescate:** el gestor pulsa "Dar Modo Rescate". En el celular del cliente aparece la tarjeta: paga 30 % menos hoy, +10 % en sus 3 cuotas siguientes → "Aprovechar mi regalo" → pago con QR → al día y con beneficios de vuelta.
 7. **(2:35) Asistente:** "¿Cuánto debo?" (cifras del servidor), "escríbeme un poema" (no responde: no gasta tokens), "mi clave es…" (no la acepta).

@@ -12,7 +12,7 @@ function hechos(s: Sit): string {
     `Deuda total hoy: ${soles(s.deuda.total)} (cuotas vencidas ${soles(s.deuda.montoVencido)} + interés moratorio ${soles(s.deuda.interesMoratorio)}). Días de atraso: ${s.diasAtraso}.`,
     `Score: ${s.score} puntos, nivel ${s.nivel}. ${s.siguienteNivel.texto}.${s.sinBeneficios ? " Incumplió un plan: sin beneficios ni nueva reprogramación." : ""}`,
   ];
-  if (s.regalo) l.push(`Campaña vigente "Regalo Salvador": paga ${soles(s.regalo.montoHoy)} hoy en vez de ${soles(s.regalo.base)}; recargos de ${s.regalo.recargos.map((r) => `${soles(r.monto)} el ${r.fechaLarga}`).join(", ")}; vence el ${s.regalo.venceLargo}.`);
+  if (s.regalo) l.push(`Campaña vigente "Modo Rescate": paga ${soles(s.regalo.montoHoy)} hoy en vez de ${soles(s.regalo.base)}; recargos de ${s.regalo.recargos.map((r) => `${soles(r.monto)} el ${r.fechaLarga}`).join(", ")}; vence el ${s.regalo.venceLargo}.`);
   if (s.limites) l.push(`Opciones de reprogramación: hasta ${s.limites.maxCuotas} cuotas; inicial mínima ${soles(s.limites.inicialMin)}; primer pago hasta el ${fechaLarga(s.limites.primerPagoMax)}; ${s.limites.derivado ? "por los días de atraso la propuesta la revisa un gestor" : "aprobación automática si se cumple"}. Cada cuota debe ser de al menos S/ 20.00.`);
   if (s.propuestaActiva) l.push(`Plan activo: ${s.propuestaActiva.pagos.map((p) => `${p.tipo === "inicial" ? "inicial" : `cuota ${p.n}`} ${soles(p.monto)} el ${p.fechaLarga}${p.pagado ? " (pagado)" : ""}`).join("; ")}.`);
   return l.join("\n");

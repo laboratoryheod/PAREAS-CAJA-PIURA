@@ -46,7 +46,7 @@ export default function Pagar({ sit, onPagado, onVolver }: { sit: Situacion; onP
     <section className="space-y-4">
       <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-3 text-center">
-        <h2 className="text-xl font-extrabold text-caja">{cobro?.concepto === "regalo" ? "Pago con Regalo Salvador" : "Pagar hoy"}</h2>
+        <h2 className="text-xl font-extrabold text-caja">{cobro?.concepto === "regalo" ? "Pago con Modo Rescate" : "Pagar hoy"}</h2>
         {!cobro && !error && <p>Cargando…</p>}
         {cobro?.concepto === "nada" && <p>No tiene pagos pendientes. Está al día.</p>}
         {cobro && cobro.concepto !== "nada" && (

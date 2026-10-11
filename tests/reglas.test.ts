@@ -120,7 +120,7 @@ describe("otras reglas", () => {
   });
 });
 
-describe("incumplimiento y regalo salvador", () => {
+describe("incumplimiento y modo rescate", () => {
   it("quien incumplió no puede reprogramar ni tiene beneficios de nivel", () => {
     const v = validarPropuesta(credito(10), { score: 80, sinBeneficios: true }, plan(2), HOY);
     expect(v.aceptable).toBe(false);
@@ -128,7 +128,7 @@ describe("incumplimiento y regalo salvador", () => {
     expect(v.contrapropuesta).toBeNull();
     expect(limitesPara(credito(31), { score: 80, sinBeneficios: true }, HOY)).toMatchObject({ maxCuotas: 4, inicialMinPct: 0.2 });
   });
-  it("regalo salvador: -30% hoy y +10% en 3 cuotas que recuperan exactamente el descuento", () => {
+  it("modo rescate: -30% hoy y +10% en 3 cuotas que recuperan exactamente el descuento", () => {
     const r = calcularRegaloSalvador(326.08, HOY);
     expect(r.descuento).toBe(97.82);
     expect(r.montoHoy).toBe(228.26);

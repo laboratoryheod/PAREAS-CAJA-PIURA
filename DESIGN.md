@@ -29,7 +29,7 @@ Se aplica la paleta institucional de Caja Piura (tomada de capturas de cajapiura
 | Éxito / pagado | `#34C759` |
 | Mora / CHICOTAZO | `#FF3B30`, degradado `#7A0F1C → #E2401C` |
 | Juego / trivia | `#5B2EE5 → #9B4DFF` |
-| Regalo Salvador | `#D6247A → #FF7A59` |
+| Modo Rescate | `#D6247A → #FF7A59` |
 El logo de Caja Piura aparece en blanco en la barra superior y en dorado al pie de Beneficios (`public/caja/`). Fondo general: azul tenue que se funde con blanco (`#DCE9F8 → #FFFFFF`).
 
 ## Flotantes
@@ -42,5 +42,5 @@ El logo de Caja Piura aparece en blanco en la barra superior y en dorado al pie 
 
 ## Tono
 - **Formal (de usted)** en toda la app: inicio, pagos, plan, asistente, landing y panel del gestor.
-- **Solo dentro del juego de la trivia** se usa tono coloquial del norte ("compare", "chévere", "bacán"): la pantalla de la trivia, sus mensajes y sus preguntas.
+- **Solo dentro del juego de la trivia** se usa tono coloquial del norte ("compare", "chévere", "bacán"): la pantalla de la trivia, sus mensajes y sus preguntas. También las **notificaciones** del cliente (banners y centro de avisos), que buscan ser cercanas y divertidas ("…sino te caerá el CHICOTAZO").
 - El CHICOTAZO conserva su nombre y su humor, nunca una amenaza.

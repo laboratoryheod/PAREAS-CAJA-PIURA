@@ -17,7 +17,7 @@ export const PARAMS_SCORE = {
   // Resta (chicotazo de Pareas)
   chicotazoPorDia: -12, // por cada día que el cliente sigue en mora; supera a propósito el tope de trivia (+10)
   // Incumplir un plan NO resta puntos fijos: vuelve el chicotazo diario y el cliente pierde sus beneficios
-  // (ver REGLAS en lib/reglas.ts) hasta que la Caja le ofrezca un "regalo salvador".
+  // (ver REGLAS en lib/reglas.ts) hasta que la Caja le ofrezca un "modo rescate".
 } as const;
 // Nota: con trivia (+10 máx.) y sin racha en mora, el neto diario en mora es 10 − 12 = −2, siempre negativo.
 // Pareas solo deja de pegar cuando el cliente paga.
@@ -118,7 +118,7 @@ export function estadoPareas(c: { nombre?: string; diasAtraso: number; score: nu
 function estadoPareasBase(c: { nombre?: string; diasAtraso: number; score: number; sinBeneficios?: boolean; regaloDisponible?: boolean }): { humor: HumorPareas; mensaje: string } {
   const quien = c.nombre ? `${c.nombre}, ` : "";
   if (c.regaloDisponible) {
-    return { humor: "feliz", mensaje: `${quien}la Caja le otorgó el Regalo Salvador para que se ponga al día. Le recomendamos usarlo antes de su vencimiento.` };
+    return { humor: "feliz", mensaje: `${quien}la Caja le otorgó el Modo Rescate para que se ponga al día. Le recomendamos usarlo antes de su vencimiento.` };
   }
   if (c.diasAtraso > 0 && c.sinBeneficios) {
     return { humor: "chicotazo", mensaje: `¡CHICOTAZO doble! ${quien}no se registró un pago de su plan y sus beneficios quedaron en pausa. Al pagar lo pendiente, Pareas deja de restar puntos.` };

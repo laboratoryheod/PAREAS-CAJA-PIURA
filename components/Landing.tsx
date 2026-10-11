@@ -10,7 +10,7 @@ import { RollingNumber } from "@/components/ui/rolling-number";
 import { TarjetaChicotazo } from "@/components/cliente/inicio/Chicotazo";
 import { AnilloScore } from "@/components/cliente/inicio/AnilloScore";
 import { PantallaCliente, PantallaGestor, IslaChicotazo } from "@/components/landing/Pantallas";
-import { FichaApp, IcBurbuja, IcCalendario, IcEscudo, IcRegalo, IcEnVivo, IcFlecha, IcMando, IcTarjeta, IcCandado, IcGestor, IcCaja } from "@/components/iconos";
+import { FichaApp, IcBurbuja, IcCalendario, IcEscudo, IcSalvavidas, IcEnVivo, IcFlecha, IcMando, IcTarjeta, IcCandado, IcGestor, IcCaja } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 
 const ENTRA = (k: number) => ({ initial: { opacity: 0, y: 14, filter: "blur(8px)" }, whileInView: { opacity: 1, y: 0, filter: "blur(0px)" }, viewport: { once: true, margin: "-60px" }, transition: { type: "spring" as const, bounce: 0, duration: 0.8, delay: 0.08 * k } });
@@ -168,8 +168,8 @@ export default function Landing() {
             <p className="mt-1 text-[15px] text-[#6E6E73]">Usted elige cuotas, inicial y fecha. Si no cumple las condiciones, le ofrecemos de inmediato la alternativa más cercana.</p>
           </Bento>
           <Bento className="md:col-span-2 bg-gradient-to-br from-[#D6247A] via-[#E2405F] to-[#FF7A59] text-white !shadow-none">
-            <FichaApp icono={IcRegalo} color="rosa" tam={48} className="ring-2 ring-white/30" />
-            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Regalo Salvador</h3>
+            <FichaApp icono={IcSalvavidas} color="rosa" tam={48} className="ring-2 ring-white/30" />
+            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Modo Rescate</h3>
             <p className="mt-1 text-[15px] text-white/85">La Caja le brinda una facilidad: paga hoy 30% menos y lo recupera en 3 cuotas.</p>
           </Bento>
           <Bento className="md:col-span-3">

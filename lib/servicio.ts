@@ -96,7 +96,7 @@ export function situacion(clienteId: number) {
   const n = vencidas(cuotas).length;
   const pendiente = `${n === 1 ? "una cuota pendiente" : `${n} cuotas pendientes`} por ${soles(cr.montoVencido)} desde hace ${cr.diasAtraso} ${cr.diasAtraso === 1 ? "día" : "días"}`;
   let saludo: string;
-  if (regalo) saludo = `Hola, ${nombre}. Tiene ${pendiente}. La Caja le otorgó un Regalo Salvador para ponerse al día.`;
+  if (regalo) saludo = `Hola, ${nombre}. Tiene ${pendiente}. La Caja le otorgó un Modo Rescate para ponerse al día.`;
   else if (estado === "reprogramado") saludo = `Hola, ${nombre}. Su plan de pago está en marcha. Cumplirlo le suma puntos y mejora su nivel.`;
   else if (estado === "plan_pendiente") saludo = `Hola, ${nombre}. Su plan está aceptado. Realice el primer pago para activarlo y detener el CHICOTAZO.`;
   else if (estado === "al_dia") saludo = `Hola, ${nombre}. Está al día con sus pagos. Gracias por su puntualidad.`;
@@ -357,7 +357,7 @@ export async function cobroPendiente(clienteId: number) {
   let concepto: ConceptoPago = "nada", monto = 0, detalle = "";
   if (regalo) {
     concepto = "regalo"; monto = regalo.monto_hoy;
-    detalle = `Regalo Salvador: pagas ${Math.round(REGALO_SALVADOR.descuentoPct * 100)}% menos hoy`;
+    detalle = `Modo Rescate: paga ${Math.round(REGALO_SALVADOR.descuentoPct * 100)}% menos hoy`;
   } else if (activa) {
     const p = proximoPago(activa);
     if (p) { concepto = "cuota"; monto = p.monto; detalle = p.tipo === "inicial" ? "Inicial de su plan de pago" : `Cuota ${p.n} de ${activa.n_cuotas} de su plan de pago`; }
@@ -392,7 +392,7 @@ export async function registrarPago(clienteId: number, concepto?: string) {
     repo.setSinBeneficios(clienteId, false);
     for (const p of propuestas.filter((x) => x.estado === "aceptada" || x.estado === "derivada")) repo.actualizarPropuesta(p.id, { estado: "rechazada" });
     repo.insertarEvento(clienteId, "regalo_usado", { monto: regalo.monto_hoy, descuento: regalo.descuento });
-    mensajes.push(`Se puso al día con el Regalo Salvador y ahorró ${soles(regalo.descuento)} hoy.`);
+    mensajes.push(`Se puso al día con el Modo Rescate y ahorró ${soles(regalo.descuento)} hoy.`);
     mensajes.push(`Sus próximas ${regalo.recargos.length} cuotas tendrán un recargo de ${regalo.recargos.map((r) => soles(r.monto)).join(", ")} para recuperar el descuento.`);
     mensajes.push("Recuperó sus beneficios y el CHICOTAZO se detuvo.");
   } else if (cobro.concepto === "deuda") {
@@ -431,14 +431,14 @@ export async function registrarPago(clienteId: number, concepto?: string) {
   };
 }
 
-// ------------------------------------------------------------------ regalo salvador (lo otorga el gestor)
+// ------------------------------------------------------------------ modo rescate (lo otorga el gestor)
 
 export function otorgarRegalo(clienteId: number, gestor = "gestor") {
   const repo = getRepo();
   const { cliente, credito, cuotas, propuestas, regalo } = cargar(repo, clienteId);
-  if (regalo) throw new ErrorNegocio("Este cliente ya tiene un Regalo Salvador vigente.");
+  if (regalo) throw new ErrorNegocio("Este cliente ya tiene un Modo Rescate vigente.");
   const activa = propuestaActiva(propuestas);
-  if (activa && planIniciado(activa)) throw new ErrorNegocio("El cliente tiene un plan en marcha; el regalo es para regularizar morosos.");
+  if (activa && planIniciado(activa)) throw new ErrorNegocio("El cliente tiene un plan en marcha; el Modo Rescate es para regularizar clientes en mora.");
   const cr = reglasDe(credito, cuotas, propuestas);
   const base = r2(cr.montoVencido + cr.interesMoratorio);
   if (cr.diasAtraso <= 0 || base <= 0) throw new ErrorNegocio("El cliente no está en mora.");
@@ -496,6 +496,59 @@ export function reiniciarApp() {
   return { ok: true };
 }
 
+// ------------------------------------------------------------------ notificaciones del cliente
+
+/** Cuántos días antes de una fecha de pago se avisa. */
+export const DIAS_AVISO_PAGO = 3;
+
+export type TipoNotificacion = "rescate" | "pago_cerca" | "mora" | "trivia";
+export interface Notificacion { id: string; tipo: TipoNotificacion; titulo: string; mensaje: string; accion: "pagar" | "trivia" | "plan" | "simulador"; urgencia: number }
+
+/**
+ * Avisos para el cliente, en tono coloquial y con humor (como los de un pata que te cuida).
+ * Montos, fechas y días se calculan aquí, en el servidor. El id es estable por día para no repetir avisos.
+ */
+export function notificacionesCliente(clienteId: number): Notificacion[] {
+  const s = situacion(clienteId);
+  const hoy = s.fechaHoy;
+  const out: Notificacion[] = [];
+
+  if (s.regalo) {
+    out.push({ id: `rescate-${s.regalo.id}-${hoy}`, tipo: "rescate", urgencia: 3, accion: "pagar",
+      titulo: "¡Te activaron el Modo Rescate!",
+      mensaje: `Oe ${s.cliente.nombre}, paga ${soles(s.regalo.montoHoy)} (${s.regalo.descuentoPct}% menos) antes del ${s.regalo.venceLargo}. Aprovéchalo, ${APELATIVO}, sino te caerá el CHICOTAZO.` });
+  }
+
+  const plan = s.propuestaActiva;
+  if (plan) {
+    for (const p of plan.pagos.filter((x) => !x.pagado)) {
+      const dias = diferenciaDias(hoy, p.fecha);
+      if (dias < 0 || dias > DIAS_AVISO_PAGO) continue;
+      const cuando = dias === 0 ? "hoy" : dias === 1 ? "mañana" : `en ${dias} días`;
+      out.push({ id: `pago-${plan.id}-${p.n}-${hoy}`, tipo: "pago_cerca", urgencia: dias === 0 ? 3 : 2, accion: "pagar",
+        titulo: dias === 0 ? "¡Hoy vence tu pago!" : `Tu pago vence ${cuando}`,
+        mensaje: `${p.tipo === "inicial" ? "Tu inicial" : `Tu cuota ${p.n}`} de ${soles(p.monto)} vence ${cuando} (${p.fechaLarga}). Págala a tiempo, ${APELATIVO}, sino te caerá el CHICOTAZO.` });
+      break; // basta con el pago más próximo
+    }
+  }
+
+  if (s.diasAtraso > 0 && !s.regalo) {
+    out.push({ id: `mora-${hoy}`, tipo: "mora", urgencia: 2, accion: s.limites ? "simulador" : "pagar",
+      titulo: "¡Chas! Te cayó el CHICOTAZO",
+      mensaje: `Llevas ${s.diasAtraso} ${s.diasAtraso === 1 ? "día" : "días"} de atraso y hoy Pareas te dio un CHICOTAZO de ${PARAMS_SCORE.chicotazoPorDia} puntos. ${s.limites ? "Arma tu plan" : "Ponte al día"} y guarda el látigo, ${APELATIVO}.` });
+  }
+
+  const t = triviaSiguiente(clienteId).progreso;
+  if (!t.completo) {
+    const faltan = t.total - t.respondidas;
+    const puntos = Math.max(0, t.topeDia - t.puntosTriviaHoy);
+    out.push({ id: `trivia-${hoy}`, tipo: "trivia", urgencia: 1, accion: "trivia",
+      titulo: "Tu trivia del día te espera",
+      mensaje: `Te ${faltan === 1 ? "queda 1 pregunta" : `quedan ${faltan} preguntas`}: gana hasta +${puntos} puntos y sube tu score, ${APELATIVO}. ¡Dale que es rapidito!` });
+  }
+  return out.sort((a, b) => b.urgencia - a.urgencia);
+}
+
 // ------------------------------------------------------------------ banco
 
 function mensajeEvento(e: EventoRow, nombre: string): string {
@@ -508,13 +561,13 @@ function mensajeEvento(e: EventoRow, nombre: string): string {
       return d.estado === "aceptada"
         ? `${nombre} aceptó pagar en ${d.nCuotas} cuota${d.nCuotas === 1 ? "" : "s"}${d.inicial > 0 ? ` con inicial de ${soles(d.inicial)}` : ""}`
         : `${nombre} dejó una propuesta para el gestor (${d.nCuotas} cuotas)`;
-    case "pago_registrado": return d.concepto === "regalo" ? `${nombre} se regularizó con el Regalo Salvador (${soles(Number(d.monto))})` : `${nombre} pagó ${soles(Number(d.monto))}`;
+    case "pago_registrado": return d.concepto === "regalo" ? `${nombre} se regularizó con el Modo Rescate (${soles(Number(d.monto))})` : `${nombre} pagó ${soles(Number(d.monto))}`;
     case "ayuda_humana": return `${nombre} pidió hablar con un gestor`;
     case "trivia_jugada": return `${nombre} jugó la trivia`;
     case "chat": return `${nombre} consultó al asistente`;
     case "promesa_incumplida": return `${nombre} incumplió su plan: pierde beneficios`;
-    case "regalo_otorgado": return `Se otorgó un Regalo Salvador a ${nombre} (paga ${soles(Number(d.montoHoy))} hoy)`;
-    case "regalo_usado": return `${nombre} usó su Regalo Salvador`;
+    case "regalo_otorgado": return `Se otorgó un Modo Rescate a ${nombre} (paga ${soles(Number(d.montoHoy))} hoy)`;
+    case "regalo_usado": return `${nombre} usó su Modo Rescate`;
     default: return `${nombre}: ${e.tipo}`;
   }
 }
@@ -615,7 +668,7 @@ export function derivados(listaPrevia?: ReturnType<typeof cartera>) {
       const motivos: string[] = [];
       if (c.diasAtraso > 60) motivos.push("Más de 60 días de atraso");
       if (c.estado === "derivado" && c.diasAtraso <= 60) motivos.push("Propuesta pendiente de revisión");
-      if (c.sinBeneficios && c.diasAtraso > 0) motivos.push("Incumplió su plan: candidato a Regalo Salvador");
+      if (c.sinBeneficios && c.diasAtraso > 0) motivos.push("Incumplió su plan: candidato a Modo Rescate");
       if (c.pideAyuda) motivos.push("Pidió ayuda humana");
       const credito = repo.creditoDeCliente(c.id)!;
       const prop = repo.propuestasDeCredito(credito.id).find((p) => p.estado === "derivada");

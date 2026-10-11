@@ -28,7 +28,7 @@ export const REGLAS = {
 };
 
 /**
- * "Regalo salvador": campaña que el gestor puede activar para que un moroso se regularice.
+ * "Modo Rescate": campaña que el gestor puede activar para que un moroso se regularice.
  * Paga hoy un 30% menos de lo que le toca y recupera ese descuento con +10% en sus 3 cuotas siguientes.
  * (Cada caja define su propia campaña; se cambia aquí.)
  */
@@ -48,7 +48,7 @@ export interface CreditoReglas {
   interesMoratorio: number; // a la fecha
   reprogramacionActiva: boolean;
 }
-/** sinBeneficios: incumplió un plan; pierde beneficios de nivel y no puede volver a reprogramar (salvo regalo salvador). */
+/** sinBeneficios: incumplió un plan; pierde beneficios de nivel y no puede volver a reprogramar (salvo modo rescate). */
 export interface ClienteReglas { score: number; sinBeneficios?: boolean }
 export interface PropuestaPlan { nCuotas: number; inicial: number; fechaPrimerPago: string }
 
@@ -160,7 +160,7 @@ function mejorAlternativa(lim: Limites, p: PropuestaPlan, hoy: string): Propuest
   return { nCuotas: r2(lim.deuda - inicial) > 0 ? n : 0, inicial, fechaPrimerPago: fecha };
 }
 
-// ---------------------------------------------------------------- regalo salvador
+// ---------------------------------------------------------------- modo rescate
 
 export interface RegaloCalculado { base: number; descuento: number; montoHoy: number; recargos: { n: number; fecha: string; monto: number }[] }
 

@@ -3,7 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { soles, type Situacion } from "@/lib/cliente-api";
-import { FichaApp, IcBombilla, IcBurbuja, IcCalculadora, IcCalendario, IcFlecha, IcLlama, IcMando, IcQR, IcTarjeta, IcRegalo, IcAtras } from "@/components/iconos";
+import { FichaApp, IcBombilla, IcBurbuja, IcCalculadora, IcCalendario, IcFlecha, IcLlama, IcMando, IcQR, IcTarjeta, IcSalvavidas, IcAtras } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 import { Widget, TituloWidget } from "./Widget";
 import { AnilloScore } from "./AnilloScore";
@@ -89,12 +89,12 @@ export function WidgetPagos({ sit, progreso, ir, className }: { sit: Situacion; 
     <Widget className={cn("flex flex-col p-0", className)}>
       <div className="p-4 pb-2">
         <TituloWidget>Pagos y juegos</TituloWidget>
-        <p className="-mt-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-neutral-500">{sit.regalo ? "Con su Regalo Salvador" : proximo ? `Próximo pago · ${proximo.fechaLarga}` : hayPago ? "Su deuda de hoy" : "Está al día"}</p>
+        <p className="-mt-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-neutral-500">{sit.regalo ? "Con su Modo Rescate" : proximo ? `Próximo pago · ${proximo.fechaLarga}` : hayPago ? "Su deuda de hoy" : "Está al día"}</p>
         <p className={cn("text-[34px] font-bold leading-tight tracking-[-0.03em] tabular-nums", sit.diasAtraso > 0 && !sit.regalo ? "text-[#C9182B]" : "text-neutral-900")}>{soles(monto)}</p>
         {sit.diasAtraso > 0 && <p className="text-[13px] text-neutral-500">{sit.diasAtraso} días de atraso · incluye {soles(sit.deuda.interesMoratorio)} de mora</p>}
       </div>
       <ul className="mx-3 mb-3 divide-y divide-black/5 overflow-hidden rounded-2xl bg-neutral-50">
-        {hayPago && <Fila icono={sit.regalo ? IcRegalo : IcTarjeta} color={sit.regalo ? "rosa" : "azul"} titulo={sit.estado === "plan_pendiente" ? "Hacer mi primer pago" : "Pagar hoy"} sub="Pago con código QR" onClick={() => ir("pagar")} />}
+        {hayPago && <Fila icono={sit.regalo ? IcSalvavidas : IcTarjeta} color={sit.regalo ? "rosa" : "azul"} titulo={sit.estado === "plan_pendiente" ? "Hacer mi primer pago" : "Pagar hoy"} sub="Pago con código QR" onClick={() => ir("pagar")} />}
         {sit.limites && !sit.propuestaActiva && !sit.propuestaDerivada && !sit.regalo && <Fila icono={IcCalculadora} color="sol" titulo="Armar mi plan" sub={`Hasta ${sit.limites.maxCuotas} cuotas`} onClick={() => ir("simulador")} />}
         {(sit.propuestaActiva || sit.propuestaDerivada) && <Fila icono={IcCalendario} color="cielo" titulo="Ver mi plan" sub={sit.propuestaDerivada ? "En revisión del gestor" : sit.estado === "plan_pendiente" ? "Falta el primer pago" : "En marcha"} onClick={() => ir("plan")} />}
         {hayPago && <Fila icono={IcQR} color="grafito" titulo="QR para un familiar" sub="Para que un familiar pague por usted" onClick={() => ir("pagar")} />}

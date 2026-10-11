@@ -13,6 +13,7 @@ import { IcInicio, IcTarjeta, IcCalculadora, IcCalendario, IcMando, IcBurbuja, I
 import dynamic from "next/dynamic";
 import type { PlanElegido } from "./Simulador";
 import { Inicio } from "./inicio/Inicio";
+import { Notificaciones } from "./Notificaciones";
 import { Bienvenida } from "./inicio/Bienvenida";
 import type { ProgresoTrivia } from "./inicio/Widgets";
 
@@ -45,7 +46,7 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
   // Refresco completo (situación + trivia): solo al volver al inicio o tras una acción, no en el polling
   const refrescar = useCallback(async () => { const [s] = await Promise.all([refrescarSituacion(), refrescarTrivia()]); return s; }, [refrescarSituacion, refrescarTrivia]);
 
-  // Polling liviano: solo la situación (para ver al instante un regalo del gestor), solo en el inicio
+  // Polling liviano: solo la situación (para ver al instante un Modo Rescate del gestor), solo en el inicio
   // y pausado con la pestaña en segundo plano. La trivia se refresca al volver de jugar.
   usarPolling(() => refrescarSituacion().catch(() => {}), POLL_MS, vista === "inicio");
 
@@ -84,12 +85,13 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
       <header className="sticky top-0 z-30 bg-[#00529B] text-white shadow-[0_1px_0_rgba(0,0,0,0.08)]">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
           <Link href="/" className="flex min-h-[44px] items-center gap-2 text-[17px] font-semibold tracking-[-0.01em]">
-            <span className="relative h-[34px] w-[34px] overflow-hidden rounded-[9px] bg-white"><Image src="/pareas/pareas.png" alt="" fill sizes="34px" className="object-contain p-0.5" /></span>Ponte al Día
+            <span className="relative h-[34px] w-[34px] overflow-hidden rounded-[9px] bg-white"><Image src="/pareas/pareas.png" alt="" fill sizes="34px" className="object-contain p-0.5" /></span><span className="max-sm:hidden">Ponte al Día</span>
           </Link>
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Notificaciones clienteId={clienteId} firma={`${sit.fechaHoy}|${sit.estado}|${sit.score}|${sit.regalo?.id ?? 0}|${sit.propuestaActiva?.pagos.filter((x) => x.pagado).length ?? -1}|${progreso?.respondidas ?? 0}`} onAccion={(a) => irA(a)} />
             <BotonReinicio claro />
-            <Image src="/caja/logo-caja-piura-blanco.png" alt="Caja Piura" width={110} height={26} className="h-[24px] w-auto" priority />
-            <span className="h-6 w-px bg-white/25" aria-hidden />
+            <Image src="/caja/logo-caja-piura-blanco.png" alt="Caja Piura" width={110} height={26} className="h-[24px] w-auto max-[400px]:hidden" priority />
+            <span className="h-6 w-px max-[400px]:hidden bg-white/25" aria-hidden />
             <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-white/90 hover:text-white">Salir</Link>
           </div>
         </div>

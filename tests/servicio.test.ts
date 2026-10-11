@@ -98,7 +98,7 @@ describe("Gengis Guerrero (cliente de ejemplo)", () => {
   });
 });
 
-describe("regalo salvador", () => {
+describe("modo rescate", () => {
   async function incumplir() {
     await S.registrarPropuesta({ ...plan(2, 0, "2026-10-11"), motivo: "olvido", acepta: true });
     S.avanzarDia(); S.avanzarDia();
@@ -111,7 +111,7 @@ describe("regalo salvador", () => {
     expect(regalo.recargos).toHaveLength(3);
     const s = S.situacion(GENGIS);
     expect(s.regalo?.montoHoy).toBe(regalo.montoHoy);
-    expect(s.pareas.mensaje).toMatch(/Regalo Salvador/);
+    expect(s.pareas.mensaje).toMatch(/Modo Rescate/);
     const cobro = await S.cobroPendiente(GENGIS);
     expect(cobro.concepto).toBe("regalo");
     expect(cobro.monto).toBe(regalo.montoHoy);
@@ -168,6 +168,36 @@ describe("chicotazo y trivia en servidor", () => {
     const p = S.triviaSiguiente(GENGIS).pregunta!;
     S.responderTrivia(GENGIS, p.id, 0);
     expect(() => S.responderTrivia(GENGIS, p.id, 0)).toThrow(/Ya respondiste/);
+  });
+});
+
+describe("notificaciones del cliente", () => {
+  const tipos = () => S.notificacionesCliente(GENGIS).map((n) => n.tipo);
+  it("en mora avisa del CHICOTAZO y de la trivia pendiente, en tono coloquial", () => {
+    const ns = S.notificacionesCliente(GENGIS);
+    expect(ns.map((n) => n.tipo)).toEqual(["mora", "trivia"]);
+    expect(ns[0].mensaje).toMatch(/CHICOTAZO/);
+    expect(ns.every((n) => /compare/.test(n.mensaje))).toBe(true);
+  });
+  it("avisa cuando un pago del plan vence en 3 días o menos (y no antes)", async () => {
+    await S.registrarPropuesta({ ...plan(2, 0, "2026-10-12"), motivo: "olvido", acepta: true });
+    const n = S.notificacionesCliente(GENGIS).find((x) => x.tipo === "pago_cerca")!;
+    expect(n.titulo).toMatch(/en 2 días/);
+    expect(n.mensaje).toMatch(/sino te caerá el CHICOTAZO/);
+    S.reiniciarApp();
+    await S.registrarPropuesta({ ...plan(2, 0, "2026-10-20"), motivo: "olvido", acepta: true });
+    expect(tipos()).not.toContain("pago_cerca");
+  });
+  it("el Modo Rescate va primero", () => {
+    S.otorgarRegalo(GENGIS);
+    const ns = S.notificacionesCliente(GENGIS);
+    expect(ns[0].tipo).toBe("rescate");
+    expect(ns.map((n) => n.tipo)).not.toContain("mora");
+  });
+  it("sin trivia pendiente no avisa de la trivia", async () => {
+    const repo = (await import("@/lib/db/repo")).getRepo();
+    for (let i = 0; i < 5; i++) { const p = S.triviaSiguiente(GENGIS).pregunta!; S.responderTrivia(GENGIS, p.id, repo.preguntas().find((x) => x.id === p.id)!.correcta); }
+    expect(tipos()).not.toContain("trivia");
   });
 });
 
