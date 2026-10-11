@@ -10,7 +10,8 @@
     "seed": "tsx scripts/seed.ts",
     "export:xlsx": "tsx scripts/export-xlsx.ts",
     "importar:xlsx": "tsx scripts/importar-xlsx.ts",
-    "plantilla:xlsx": "tsx scripts/importar-xlsx.ts --plantilla"
+    "plantilla:xlsx": "tsx scripts/importar-xlsx.ts --plantilla",
+    "levantar": "node scripts/levantar.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

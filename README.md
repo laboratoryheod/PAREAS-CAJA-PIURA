@@ -10,6 +10,7 @@ Ver [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md). El contexto 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
+npm run levantar     # si sale "puerto ocupado": cierra lo que use el 3000 y levanta la app
 npm test             # reglas, score, servicio, Mis Finanzas, Excel y asistente
 npm run build && npm start
 ```
