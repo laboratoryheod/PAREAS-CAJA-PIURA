@@ -1,8 +1,43 @@
-node_modules
-.next
-.env.local
-data/*.db
-data/*.db-*
+# Dependencias
+node_modules/
+
+# Build de Next.js y TypeScript
+.next/
+out/
+build/
 next-env.d.ts
 *.tsbuildinfo
+
+# Variables de entorno (las claves nunca se suben; .env.example sí)
+.env
+.env*.local
+!.env.example
+
+# Base de datos local y archivos que genera la app
+data/*.db
+data/*.db-*
+data/cartera*.xlsx
+data/plantilla-cartera*.xlsx
+
+# Salidas de pruebas y del video del pitch
 /video-pitch/
+coverage/
+playwright-report/
+test-results/
+
+# Configuración local de agentes y skills
+.agents/
+.claude/skills/
+
+# Registros
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
