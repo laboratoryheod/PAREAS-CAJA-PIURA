@@ -19,7 +19,7 @@
 
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-synthesis: none; }
 /* Estilo Apple: San Francisco en dispositivos Apple; Plus Jakarta como respaldo en el resto */
-body { background: #F2F2F7; color: #1C1C1E; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans Variable", system-ui, sans-serif; letter-spacing: -0.005em; }
+body { background: #F7F7F7; color: #1C1C1E; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans Variable", system-ui, sans-serif; letter-spacing: -0.005em; }
 h1, h2, h3, .font-display { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans Variable", system-ui, sans-serif; text-wrap: balance; }
 p { text-wrap: pretty; }
 .tabular, .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -30,4 +30,4 @@ p { text-wrap: pretty; }
 input[type="range"] { width: 100%; height: 28px; }
 input, select, textarea { font-size: 16px; }
 
-input[type="range"] { accent-color: #0A84FF; }
+input[type="range"] { accent-color: #0072C6; }

@@ -533,14 +533,17 @@ export interface FiltrosCartera { tramo?: string; tipo?: string; estado?: string
 export function cartera(f: FiltrosCartera = {}) {
   const repo = getRepo();
   const hoy = repo.fechaDemo();
+  // Una consulta para todos (antes: una por cliente para eventos y otra para campañas)
+  const conAyuda = new Set(repo.idsConEvento("ayuda_humana"));
+  const conRegalo = new Set(repo.todasLasCampanas().filter((c) => c.estado === "ofrecida" && c.vence >= hoy).map((c) => c.cliente_id));
   const filas = repo.clientes().map((cliente) => {
     const credito = repo.creditoDeCliente(cliente.id)!;
     const cuotas = repo.cuotas(credito.id);
     const props = repo.propuestasDeCredito(credito.id);
     const cr = reglasDe(credito, cuotas, props);
     const estado = estadoDe(cliente, cuotas, props);
-    const ayuda = repo.eventosDeCliente(cliente.id).some((e) => e.tipo === "ayuda_humana");
-    const regaloVig = repo.campanasDeCliente(cliente.id).some((c) => c.estado === "ofrecida" && c.vence >= hoy);
+    const ayuda = conAyuda.has(cliente.id);
+    const regaloVig = conRegalo.has(cliente.id);
     return {
       id: cliente.id, nombres: cliente.nombres, dni: cliente.dni_mascara, zona: cliente.zona, negocio: cliente.negocio,
       tipoCredito: credito.tipo_credito, score: cliente.score, nivel: cliente.nivel, estado, pideAyuda: ayuda,
@@ -564,7 +567,13 @@ function tramoDe(dias: number): string {
   return dias <= 0 ? "al_dia" : dias <= 15 ? "1-15" : dias <= 30 ? "16-30" : dias <= 60 ? "31-60" : ">60";
 }
 
-export function kpis() {
+/** KPIs + casos derivados con una sola pasada por la cartera (para el panel del gestor). */
+export function resumenBanco() {
+  const lista = cartera();
+  return { kpis: kpis(lista), derivados: derivados(lista) };
+}
+
+export function kpis(listaPrevia?: ReturnType<typeof cartera>) {
   const repo = getRepo();
   const props = repo.todasLasPropuestas();
   const aceptadas = props.filter((p) => p.estado === "aceptada" || p.estado === "cumplida" || p.estado === "incumplida");
@@ -572,7 +581,7 @@ export function kpis() {
   const resueltas = props.filter((p) => p.estado === "cumplida" || p.estado === "incumplida");
   const cumplidas = props.filter((p) => p.estado === "cumplida").length;
   const campanas = repo.todasLasCampanas();
-  const lista = cartera();
+  const lista = listaPrevia ?? cartera();
   return {
     avisosEnviados: repo.contarEventos("aviso_enviado"),
     modulosAbiertos: repo.clientesConEvento("modulo_abierto"),
@@ -586,13 +595,13 @@ export function kpis() {
     incumplidos: lista.filter((c) => c.sinBeneficios).length,
     regalosOtorgados: campanas.length,
     regalosUsados: campanas.filter((c) => c.estado === "usada").length,
-    derivados: derivados().length,
+    derivados: derivados(lista).length,
   };
 }
 
-export function derivados() {
+export function derivados(listaPrevia?: ReturnType<typeof cartera>) {
   const repo = getRepo();
-  return cartera()
+  return (listaPrevia ?? cartera())
     .map((c) => {
       const motivos: string[] = [];
       if (c.diasAtraso > 60) motivos.push("Más de 60 días de atraso");

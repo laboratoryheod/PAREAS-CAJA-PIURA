@@ -11,7 +11,7 @@ type Tipo = "vencida" | "plan" | "pagado" | "regalo" | "recargo";
 interface Marca { fecha: string; tipo: Tipo; texto: string; monto?: number }
 
 const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-const COLOR: Record<Tipo, string> = { vencida: "bg-[#FF3B30]", plan: "bg-[#0A84FF]", pagado: "bg-[#34C759]", regalo: "bg-[#D6247A]", recargo: "bg-[#FF9F0A]" };
+const COLOR: Record<Tipo, string> = { vencida: "bg-[#FF3B30]", plan: "bg-[#0072C6]", pagado: "bg-[#34C759]", regalo: "bg-[#D6247A]", recargo: "bg-[#FF9F0A]" };
 const ETIQUETA: Record<Tipo, string> = { vencida: "Vencida", plan: "Pago del plan", pagado: "Pagado", regalo: "Vence tu regalo", recargo: "Recargo" };
 
 /** Todas las fechas vienen del servidor (situación del cliente); aquí solo se ubican en el mes. */
@@ -54,8 +54,8 @@ export function Calendario({ sit, className }: { sit: Situacion; className?: str
     <Widget className={className}>
       <TituloWidget icono={<IcCalendario tam={18} className="text-[#FF3B30]" />}
         accion={<div className="flex items-center gap-1">
-          <button onClick={() => mover(-1)} aria-label="Mes anterior" className="grid h-9 w-9 place-items-center rounded-full text-[#0A84FF] active:scale-[0.96] hover:bg-black/5"><IcAtras tam={18} /></button>
-          <button onClick={() => mover(1)} aria-label="Mes siguiente" className="grid h-9 w-9 place-items-center rounded-full text-[#0A84FF] active:scale-[0.96] hover:bg-black/5"><IcFlecha tam={18} /></button>
+          <button onClick={() => mover(-1)} aria-label="Mes anterior" className="grid h-9 w-9 place-items-center rounded-full text-[#0072C6] active:scale-[0.96] hover:bg-black/5"><IcAtras tam={18} /></button>
+          <button onClick={() => mover(1)} aria-label="Mes siguiente" className="grid h-9 w-9 place-items-center rounded-full text-[#0072C6] active:scale-[0.96] hover:bg-black/5"><IcFlecha tam={18} /></button>
         </div>}>
         Mi calendario de pagos
       </TituloWidget>

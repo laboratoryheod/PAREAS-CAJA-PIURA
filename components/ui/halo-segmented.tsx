@@ -1,3 +1,4 @@
+// Adaptado de cult-ui (MIT): el brillo animado usa transform en vez de `left` (rendimiento).
 "use client"
 
 /**
@@ -120,31 +121,27 @@ export function HaloSegmented({
           className="absolute inset-x-0 bottom-0 h-1/2"
           transition={{ duration: 0.25, ease: "easeOut" }}
         >
-          <motion.div
-            animate={{ left: ["-5%", "75%", "-5%"] }}
-            className="-bottom-4 absolute h-14 w-44 blur-xl"
-            style={{
-              background:
-                "linear-gradient(90deg, #ff0080, #7928ca, #00d4ff, #0070f3)",
-            }}
-            transition={{
+          {/* Optimizado: se anima transform (x) del envoltorio de ancho completo en vez de `left` → sin layout por cuadro */}
+<motion.div aria-hidden className="absolute inset-0 will-change-transform" animate={{ x: ["-5%", "75%", "-5%"] }} transition={{
               duration: reduceMotion ? 0.01 : 6,
               ease: "easeInOut",
               repeat: reduceMotion ? 0 : Number.POSITIVE_INFINITY,
-            }}
-          />
-          <motion.div
-            animate={{ left: ["65%", "10%", "65%"] }}
-            className="-bottom-3 absolute h-11 w-36 blur-lg"
-            style={{
-              background: "linear-gradient(90deg, #ff4d4d, #f9cb28, #ff0080)",
-            }}
-            transition={{
+            }}>
+<div className="-bottom-4 absolute h-14 w-44 blur-xl left-0" style={{
+              background:
+                "linear-gradient(90deg, #ff0080, #7928ca, #00d4ff, #0070f3)",
+            }} />
+</motion.div>
+          {/* Optimizado: se anima transform (x) del envoltorio de ancho completo en vez de `left` → sin layout por cuadro */}
+<motion.div aria-hidden className="absolute inset-0 will-change-transform" animate={{ x: ["65%", "10%", "65%"] }} transition={{
               duration: reduceMotion ? 0.01 : 5,
               ease: "easeInOut",
               repeat: reduceMotion ? 0 : Number.POSITIVE_INFINITY,
-            }}
-          />
+            }}>
+<div className="-bottom-3 absolute h-11 w-36 blur-lg left-0" style={{
+              background: "linear-gradient(90deg, #ff4d4d, #f9cb28, #ff0080)",
+            }} />
+</motion.div>
         </motion.div>
       </div>
 

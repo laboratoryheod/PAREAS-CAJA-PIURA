@@ -26,7 +26,7 @@ export function Bienvenida({ clienteId, nombre }: { clienteId: number; nombre: s
             initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: "spring", bounce: 0, duration: 0.5 }}>
             <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-neutral-200 md:hidden" />
             <div className="relative mx-auto h-36 w-36"><Image src="/pareas/pareas.png" alt="Pareas" fill sizes="144px" className="object-contain" priority /></div>
-            <p className="text-center text-[12px] font-semibold uppercase tracking-[0.12em] text-[#0A84FF]">Ponte al Día</p>
+            <p className="text-center text-[12px] font-semibold uppercase tracking-[0.12em] text-[#0072C6]">Ponte al Día</p>
             <h2 id="bienvenida-titulo" className="text-center text-[28px] font-bold leading-tight tracking-[-0.03em]">¡Habla, {nombre}! Empieza el juego</h2>
             <p className="mt-1 text-center text-[15px] text-neutral-600">Soy Pareas. Tu score parte en 70 puntos. Así se gana y así se pierde:</p>
             <ul className="mt-4 space-y-3">
@@ -37,7 +37,7 @@ export function Bienvenida({ clienteId, nombre }: { clienteId: number; nombre: s
                 </motion.li>
               ))}
             </ul>
-            <button onClick={cerrar} className="mt-6 min-h-[52px] w-full rounded-full bg-[#0A84FF] text-[17px] font-semibold text-white transition-transform active:scale-[0.97]">Empezar</button>
+            <button onClick={cerrar} className="mt-6 min-h-[52px] w-full rounded-full bg-[#F9A825] text-[17px] font-semibold text-[#1A1A1A] transition-transform active:scale-[0.97]">Empezar</button>
           </motion.div>
         </motion.div>
       )}

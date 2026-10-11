@@ -27,7 +27,7 @@ export function Beneficios({ sit, className, onPagar }: { sit: Situacion; classN
   const [tab, setTab] = useState(sit.chicotazo.activo ? "chicotazo" : sit.regalo ? "campanas" : "beneficios");
   return (
     <Widget className={className}>
-      <TituloWidget icono={<IcCaja tam={18} className="text-[#0A84FF]" />}>Beneficios de la Caja</TituloWidget>
+      <TituloWidget icono={<IcCaja tam={18} className="text-[#0072C6]" />}>Beneficios de la Caja</TituloWidget>
       <HaloSegmented className="mb-3 w-full [&>div:last-child]:w-full" value={tab} onValueChange={setTab}
         items={[{ value: "beneficios", label: "Beneficios" }, { value: "campanas", label: "Campañas" }, { value: "chicotazo", label: "CHICOTAZO" }]} />
       <AnimatePresence mode="popLayout" initial={false}>

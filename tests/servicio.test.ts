@@ -172,6 +172,12 @@ describe("banco", () => {
     expect(S.cartera({ q: "gengis" }).length).toBe(1);
     expect(S.derivados().every((d) => d.motivos.length > 0)).toBe(true);
   });
+  it("el resumen consolidado coincide con kpis() y derivados() por separado", () => {
+    const r = S.resumenBanco();
+    expect(r.kpis).toEqual(S.kpis());
+    expect(r.derivados).toEqual(S.derivados());
+    expect(S.cartera().filter((c) => c.pideAyuda).length).toBe(2);
+  });
   it("kpis coherentes", () => {
     const k = S.kpis();
     expect(k.avisosEnviados).toBe(100);

@@ -28,7 +28,7 @@ export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver:
 
   return (
     <section className="space-y-3">
-      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0A84FF]"><IcAtras tam={22} />Volver</button>
+      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-3">
         <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcBurbuja} color="cielo" tam={34} />Habla con Pareas</h2><p className="text-xs text-gray-500">Solo temas de tu deuda, tu plan y la Caja.</p>
         <div className="space-y-2 max-h-[50vh] overflow-y-auto" aria-live="polite">

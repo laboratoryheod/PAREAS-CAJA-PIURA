@@ -7,7 +7,7 @@ import { FichaApp, IcBurbuja, IcCalculadora, IcLatigo, IcMando, IcTarjeta, IcEnV
 
 export function PantallaCliente() {
   return (
-    <div className="flex h-full flex-col gap-2 overflow-hidden bg-[#F2F2F7] px-3 pb-6 text-[#1C1C1E]">
+    <div className="flex h-full flex-col gap-2 overflow-hidden bg-[#F7F7F7] px-3 pb-6 text-[#1C1C1E]">
       <div>
         <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Sábado 10 de octubre</p>
         <p className="text-[20px] font-bold leading-tight tracking-[-0.03em]">Hola, Gengis</p>
@@ -67,7 +67,7 @@ export function PantallaGestor() {
     [IcGestor, "grafito", "Santos Z. pidió hablar con un gestor", "hace 8 min"],
   ] as const;
   return (
-    <div className="grid h-full grid-cols-[1fr_1.1fr] gap-3 bg-[#F5F5F7] p-3 text-[#1C1C1E]">
+    <div className="grid h-full grid-cols-[1fr_1.1fr] gap-3 bg-[#F7F7F7] p-3 text-[#1C1C1E]">
       <div className="space-y-2">
         <p className="text-[13px] font-bold tracking-[-0.02em]">Panel del gestor</p>
         <div className="grid grid-cols-2 gap-1.5">
@@ -76,7 +76,7 @@ export function PantallaGestor() {
         <div className="rounded-xl bg-white p-2 shadow-[0_0_0_1px_rgba(0,0,0,0.05)]">
           <p className="text-[8px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Cartera por tramo</p>
           {[["1–15 días", 32], ["16–30", 28], ["31–60", 25], ["> 60", 15]].map(([t, v]) => (
-            <div key={t as string} className="mt-1 flex items-center gap-1.5 text-[8px]"><span className="w-12 text-neutral-500">{t}</span><span className="h-1.5 rounded-full bg-[#0A84FF]" style={{ width: `${(v as number) * 2}%` }} /></div>
+            <div key={t as string} className="mt-1 flex items-center gap-1.5 text-[8px]"><span className="w-12 text-neutral-500">{t}</span><span className="h-1.5 rounded-full bg-[#0072C6]" style={{ width: `${(v as number) * 2}%` }} /></div>
           ))}
         </div>
       </div>

@@ -29,7 +29,7 @@ export default function Confirmar({ sit, plan, resultado, total, onListo, onVolv
 
   return (
     <section className="space-y-4">
-      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0A84FF]"><IcAtras tam={22} />Cambiar mi plan</button>
+      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Cambiar mi plan</button>
       <div className="card space-y-2">
         <h2 className="text-xl font-extrabold text-caja">¿Cerramos trato?</h2>
         <p>{plan.inicial > 0 ? <>Pagarás una inicial de <b>{soles(plan.inicial)}</b> hoy y </> : "Pagarás "}el resto en <b>{plan.nCuotas} cuota{plan.nCuotas === 1 ? "" : "s"}</b>, empezando el <b>{plan.fechaPrimerPago.split("-").reverse().join("/")}</b>.</p>

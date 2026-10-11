@@ -22,15 +22,15 @@ function IslaNav() {
   const enlaces = [["#como", "Cómo funciona"], ["#chicotazo", "CHICOTAZO"], ["#gestor", "Para la Caja"], ["#seguridad", "Seguridad"]];
   return (
     <div className="fixed inset-x-0 top-3 z-50 flex justify-center px-3" onMouseLeave={() => setAbierta(false)}>
-      <motion.nav layout onMouseEnter={() => setAbierta(true)} className="overflow-hidden bg-black/90 text-white shadow-[0_12px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl"
+      <motion.nav layout onMouseEnter={() => setAbierta(true)} className="overflow-hidden bg-[#00529B]/95 text-white shadow-[0_12px_32px_rgba(0,0,0,0.3)] backdrop-blur-xl"
         style={{ borderRadius: 28 }} transition={{ type: "spring", bounce: 0.18, duration: 0.55 }} aria-label="Principal">
         <motion.div layout className="flex items-center gap-3 py-1.5 pl-1.5 pr-1.5">
           <button onClick={() => setAbierta((x) => !x)} aria-expanded={abierta} className="flex min-h-[40px] items-center gap-2 rounded-full pr-2">
             <span className="relative h-9 w-9 overflow-hidden rounded-full bg-white"><Image src="/pareas/logo.png" alt="" fill sizes="36px" className="object-cover" /></span>
             <span className="text-[15px] font-semibold tracking-[-0.01em]">Ponte al Día</span>
-            <span className="flex items-center gap-1 rounded-full bg-[#FF3B30]/20 px-2 py-0.5 text-[11px] font-semibold text-[#FF6B60]"><motion.span className="h-1.5 w-1.5 rounded-full bg-[#FF453A]" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />En vivo</span>
+            <span className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold text-white"><motion.span className="h-1.5 w-1.5 rounded-full bg-[#FF453A]" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />En vivo</span>
           </button>
-          <Link href="/cliente" className="flex min-h-[40px] items-center rounded-full bg-[#0A84FF] px-4 text-[14px] font-semibold active:scale-[0.96] transition-transform">Entrar</Link>
+          <Link href="/cliente" className="flex min-h-[40px] items-center rounded-full bg-[#F9A825] text-[#1A1A1A] px-4 text-[14px] font-semibold active:scale-[0.96] transition-transform">Entrar</Link>
         </motion.div>
         <AnimatePresence initial={false}>
           {abierta && (
@@ -54,7 +54,7 @@ function BarraFlotante({ visible }: { visible: boolean }) {
             <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-[12px] bg-[#EEF4FF]"><Image src="/pareas/pareas.png" alt="" fill sizes="44px" className="object-contain p-0.5" /></span>
             <div className="hidden min-w-0 flex-1 sm:block"><p className="text-[14px] font-semibold leading-tight">Ponte al día hoy</p><p className="truncate text-[12px] text-neutral-500">Sin colas, sin llamadas, con Pareas</p></div>
             <Link href="/banco" className="ml-auto flex min-h-[44px] items-center rounded-full bg-neutral-100 px-4 text-[14px] font-semibold text-neutral-800 active:scale-[0.96] transition-transform">Soy gestor</Link>
-            <Link href="/cliente" className="flex min-h-[44px] items-center gap-1 rounded-full bg-[#0A84FF] px-4 text-[14px] font-semibold text-white active:scale-[0.96] transition-transform">Soy cliente<IcFlecha tam={16} /></Link>
+            <Link href="/cliente" className="flex min-h-[44px] items-center gap-1 rounded-full bg-[#F9A825] px-4 text-[14px] font-semibold text-[#1A1A1A] active:scale-[0.96] transition-transform">Soy cliente<IcFlecha tam={16} /></Link>
           </div>
         </motion.div>
       )}
@@ -94,21 +94,21 @@ export default function Landing() {
   }, [reducir]);
 
   return (
-    <main className="min-h-screen overflow-x-clip bg-[#F5F5F7] text-[#1D1D1F]">
+    <main className="min-h-screen overflow-x-clip bg-[#F7F7F7] text-[#1D1D1F]">
       <IslaNav />
 
       {/* ---------- hero ---------- */}
       <section ref={hero} className="relative px-5 pb-10 pt-28 text-center md:pt-32">
-        <motion.p {...ENTRA(0)} className="text-[15px] font-semibold text-[#BF4800]">Nuevo · Caja Piura · Reto 14</motion.p>
+        <motion.p {...ENTRA(0)} className="text-[15px] font-semibold text-[#00529B]">Nuevo · Caja Piura · Reto 14</motion.p>
         <motion.h1 {...ENTRA(1)} className="mx-auto mt-2 max-w-4xl text-[48px] font-semibold leading-[1.04] tracking-[-0.045em] md:text-[84px]">
-          Ponte al día.<br /><span className="bg-gradient-to-r from-[#0A84FF] via-[#5E5CE6] to-[#FF375F] bg-clip-text text-transparent">Con Pareas.</span>
+          Ponte al día.<br /><span className="bg-gradient-to-r from-[#0047AB] via-[#0072C6] to-[#F9A825] bg-clip-text text-transparent">Con Pareas.</span>
         </motion.h1>
         <motion.p {...ENTRA(2)} className="mx-auto mt-4 max-w-xl text-[19px] leading-relaxed text-[#6E6E73] md:text-[21px]">
           Tu deuda clara, tu plan de pago a tu ritmo y un juego que te premia por pagar a tiempo. Y si te atrasas, el CHICOTAZO.
         </motion.p>
         <motion.div {...ENTRA(3)} className="mt-6 flex flex-wrap items-center justify-center gap-4">
-          <Link href="/cliente" className="flex min-h-[48px] items-center rounded-full bg-[#0071E3] px-6 text-[17px] font-medium text-white transition-transform active:scale-[0.96] hover:bg-[#0077ED]">Entrar como cliente</Link>
-          <Link href="/banco" className="flex min-h-[48px] items-center gap-1 text-[17px] text-[#0066CC] hover:underline">Ver panel del gestor<IcFlecha tam={16} /></Link>
+          <Link href="/cliente" className="flex min-h-[48px] items-center rounded-full bg-[#F9A825] px-6 text-[17px] font-semibold text-[#1A1A1A] transition-transform active:scale-[0.96] hover:bg-[#FFB733]">Entrar como cliente</Link>
+          <Link href="/banco" className="flex min-h-[48px] items-center gap-1 text-[17px] text-[#0047AB] hover:underline">Ver panel del gestor<IcFlecha tam={16} /></Link>
         </motion.div>
 
         {/* escenario de dispositivos */}
@@ -177,7 +177,7 @@ export default function Landing() {
             <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Pareas, tu agente</h3>
             <p className="mt-1 text-[15px] text-[#6E6E73]">Responde sobre tu deuda, tu plan y la Caja. Nada más: así es rápido, seguro y no te enreda.</p>
             <div className="mt-4 space-y-2 text-[14px]">
-              <p className="ml-auto w-fit rounded-[18px] rounded-br-[6px] bg-[#0A84FF] px-3 py-2 text-white">¿Cuánto debo hoy?</p>
+              <p className="ml-auto w-fit rounded-[18px] rounded-br-[6px] bg-[#0072C6] px-3 py-2 text-white">¿Cuánto debo hoy?</p>
               <p className="w-fit max-w-[85%] rounded-[18px] rounded-bl-[6px] bg-[#E9E9EB] px-3 py-2">Hoy debes S/ 326.08, compare. ¿Lo pasamos a cuotas?</p>
             </div>
           </Bento>
@@ -196,7 +196,7 @@ export default function Landing() {
       </section>
 
       {/* ---------- para la Caja ---------- */}
-      <section id="gestor" className="scroll-mt-24 bg-black py-20 text-white">
+      <section id="gestor" className="scroll-mt-24 bg-[#071A33] py-20 text-white">
         <div className="mx-auto max-w-6xl px-5">
           <motion.h2 {...ENTRA(0)} className="text-[40px] font-semibold leading-tight tracking-[-0.04em] md:text-[56px]">Para la Caja,<br /><span className="text-[#86868B]">todo en tiempo real.</span></motion.h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">

@@ -46,7 +46,7 @@ export function WidgetScore({ sit, progreso, className }: { sit: Situacion; prog
         <p className="text-[13px] text-neutral-600">{sit.siguienteNivel.texto}</p>
         <div className="flex flex-wrap gap-1.5 pt-0.5 text-[11px] font-semibold">
           <span className="flex items-center gap-1 rounded-full bg-[#E8F8EE] px-2 py-0.5 text-[#1DA851]"><span className="h-1.5 w-1.5 rounded-full bg-[#1DA851]" />Trivia hoy</span>
-          <span className={cn("flex items-center gap-1 rounded-full px-2 py-0.5", mora ? "bg-[#FFF1F0] text-[#C9182B]" : "bg-[#EEF4FF] text-[#0A84FF]")}>
+          <span className={cn("flex items-center gap-1 rounded-full px-2 py-0.5", mora ? "bg-[#FFF1F0] text-[#C9182B]" : "bg-[#EEF4FF] text-[#0072C6]")}>
             <IcLlama tam={12} />{mora ? "Racha en pausa" : "Racha activa"}
           </span>
         </div>

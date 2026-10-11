@@ -15,7 +15,7 @@ export default function Plan({ sit, onPagar, onVolver }: { sit: Situacion; onPag
   const proximo = p.pagos.find((x: any) => !x.pagado);
   return (
     <section className="space-y-4">
-      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0A84FF]"><IcAtras tam={22} />Volver</button>
+      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-3">
         <div className="flex justify-center"><FichaApp icono={derivada ? IcGestor : porArrancar ? IcCalendario : IcCheck} color={derivada ? "grafito" : porArrancar ? "sol" : "verde"} tam={56} /></div>
         <h2 className="text-xl font-bold text-caja text-center">{derivada ? "Propuesta enviada a tu gestor" : porArrancar ? "¡Plan aceptado! Falta tu primer pago" : "¡Tu plan está en marcha!"}</h2>

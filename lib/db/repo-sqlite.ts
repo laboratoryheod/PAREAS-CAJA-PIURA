@@ -81,6 +81,7 @@ export function crearRepoSqlite(): Repo {
       const r = (cid ? db().prepare(sql + " AND cliente_id=?").get(desde, cid) : db().prepare(sql).get(desde)) as { c: number };
       return r.c;
     },
+    idsConEvento: (tipo) => (db().prepare("SELECT DISTINCT cliente_id FROM eventos WHERE tipo=?").all(tipo) as { cliente_id: number }[]).map((r) => r.cliente_id),
     clientesConEvento: (tipo) => (db().prepare("SELECT COUNT(DISTINCT cliente_id) c FROM eventos WHERE tipo=?").get(tipo) as { c: number }).c,
   };
 }

@@ -1,5 +1,6 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
+import { usarPolling } from "@/lib/usar-polling";
 import { IcRegalo, IcCheck, IcReloj } from "@/components/iconos";
 import Link from "next/link";
 import { api, soles } from "@/lib/cliente-api";
@@ -16,12 +17,9 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
     try { await api("/api/banco/regalo", { clienteId: Number(id) }); setAviso("Regalo Salvador otorgado. El cliente ya lo ve en su app."); setD(await api(`/api/banco/cliente/${id}`)); }
     catch (e: any) { setAviso(e.message); }
   }
-  useEffect(() => {
-    const cargar = () => api(`/api/banco/cliente/${id}`).then(setD).catch((e) => setError(e.message));
-    cargar();
-    const t = setInterval(cargar, 3000);
-    return () => clearInterval(t);
-  }, [id]);
+  const cargar = useCallback(() => api(`/api/banco/cliente/${id}`).then(setD).catch((e) => setError(e.message)), [id]);
+  useEffect(() => { cargar(); }, [cargar]);
+  usarPolling(cargar, 5000); // pausado con la pestaña en segundo plano
   if (error) return <main className="p-6"><p className="text-red-700">{error}</p></main>;
   if (!d) return <main className="p-6">Cargando…</main>;
   return (

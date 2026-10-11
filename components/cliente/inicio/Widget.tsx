@@ -8,7 +8,7 @@ export function Widget({ className, children, oscuro = false, ...p }: React.HTML
         "relative overflow-hidden rounded-[28px] p-4",
         oscuro
           ? "bg-[#111317] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_10px_30px_rgba(0,0,0,0.25)]"
-          : "bg-white/80 backdrop-blur-xl shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,30,80,0.06)]",
+          : "bg-white shadow-[0_0_0_1px_#D6E4F5,0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,71,171,0.06)]",
         className,
       )}
       {...p}

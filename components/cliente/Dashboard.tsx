@@ -1,49 +1,55 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { api, type Situacion } from "@/lib/cliente-api";
+import { usarPolling } from "@/lib/usar-polling";
 import { Dock, DockCard } from "@/components/ui/dock";
 import { FamilyButton } from "@/components/ui/family-button";
 import { IcInicio, IcTarjeta, IcCalculadora, IcCalendario, IcMando, IcBurbuja, IcGestor, IcQR, IcReloj } from "@/components/iconos";
-import Simulador, { type PlanElegido } from "./Simulador";
-import Confirmar from "./Confirmar";
-import Pagar from "./Pagar";
-import Plan from "./Plan";
-import Trivia from "./Trivia";
-import Asistente from "./Asistente";
+import dynamic from "next/dynamic";
+import type { PlanElegido } from "./Simulador";
 import { Inicio } from "./inicio/Inicio";
 import { Bienvenida } from "./inicio/Bienvenida";
 import type { ProgresoTrivia } from "./inicio/Widgets";
+
+// Vistas secundarias: se descargan solo cuando el cliente navega a ellas (code splitting)
+const Cargando = () => <div className="mx-auto mt-10 h-40 max-w-xl animate-pulse rounded-[28px] bg-white/70" aria-busy="true" />;
+const Simulador = dynamic(() => import("./Simulador"), { ssr: false, loading: Cargando });
+const Confirmar = dynamic(() => import("./Confirmar"), { ssr: false, loading: Cargando });
+const Pagar = dynamic(() => import("./Pagar"), { ssr: false, loading: Cargando });
+const Plan = dynamic(() => import("./Plan"), { ssr: false, loading: Cargando });
+const Trivia = dynamic(() => import("./Trivia"), { ssr: false, loading: Cargando });
+const Asistente = dynamic(() => import("./Asistente"), { ssr: false, loading: Cargando });
+
+const POLL_MS = 5000;
 
 type Vista = "inicio" | "simulador" | "confirmar" | "plan" | "pagar" | "trivia" | "asistente";
 export type { Vista };
 
 const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 
-export default function Dashboard({ clienteId, vistaInicial = "inicio" }: { clienteId: number; vistaInicial?: Vista }) {
-  const [sit, setSit] = useState<Situacion | null>(null);
-  const [progreso, setProgreso] = useState<ProgresoTrivia | null>(null);
+export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial }: { clienteId: number; vistaInicial?: Vista; inicial: { sit: Situacion; progreso: ProgresoTrivia } }) {
+  const [sit, setSit] = useState<Situacion | null>(inicial.sit);
+  const [progreso, setProgreso] = useState<ProgresoTrivia | null>(inicial.progreso);
   const [vista, setVista] = useState<Vista>(vistaInicial);
   const [plan, setPlan] = useState<{ plan: PlanElegido; resultado: string; total: number } | null>(null);
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
 
-  const refrescar = useCallback(async () => {
-    const [s, t] = await Promise.all([api<Situacion>(`/api/cliente/${clienteId}`), api<{ progreso: ProgresoTrivia }>(`/api/trivia?clienteId=${clienteId}`)]);
-    setSit(s); setProgreso(t.progreso); return s;
-  }, [clienteId]);
-  useEffect(() => {
-    api<Situacion>(`/api/cliente/${clienteId}?abrir=1`).then(setSit).catch((e) => setError(e.message));
-    api<{ progreso: ProgresoTrivia }>(`/api/trivia?clienteId=${clienteId}`).then((t) => setProgreso(t.progreso)).catch(() => {});
-  }, [clienteId]);
-  // Si el gestor otorga un regalo mientras el cliente mira, aparece solo
-  useEffect(() => { if (vista !== "inicio") return; const t = setInterval(() => { refrescar().catch(() => {}); }, 5000); return () => clearInterval(t); }, [vista, refrescar]);
+  const refrescarSituacion = useCallback(async () => { const s = await api<Situacion>(`/api/cliente/${clienteId}`); setSit(s); return s; }, [clienteId]);
+  const refrescarTrivia = useCallback(async () => { const t = await api<{ progreso: ProgresoTrivia }>(`/api/trivia?clienteId=${clienteId}`); setProgreso(t.progreso); }, [clienteId]);
+  // Refresco completo (situación + trivia): solo al volver al inicio o tras una acción, no en el polling
+  const refrescar = useCallback(async () => { const [s] = await Promise.all([refrescarSituacion(), refrescarTrivia()]); return s; }, [refrescarSituacion, refrescarTrivia]);
 
-  if (error) return <main className="mx-auto max-w-md p-6"><p className="card text-red-700">{error}</p><Link href="/" className="text-[#0A84FF] underline">Volver al inicio</Link></main>;
+  // Polling liviano: solo la situación (para ver al instante un regalo del gestor), solo en el inicio
+  // y pausado con la pestaña en segundo plano. La trivia se refresca al volver de jugar.
+  usarPolling(() => refrescarSituacion().catch(() => {}), POLL_MS, vista === "inicio");
+
+  if (error) return <main className="mx-auto max-w-md p-6"><p className="card text-red-700">{error}</p><Link href="/" className="text-[#0072C6] underline">Volver al inicio</Link></main>;
   if (!sit) return (
-    <main className="grid min-h-screen place-items-center bg-[#F2F2F7]">
+    <main className="grid min-h-screen place-items-center bg-[#F7F7F7]">
       <motion.div animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 1.2, repeat: Infinity }} className="relative h-24 w-24"><Image src="/pareas/pareas.png" alt="Cargando" fill sizes="96px" className="object-contain" /></motion.div>
     </main>
   );
@@ -71,14 +77,14 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio" }: { clie
   ];
 
   return (
-    <main className="min-h-screen bg-[#F2F2F7] pb-36 text-[#1C1C1E]">
+    <main className="min-h-screen bg-[#F7F7F7] pb-36 text-[#1C1C1E]">
       {/* barra superior translúcida estilo iOS */}
-      <header className="sticky top-0 z-30 border-b border-black/5 bg-[#F2F2F7]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 bg-[#00529B] text-white shadow-[0_1px_0_rgba(0,0,0,0.08)]">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
           <Link href="/" className="flex min-h-[44px] items-center gap-2 text-[17px] font-semibold tracking-[-0.01em]">
-            <Image src="/pareas/logo.png" alt="" width={30} height={30} className="rounded-[8px]" />Ponte al Día
+            <Image src="/pareas/logo.png" alt="" width={30} height={30} className="rounded-[8px] bg-white" />Ponte al Día
           </Link>
-          <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-[#0A84FF]">Salir</Link>
+          <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-white/90 hover:text-white">Salir</Link>
         </div>
       </header>
 
@@ -95,7 +101,7 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio" }: { clie
 
                 <div className="mt-6 overflow-hidden rounded-[20px] bg-white text-[15px] shadow-[0_0_0_1px_rgba(0,0,0,0.05)]">
                   <p className="px-4 pb-1 pt-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Demo · {sit.fechaDemoLarga}</p>
-                  <button className="flex min-h-[48px] w-full items-center gap-3 px-4 text-left hover:bg-black/[0.03]" onClick={async () => { await api("/api/demo/avanzar-dia", {}); refrescar(); }}><IcReloj tam={20} className="text-[#0A84FF]" />Pasar un día</button>
+                  <button className="flex min-h-[48px] w-full items-center gap-3 px-4 text-left hover:bg-black/[0.03]" onClick={async () => { await api("/api/demo/avanzar-dia", {}); refrescar(); }}><IcReloj tam={20} className="text-[#0072C6]" />Pasar un día</button>
                   <button className="flex min-h-[48px] w-full items-center gap-3 border-t border-black/5 px-4 text-left text-[#FF3B30] hover:bg-black/[0.03]" onClick={async () => { await api("/api/demo/reset", {}); try { localStorage.removeItem(`pareas-bienvenida-${clienteId}`); } catch {} location.reload(); }}>Reiniciar demo</button>
                 </div>
               </>
@@ -105,7 +111,7 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio" }: { clie
                 {vista === "confirmar" && plan && <Confirmar sit={sit} plan={plan.plan} resultado={plan.resultado} total={plan.total} onVolver={() => setVista("simulador")} onListo={(s) => { setSit(s); setVista("plan"); }} />}
                 {vista === "plan" && <Plan sit={sit} onVolver={volver} onPagar={() => setVista("pagar")} />}
                 {vista === "pagar" && <Pagar sit={sit} onPagado={setSit} onVolver={volver} />}
-                {vista === "trivia" && <Trivia sit={sit} onScore={setSit} onVolver={volver} />}
+                {vista === "trivia" && <Trivia sit={sit} onScore={(s) => { setSit(s); refrescarTrivia().catch(() => {}); }} onVolver={volver} />}
                 {vista === "asistente" && <Asistente sit={sit} onVolver={volver} />}
               </div>
             )}

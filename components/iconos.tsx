@@ -52,7 +52,7 @@ export const IcPareas = (p: P) => <Glifo {...p}><path d="M4 16.5c0-4.6 3.4-8.3 8
 
 const PALETA = {
   azul: "from-[#2F8CFF] to-[#0047AB]",
-  cielo: "from-[#5AC8FA] to-[#0A84FF]",
+  cielo: "from-[#5AC8FA] to-[#0072C6]",
   sol: "from-[#FFD60A] to-[#FF9F0A]",
   coral: "from-[#FF7A59] to-[#FF375F]",
   rojo: "from-[#FF6A3D] to-[#C9182B]",

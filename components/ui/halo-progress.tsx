@@ -1,3 +1,4 @@
+// Adaptado de cult-ui (MIT): el brillo animado usa transform en vez de `left` (rendimiento).
 "use client"
 
 /**
@@ -129,19 +130,17 @@ export function HaloProgress({
             className="absolute inset-x-0 bottom-0 h-1/2"
             transition={{ duration: 0.22, ease: "easeOut" }}
           >
-            <motion.div
-              animate={{ left: ["-8%", "72%", "-8%"] }}
-              className="-bottom-3 absolute h-10 w-32 blur-xl"
-              style={{
-                background:
-                  "linear-gradient(90deg, #0070f3, #7928ca, #00d4ff, #ff0080)",
-              }}
-              transition={{
+            {/* Optimizado: se anima transform (x) del envoltorio de ancho completo en vez de `left` → sin layout por cuadro */}
+<motion.div aria-hidden className="absolute inset-0 will-change-transform" animate={{ x: ["-8%", "72%", "-8%"] }} transition={{
                 duration: reduceMotion ? 0.01 : 5.5,
                 ease: "easeInOut",
                 repeat: reduceMotion ? 0 : Number.POSITIVE_INFINITY,
-              }}
-            />
+              }}>
+<div className="-bottom-3 absolute h-10 w-32 blur-xl left-0" style={{
+                background:
+                  "linear-gradient(90deg, #0070f3, #7928ca, #00d4ff, #ff0080)",
+              }} />
+</motion.div>
           </motion.div>
         </div>
 

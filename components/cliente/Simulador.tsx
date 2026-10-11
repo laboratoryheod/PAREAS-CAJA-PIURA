@@ -29,7 +29,7 @@ export default function Simulador({ sit, onContinuar, onVolver }: { sit: Situaci
 
   return (
     <section className="space-y-4">
-      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0A84FF]"><IcAtras tam={22} />Volver</button>
+      <button onClick={onVolver} className="-ml-2 flex min-h-[44px] items-center gap-0.5 text-[17px] text-[#0072C6]"><IcAtras tam={22} />Volver</button>
       <div className="card space-y-5">
         <div>
           <h2 className="flex items-center gap-2 text-[22px] font-bold tracking-[-0.02em]"><FichaApp icono={IcCalculadora} color="sol" tam={34} />Arma tu plan, a tu ritmo</h2>

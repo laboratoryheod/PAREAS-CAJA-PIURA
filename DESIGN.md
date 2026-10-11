@@ -16,16 +16,21 @@ Las skills de `.agents/skills/` y `.claude/skills/` (traídas de cult-ui: `front
 - San Francisco en dispositivos Apple (`-apple-system`), con Plus Jakarta Sans como respaldo.
 - Títulos con tracking negativo (−0.02 a −0.045 em), números en `tabular-nums`, inputs ≥ 16 px.
 
-## Color
+## Color (identidad de Caja Piura)
+Se aplica la paleta institucional de Caja Piura (tomada de capturas de cajapiura.pe, ver el brief del proyecto) sobre la estructura estilo Apple.
 | Uso | Valor |
 |---|---|
-| Acción (enlaces, botones) | `#0A84FF` / `#0071E3` |
+| Azul principal (marca, botones, dock activo) | `#0047AB` |
+| Azul medio (enlaces, acciones secundarias, foco) | `#0072C6` |
+| Azul de encabezado (barras superiores, isla de navegación) | `#00529B` |
+| Acento amarillo-naranja (CTA principal y logros: "Entrar como cliente", "Empezar") | `#F9A825` |
+| Fondo / borde de tarjetas | `#F7F7F7` / `#D6E4F5` |
+| Azul noche (secciones oscuras) | `#071A33` |
 | Éxito / pagado | `#34C759` |
-| Alerta / mora / CHICOTAZO | `#FF3B30`, degradado `#7A0F1C → #E2401C` |
-| Sol / plan | `#FF9F0A`, `#FFD60A` |
+| Mora / CHICOTAZO | `#FF3B30`, degradado `#7A0F1C → #E2401C` |
 | Juego / trivia | `#5B2EE5 → #9B4DFF` |
 | Regalo Salvador | `#D6247A → #FF7A59` |
-| Marca Caja (panel del gestor) | `#0047AB` |
+El logo oficial de Caja Piura no se usa en el prototipo (solo texto); la marca visible es PAREAS / Pareas.
 
 ## Flotantes
 - Landing: isla de navegación negra arriba (se expande al pasar o tocar) y barra translúcida abajo con "Soy cliente / Soy gestor" que aparece al bajar.

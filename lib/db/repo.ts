@@ -57,6 +57,8 @@ export interface Repo {
   eventosDeCliente(clienteId: number): EventoRow[];
   contarEventos(tipo: TipoEvento): number;
   clientesConEvento(tipo: TipoEvento): number;
+  /** Ids de clientes que tienen al menos un evento de este tipo (una sola consulta). */
+  idsConEvento(tipo: TipoEvento): number[];
   /** Respuestas generadas por IA desde una fecha ISO (para los cupos del asistente). */
   contarChatsIA(desdeIso: string, clienteId?: number): number;
 }
