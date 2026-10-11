@@ -155,6 +155,9 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
 #p-E5 .hito { position: absolute; top: 128px; font-size: 26px; font-weight: 700; }
 #p-E5 .hito small { display: block; font-size: 22px; font-weight: 600; color: #3A2A00; }
 #p-E5 .marca31 { position: absolute; left: 52%; top: 56px; width: 6px; height: 70px; margin-left: -3px; border-radius: 3px; background: var(--rojo); }
+#p-E5 .gengis { position: absolute; left: 20.1%; top: -6px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; padding: 8px 16px; border-radius: 14px; background: var(--azul-noche); color: var(--blanco); font-size: 22px; line-height: 1.15; }
+#p-E5 .gengis span { font-size: 18px; color: #C9D8EE; }
+#p-E5 .gengis::after { content: ""; position: absolute; bottom: -10px; left: 50%; margin-left: -10px; border: 10px solid transparent; border-bottom: 0; border-top-color: var(--azul-noche); }
 #p-E5 .dato { position: absolute; left: 120px; top: 840px; display: flex; gap: 22px; align-items: baseline; }
 #p-E5 .dato b { font-size: 84px; letter-spacing: -2px; }
 #p-E5 .dato span { font-size: 32px; }
@@ -214,21 +217,21 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
 <!-- E1 · Gancho -->
 <section class="panel noche" id="p-E1">
   <div class="grupo" style="display:flex;flex-direction:column;align-items:center;gap:22px">
-    <p class="lema in" style="--d:0.2s">Mientras dura este pitch, Caja Piura da por perdidos</p>
+    <p class="lema in" style="--d:0.2s">Al ritmo de 2025, mientras dura este pitch Caja Piura castiga en créditos</p>
     <p class="grande in" style="--d:0.4s" data-contador>S/ 0.00</p>
     <p class="tasa in" style="--d:1.2s">S/ 31.7 por segundo: el promedio de créditos castigados en 2025</p>
-    <p class="golpe in" style="--d:4.5s">En 3 minutos: S/ 5,700.</p>
+    <p class="golpe in" style="--d:6.8s">En 3 minutos: S/ 5,700.</p>
   </div>
-  <div class="marca pop" style="--d:8.6s"><img src="/pareas/pareas.png" alt=""><span>PAREAS</span></div>
+  <div class="marca pop" style="--d:10.2s"><img src="/pareas/pareas.png" alt=""><span>PAREAS</span></div>
   <p class="fuente" style="color:#8FA8CC">S/ 999.2 millones castigados en 2025 ÷ 365 días. Fuente: Microfinanzas.pe con datos de la SBS.</p>
 </section>
 
 <!-- E2 · Segmentos -->
 <section class="panel" id="p-E2">
   <div class="tit in" style="--d:0.2s;display:flex;flex-direction:column;gap:10px"><p class="ceja">Segmentos de clientes</p><p class="h1" data-rot="E2">¿A quién le duele?</p></div>
-  <div class="etq in" style="--d:0.9s;left:150px;width:400px"><b>El emprendedor</b><span>9 de cada 10 mypes de Piura son informales: un mal mes y ya está atrasado.</span></div>
-  <div class="etq in" style="--d:5.5s;left:560px;width:880px"><b>El gestor de cobranza</b><span>Llama, visita y se expone. En zonas con extorsión arriesga hasta su seguridad.</span></div>
-  <div class="caja in" style="--d:10.5s"><img src="/caja/logo-caja-piura-blanco.png" alt=""><p class="n">La Caja</p><p class="s">Cada cliente que se rinde es un crédito castigado y un emprendedor que termina en el gota a gota.</p></div>
+  <div class="etq in" style="--d:0.9s;left:150px;width:400px"><b>El emprendedor</b><span>9 de cada 10 mypes de Piura son informales y viven al día.</span></div>
+  <div class="etq in" style="--d:7.5s;left:540px;width:880px"><b>El gestor de cobranza</b><span>Llama, visita y se expone. En zonas con extorsión arriesga hasta su seguridad.</span></div>
+  <div class="caja in" style="--d:11.5s"><img src="/caja/logo-caja-piura-blanco.png" alt=""><p class="n">La Caja</p><p class="s">Cada atraso que no se atiende a tiempo puede terminar en un crédito castigado.</p></div>
 </section>
 
 <!-- E3 · Problema -->
@@ -237,11 +240,11 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
   <div class="cifras">
     <div class="cifra in" style="--d:0.8s"><p class="n">S/ 999 M</p><p class="d">castigados en 2025: <b style="color:#fff">S/ 2.7 millones cada día</b></p>
       <div class="barras"><small>2022 · S/ 118 M</small><div class="barra b22"></div><small>2025 · S/ 999 M</small><div class="barra b25"></div></div></div>
-    <div class="cifra in" style="--d:9s"><p class="n">24×</p><p class="d">S/ 727.6 M en provisiones al cierre de 2024: 24 veces su utilidad de ese año (S/ 30.1 M)</p></div>
-    <div class="cifra in" style="--d:15.5s"><p class="n">9.53 %</p><p class="d">de morosidad en 2025: 1.6 veces la del sistema de cajas municipales (menos de 6 %)</p></div>
+    <div class="cifra in" style="--d:13s"><p class="n">24×</p><p class="d">S/ 727.6 M en provisiones al cierre de 2024: 24 veces la utilidad de ese año (S/ 30.1 M)</p></div>
+    <div class="cifra in" style="--d:17.5s"><p class="n">9.53 %</p><p class="d">de morosidad en 2025: 1.6 veces la del sistema de cajas municipales (menos de 6 %)</p></div>
   </div>
-  <p class="bajo in" style="--d:1.2s">Panel del gestor en PAREAS: así se ve una cartera en mora</p>
-  <p class="fuente">Fuentes: Microfinanzas.pe con datos de la SBS (castigos 2022–2025 y morosidad); informe de clasificación de riesgo publicado por la SBS, abril de 2025 (provisiones y utilidad 2024).</p>
+  <p class="bajo in" style="--d:1.2s">Panel del gestor en PAREAS (cartera de ejemplo)</p>
+  <p class="fuente">Fuentes: Microfinanzas.pe con datos de la SBS (castigos 2022–2025 y morosidad); informe de clasificación de riesgo publicado por la SBS, abril de 2025 (provisiones y utilidad 2024). Desde 2024 incluye la cartera absorbida de Caja Sullana; utilidad 2025: S/ 107.8 M (Moody's Local).</p>
 </section>
 
 <!-- E4 · Consecuencias -->
@@ -251,27 +254,28 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
     <div class="t in" style="--d:0.6s">
       <svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#C9182B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4.5"/><path d="M12 17.4v.1"/></svg>
       <h3>Reputación</h3><p class="n rojo">33.1 UIT</p><p>Multa de Indecopi a una caja municipal por cobranza abusiva. Cobrar mal también cuesta.</p></div>
-    <div class="t in" style="--d:6.5s">
+    <div class="t in" style="--d:8.5s">
       <svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#0047AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.6c2.6.2 4.4 1.9 5 4.9"/></svg>
-      <h3>Personas</h3><p class="n">Extorsión</p><p>Gestores expuestos en la calle: hay microfinancieras que evalúan cerrar agencias para proteger a su personal.</p></div>
-    <div class="t in" style="--d:12.5s">
+      <h3>Personas</h3><p class="n">Hasta 250</p><p>agencias microfinancieras en riesgo de cierre por la extorsión: gestores y personal expuestos en la calle.</p></div>
+    <div class="t in" style="--d:11.8s">
       <svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#0047AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>
-      <h3>Industria</h3><p class="n">250 agencias</p><p>en riesgo de cierre. Y el gota a gota ya mueve más de S/ 4,000 millones con 2 millones de deudores.</p></div>
+      <h3>Industria</h3><p class="n">S/ 4,000 M</p><p>mueve el gota a gota, con 2 millones de deudores: ahí cae quien sale del sistema.</p></div>
   </div>
   <p class="fuente">Fuentes: Indecopi vía prensa (Caja Municipal de Crédito Popular de Lima, 33.1 UIT); Fepcmac, declaraciones de su presidente (octubre de 2025, Infobae y Exitosa).</p>
 </section>
 
 <!-- E5 · Causa raíz -->
 <section class="panel" id="p-E5">
-  <div class="tit in" style="--d:0.1s"><p class="ceja">La causa de fondo</p><p class="h1" data-rot="E5">Nadie deja de pagar porque quiera. Deja de pagar porque nadie lo acompañó a tiempo.</p></div>
+  <div class="tit in" style="--d:0.1s"><p class="ceja">La causa de fondo</p><p class="h1" data-rot="E5">Muchos no dejan de pagar porque quieran: dejan de pagar porque nadie los acompañó a tiempo.</p></div>
   <div class="linea in" style="--d:0.8s">
     <p class="zona-txt">Del día 1 al 30: aquí se gana la batalla</p>
     <div class="riel"></div><div class="zona"></div><div class="marca31"></div>
     <p class="hito" style="left:0">Día 1<small>primer atraso</small></p>
-    <p class="hito" style="left:52%;margin-left:-60px;color:#C9182B">Día 31<small>la SBS lo califica deficiente</small></p>
+    <p class="hito" style="left:52%;margin-left:-60px;color:#C9182B">Día 31<small>según la SBS, pasa a deficiente</small></p>
+    <div class="gengis"><b>Gengis</b><span>día 12</span></div>
     <p class="hito" style="right:0;text-align:right">Castigo<small>crédito perdido</small></p>
   </div>
-  <div class="dato in" style="--d:6s"><b>41 %</b><span>de los peruanos no tiene capacidades financieras básicas</span></div>
+  <div class="dato in" style="--d:1.5s"><b>41 %</b><span>de los peruanos no tiene capacidades financieras básicas</span></div>
   <p class="fuente">Fuentes: SBS, Encuesta Nacional de Capacidades Financieras 2022; SBS, Reglamento para la Evaluación y Clasificación del Deudor (Res. 11356-2008).</p>
 </section>
 
@@ -279,15 +283,15 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
 <section class="panel" id="p-E11">
   <div class="tit in" style="--d:0.1s"><p class="ceja">Business Model Canvas</p><p class="h1" data-rot="E11">El modelo en una página</p></div>
   <div class="lienzo">
-    <div class="b in" style="--d:1.0s;grid-column:span 2;grid-row:span 2"><h4>Socios clave</h4><p>Caja Piura: core, app y gestores</p><p>SBS e Indecopi: reglas de cobranza</p><p>Proveedor de IA y nube</p></div>
-    <div class="b in" style="--d:2.2s;grid-column:span 2"><h4>Actividades clave</h4><p>Avisar antes de vencer y segmentar por score</p></div>
-    <div class="b pv in" style="--d:0.4s;grid-column:span 2;grid-row:span 2"><h4>Propuesta de valor</h4><p>Actuar en los primeros 30 días: recordar, ordenar y rescatar, con humor y sin hostigar.</p></div>
-    <div class="b in" style="--d:3.4s;grid-column:span 2"><h4>Relación</h4><p>De cobrar a acompañar: juego, puntos y Pareas</p></div>
-    <div class="b in" style="--d:4.6s;grid-column:span 2;grid-row:span 2"><h4>Segmentos</h4><p>Mypes con 1 a 30 días de atraso</p><p>Gestores de cobranza</p><p>Caja Piura</p></div>
-    <div class="b in" style="--d:5.8s;grid-column:span 2"><h4>Recursos clave</h4><p>Datos de cartera e identidad de Pareas</p></div>
-    <div class="b in" style="--d:7.0s;grid-column:span 2"><h4>Canales</h4><p>App de la Caja, avisos, chatbot y QR</p></div>
-    <div class="b in" style="--d:8.4s;grid-column:span 5"><h4>Estructura de costos</h4><p>Desarrollo e integración con el core; nube e IA por consulta: centavos por cliente.</p></div>
-    <div class="b val in" style="--d:9.8s;grid-column:span 5"><h4>Valor para la Caja</h4><p>Menos castigos y provisiones, menos llamadas y visitas, y clientes que se quedan.</p></div>
+    <div class="b in" style="--d:13.4s;grid-column:span 2;grid-row:span 2"><h4>Socios clave</h4><p>Caja Piura: core, app y gestores</p><p>SBS e Indecopi: reglas de cobranza</p><p>Proveedor de IA y nube</p></div>
+    <div class="b in" style="--d:12.6s;grid-column:span 2"><h4>Actividades clave</h4><p>Avisar antes de vencer y segmentar por score</p></div>
+    <div class="b pv in" style="--d:4.2s;grid-column:span 2;grid-row:span 2"><h4>Propuesta de valor</h4><p>Actuar en los primeros 30 días: recordar, ordenar y rescatar, con humor y sin hostigar.</p></div>
+    <div class="b in" style="--d:9.4s;grid-column:span 2"><h4>Relación</h4><p>De cobrar a acompañar: juego, puntos y Pareas</p></div>
+    <div class="b in" style="--d:2.6s;grid-column:span 2;grid-row:span 2"><h4>Segmentos</h4><p>Mypes con 1 a 30 días de atraso</p><p>Gestores de cobranza</p><p>Caja Piura</p></div>
+    <div class="b in" style="--d:13.0s;grid-column:span 2"><h4>Recursos clave</h4><p>Datos de cartera e identidad de Pareas</p></div>
+    <div class="b in" style="--d:7.6s;grid-column:span 2"><h4>Canales</h4><p>App de la Caja, avisos, chatbot y QR</p></div>
+    <div class="b in" style="--d:11.6s;grid-column:span 5"><h4>Estructura de costos</h4><p>Desarrollo e integración con el core; operación en la nube e IA por consulta.</p></div>
+    <div class="b val in" style="--d:13.8s;grid-column:span 5"><h4>Valor para la Caja</h4><p>Menos castigos y provisiones, menos llamadas y visitas, y clientes que se quedan.</p></div>
   </div>
 </section>
 
@@ -298,11 +302,11 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
     <div class="fila cab in" style="--d:0.4s"><div>Alternativa</div><div>¿Llega a tiempo?</div><div>Costo</div><div>Relación</div><div>¿Ataca la causa?</div></div>
     <div class="fila in" style="--d:1.2s"><div><b>Call center y visitas</b></div><div>Tarde: ya está en mora</div><div>Alto: horas de gestor</div><div>Riesgo de multa</div><div class="no">No</div></div>
     <div class="fila in" style="--d:3.2s"><div><b>SMS genérico</b></div><div>Sí, si llega antes</div><div>Bajo</div><div>Neutra</div><div class="no">En parte: avisa, pero no ordena ni rescata</div></div>
-    <div class="fila in" style="--d:5.0s"><div><b>Reprogramar</b></div><div>Tarde</div><div>Posterga la pérdida</div><div>Buena</div><div class="no">No: 13.8 % ya reprogramado</div></div>
-    <div class="fila nos in" style="--d:7.0s"><div>PAREAS</div><div>Antes de vencer y del día 1 al 30</div><div>Centavos por cliente</div><div>Humor, sin hostigar</div><div>Sí: educa y ordena</div></div>
+    <div class="fila in" style="--d:5.0s"><div><b>Reprogramar</b></div><div>Tarde</div><div>Posterga la pérdida</div><div>Buena</div><div class="no">No: 13.8 % de la cartera ya reprogramada</div></div>
+    <div class="fila nos in" style="--d:7.0s"><div>PAREAS</div><div>Antes de vencer y del día 1 al 30</div><div>Bajo: se opera en la nube</div><div>Humor, sin hostigar</div><div>Sí: educa y ordena</div></div>
   </div>
-  <div class="golpe in" style="--d:9.5s"><b class="n">1 % = S/ 10 M</b><p>Si PAREAS evitara solo el 1 % de lo castigado en 2025, la Caja retendría cerca de S/ 10 millones al año: un tercio de su utilidad de 2024.</p></div>
-  <p class="fuente" style="bottom:20px">Escenario ilustrativo: 1 % de S/ 999.2 M castigados en 2025 frente a S/ 30.1 M de utilidad 2024. Cartera reprogramada a dic. 2024: Moody's Local.</p>
+  <div class="golpe in" style="--d:9.5s"><b class="n">1 % = S/ 10 M</b><p>Escenario: si PAREAS evitara solo el 1 % de lo castigado en 2025, la Caja retendría cerca de S/ 10 millones al año, un tercio de su utilidad de 2024. Y el modelo se puede replicar en todo el sistema de cajas.</p></div>
+  <p class="fuente" style="bottom:20px">Escenario ilustrativo: 1 % de S/ 999.2 M castigados en 2025 frente a S/ 30.1 M de utilidad 2024 (S/ 107.8 M en 2025). Cartera reprogramada a dic. 2024: Moody's Local.</p>
 </section>
 
 <!-- E13 · Cierre -->
@@ -312,7 +316,7 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
     <p class="ceja in" style="--d:0.1s;color:#F9A825">Para cerrar</p>
     <p class="h1 in" style="--d:0.3s" data-rot="E13">El pacaso no ataca: avisa con la cola.</p>
     <p class="sub in" style="--d:2.2s">PAREAS avisa a tiempo, para que ningún emprendedor piurano llegue al día 31.</p>
-    <div class="final in" style="--d:5.5s"><b data-contador>S/ 0.00</b><span>Esto dio por perdido la Caja mientras hablábamos.</span></div>
+    <div class="final in" style="--d:4.5s"><b>S/ 5,703</b><span>Al ritmo de 2025, lo que la Caja castiga cada 3 minutos.</span></div>
   </div>
   <div class="pie in" style="--d:1.2s"><img src="/caja/logo-caja-piura-blanco.png" alt=""><span>PAREAS · Equipo Novax · Hecho en Piura, para Piura</span></div>
 </section>
@@ -329,7 +333,7 @@ body[data-esc="E9"] #rot .paso span { font-size: 17px; padding: 7px 13px; }
 <div class="disp" id="lap"><div class="barra"><i></i><i></i><i></i><span>Caja Piura · PAREAS · Panel del gestor</span></div><iframe id="app-lap" title="Panel del gestor"></iframe></div>
 <div class="disp" id="cel"><div class="isla"></div><iframe id="app-cel" title="App del cliente"></iframe></div>
 
-<div id="contador"><b data-contador>S/ 0.00</b><small>dados por perdidos desde que empezamos</small></div>
+<div id="contador"><b data-contador>S/ 0.00</b><small>castigados al ritmo de 2025 desde que empezamos</small></div>
 <div id="bmc"><p>Business Model Canvas</p>
   <div class="rejilla">
     <div class="c" data-b="socios" style="grid-row:span 2"></div><div class="c" data-b="actividades"></div><div class="c" data-b="propuesta" style="grid-row:span 2"></div><div class="c" data-b="relacion"></div><div class="c" data-b="segmentos" style="grid-row:span 2"></div>

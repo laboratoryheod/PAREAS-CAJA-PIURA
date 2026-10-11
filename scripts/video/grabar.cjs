@@ -154,7 +154,7 @@ const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
   for (const e of GUION.escenas) {
     if (!e.texto) continue;
     // Se reparte el texto de la escena en frases, con un tiempo proporcional a sus palabras
-    const frases = e.texto.match(/[^.!?…]+[.!?…]*/g).map((f) => f.trim()).filter(Boolean);
+    const frases = e.texto.match(/[^.?]+[.?]+»?|[^.?]+$/g).map((f) => f.trim()).filter(Boolean);
     const total = frases.reduce((a, f) => a + f.split(/\s+/).length, 0);
     let t = e.inicio + 0.2;
     const util = Math.min(e.fin, e.habla_hasta ?? e.fin) - e.inicio - 0.4;
