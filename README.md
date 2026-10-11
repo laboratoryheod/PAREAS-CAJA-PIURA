@@ -1,108 +1,313 @@
-# PAREAS — Caja Piura (autogestión de deuda y finanzas con Pareas)
+# PAREAS · Caja Piura
 
-Módulo web mobile-first (Next.js + TypeScript + Tailwind) para integrarse en la app de Caja Piura, con **dos interfaces**: `/cliente` y `/banco`. Incluye una cartera de ejemplo de 100 clientes; la conexión al core bancario se hace implementando la interfaz `Repo` (`lib/db/repo.ts`).
+**PAREAS** es el módulo de autogestión de deuda de Caja Piura. Atiende al cliente en la ventana en la que todavía se puede recuperar el crédito: **del día 1 al día 30 de atraso**, antes de que la SBS lo califique como deficiente (día 31) y la deuda camine al castigo.
 
-## Abrirlo en Antigravity
-Ver [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md). El contexto para agentes está en [`docs/CONTEXTO-MAESTRO.md`](docs/CONTEXTO-MAESTRO.md), `AGENTS.md`, `.agents/rules/` y `.agents/workflows/`.
+Lo hace con tres acciones:
 
-## Cómo correrlo
+1. **Recordar** con humor norteño, sin hostigar. Pareas, el pacaso de los algarrobales, "da su CHICOTAZO": resta puntos mientras el cliente siga en mora.
+2. **Ordenar** las finanzas del cliente. En **Mis Finanzas** ve cuánto gana, cuánto gasta, cuánto le toca pagar y cuánto le sobra.
+3. **Rescatar** desde el panel del gestor. El gestor activa el **Modo Rescate** a todo un segmento de la cartera (por score) o a un cliente puntual, en un clic y sin salir a la calle.
+
+Es una aplicación web *mobile-first* (Next.js + TypeScript + Tailwind) pensada para integrarse en la app de Caja Piura. Trae una cartera de ejemplo de 100 clientes en SQLite. La conexión al core bancario se hace implementando la interfaz `Repo` (`lib/db/repo.ts`).
+
+---
+
+## Contenido
+- [Interfaces](#interfaces)
+- [Puesta en marcha](#puesta-en-marcha)
+- [Configuración](#configuración)
+- [Arquitectura](#arquitectura)
+- [Reglas de negocio](#reglas-de-negocio)
+- [Asistente Pareas](#asistente-pareas)
+- [Seguridad](#seguridad)
+- [Cartera en Excel](#cartera-en-excel)
+- [Rutas](#rutas)
+- [Pruebas](#pruebas)
+- [Video del pitch](#video-del-pitch)
+- [Despliegue](#despliegue)
+- [Dónde se ajusta cada cosa](#dónde-se-ajusta-cada-cosa)
+- [Documentación relacionada](#documentación-relacionada)
+
+---
+
+## Interfaces
+
+### Cliente (`/cliente`)
+Pensada para el celular. Cliente de ejemplo: **Gengis Guerrero**, bodeguero de Piura, con cuota de S/ 320, 12 días de atraso el día en que se crea la base y score 70. Para ver a otro cliente, use `/cliente?id=N`.
+
+- **Bienvenida**: hoja inicial con las reglas del juego: trivia, pagos a tiempo, CHICOTAZO y campañas.
+- **Inicio en widgets**:
+  - juego del día y score con su nivel (Bronce, Plata, Oro);
+  - calendario de pagos;
+  - deuda de hoy, con atajos para pagar, ir a Mis Finanzas o mandar un QR a un familiar;
+  - beneficios, campañas y CHICOTAZO;
+  - consejo del día y acceso a Pareas.
+- **Avisos**: banners tipo iOS y centro de notificaciones en tono coloquial ("compare"). Avisan del Modo Rescate, la cuota que se acerca, el CHICOTAZO y la trivia pendiente.
+- **Mis Finanzas**: calculadora de ingresos y gastos (casa, negocio y otros).
+  - Muestra el resumen del mes: ingresos − gastos − cuota − deuda vencida = lo que sobra.
+  - Usa un semáforo según lo que sobra: verde, más de 20 %; amarillo, de 5 % a 20 %; rojo, menos de 5 %.
+  - Agrega gráfico por categoría y hasta 3 consejos.
+- **Pago con QR**: deuda de hoy o monto del Modo Rescate, con comprobante. El mismo QR sirve para que pague un familiar.
+- **Trivia del día**: 5 preguntas de educación financiera. Es la única parte, junto con los avisos, que usa tono coloquial.
+- **Pareas, el asistente**: burbuja flotante de chat. Responde con los datos del servidor y nunca pide claves (ver [Asistente Pareas](#asistente-pareas)).
+
+### Gestor (`/banco`)
+Acceso con usuario `gestor` y clave `caja2026`. En producción se cambian con `BANCO_USUARIO` y `BANCO_CLAVE`. Tiene una barra lateral con tres secciones:
+
+- **Resumen**:
+  - indicadores de la cartera: avisos, módulos abiertos, montos comprometidos y casos para gestor;
+  - gráfico circular de *morosos*, *impagos* y *pagaron*, con filtros por tramo, tipo de crédito, estado y zona;
+  - lista de casos derivados.
+- **Cartera**: tabla con búsqueda y filtros, ficha de cada cliente, y botones para importar y exportar Excel.
+- **Modo Rescate**:
+  - **masivo**: para todos los clientes con un *score mínimo o más*, con atajos de 40 a 80 puntos o cualquier número, y vista previa de cuántos califican y cuánto deben;
+  - **individual**: buscando al cliente por DNI o por nombre.
+- **Notificaciones del gestor**: pedidos de ayuda, planes incumplidos, propuestas por revisar y pagos, con aviso en vivo.
+
+---
+
+## Puesta en marcha
+
+Requisitos: Node.js 20 o superior.
 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm run levantar     # si sale "puerto ocupado": cierra lo que use el 3000 y levanta la app
-npm test             # reglas, score, servicio, Mis Finanzas, Excel y asistente
+npm run levantar     # si el puerto 3000 está ocupado: lo libera y levanta la app (npm run levantar -- 3001 para otro puerto)
+npm test             # pruebas unitarias
 npm run build && npm start
 ```
 
-Pruebas de calidad de punta a punta (API, interfaz y recorrido completo): ver [`scripts/qa/README.md`](scripts/qa/README.md). El plan de pruebas y el último diagnóstico están en [`docs/PLAN-DE-PRUEBAS.md`](docs/PLAN-DE-PRUEBAS.md).
+- La base SQLite (`data/ponte.db`) se crea y se llena sola la primera vez, con 100 deudores, la trivia y actividad previa. `npm run seed` la recrea de cero.
+- **Fecha del sistema**: es la fecha real de Perú (America/Lima). La mora, el interés y el CHICOTAZO de cada día se procesan solos, aunque nadie abra la app ese día.
+- **Herramientas de prueba**: *Reiniciar* (barra superior) y *Pasar un día* (final del inicio). Se ocultan con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` en `lib/config.ts`. Con ese valor, las rutas `/api/pruebas/*` responden 404.
 
-- La base SQLite (`data/ponte.db`) se crea y se llena sola la primera vez (100 deudores, trivia, actividad previa).
-- `npm run seed` la recrea de cero.
-- **Cartera en Excel** (también con botones en Panel del gestor › Cartera): `npm run plantilla:xlsx` crea `data/plantilla-cartera.xlsx` · `npm run importar:xlsx -- archivo.xlsx` agrega clientes nuevos y actualiza los existentes por ID sistema o DNI (nunca borra; "¿Ya pagó? = Sí" registra el pago) · `npm run export:xlsx` descarga la cartera actual a `data/cartera.xlsx`.
-- **Chatbot de Pareas** (burbuja flotante con su favicon): copie `.env.example` a `.env.local` y ponga `OPENAI_API_KEY` (u opcionalmente `GEMINI_API_KEY`). Sin clave responde con los filtros y el FAQ local. `GET /api/asistente/estado` dice qué proveedor está activo y si OpenAI responde. **Nunca suba claves al repositorio** (`.env.local` está en `.gitignore`).
-- Panel del banco: usuario `gestor` · clave `caja2026`.
-- Cliente de ejemplo: **Gengis Guerrero** (`/cliente`, id 1): cuota S/ 320, 12 días de atraso el día en que se crea la base, score 70, con ingresos y gastos de ejemplo en Mis Finanzas. Otros: `/cliente?id=N`.
-- **Fecha del sistema: la fecha real de Perú** (America/Lima). Cada día que pasa se procesan solos la mora, el interés y el CHICOTAZO (una vez por día, aunque nadie abra la app ese día). `FECHA_SISTEMA=AAAA-MM-DD` la fija (lo usan las pruebas automáticas) y "Pasar un día" la adelanta.
-- **Herramientas de prueba** (temporales): botón **Reiniciar** en la barra superior del cliente y del gestor (deja toda la app en su estado inicial y vuelve a la bienvenida) y **Pasar un día** al final del inicio. Se ocultan con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` en `lib/config.ts`.
+---
 
-## Dónde se ajusta todo
+## Configuración
+
+Copie `.env.example` a `.env.local`. Ese archivo **nunca** se sube al repositorio, porque está en `.gitignore`. Sin claves de IA la app funciona completa y el chat responde con sus filtros y su FAQ local.
+
+| Variable | Para qué | Por defecto |
+|---|---|---|
+| `OPENAI_API_KEY` | Chat de Pareas con OpenAI (tiene prioridad sobre Gemini) | vacío |
+| `OPENAI_MODEL` | Modelo de OpenAI | `gpt-4o-mini` |
+| `GEMINI_API_KEY` / `GEMINI_MODEL` | Alternativa con Gemini | vacío / `gemini-2.0-flash` |
+| `IA_MAX_CLIENTE_DIA` / `IA_MAX_DIA` | Cupo diario de respuestas con IA por cliente y en total | `15` / `300` |
+| `BANCO_USUARIO` / `BANCO_CLAVE` | Credenciales del panel del gestor | `gestor` / `caja2026` |
+| `SESION_SECRETO` | Secreto para firmar la sesión del gestor (texto largo y aleatorio en producción) | derivado de la clave del gestor |
+| `SQLITE_PATH` | Ruta de la base SQLite | `data/ponte.db` |
+| `FECHA_SISTEMA` | Fija la fecha (`AAAA-MM-DD`); la usan las pruebas automáticas | fecha real de Perú |
+
+`GET /api/asistente/estado` indica qué proveedor de IA está activo y si responde.
+
+---
+
+## Arquitectura
+
+```
+Navegador (cliente / gestor)
+   │  solo muestra: nunca calcula montos ni fechas
+   ▼
+app/api/*  (route handlers de Next.js)  ──  middleware.ts protege /banco y /api/banco
+   ▼
+lib/servicio.ts   toda la lógica de negocio: deuda, mora, score, CHICOTAZO,
+   │              Modo Rescate, notificaciones, Mis Finanzas, Excel
+   ├── lib/reglas.ts · lib/score.ts · lib/finanzas.ts · lib/fecha.ts
+   ├── lib/asistente/   blindaje → FAQ → IA (OpenAI o Gemini)
+   ▼
+lib/db/repo.ts  (interfaz Repo)  →  repo-sqlite.ts  →  SQLite (better-sqlite3)
+                                    └─ aquí se conecta el core de Caja Piura
+```
+
+- **Stack**: Next.js 15 (App Router), React 19, TypeScript 5, Tailwind 3, motion, better-sqlite3, exceljs, qrcode y Vitest. No se debe subir a TypeScript 7, porque Next 15 no lo soporta.
+- **Regla de oro**: los montos y las fechas se calculan solo en el servidor (`lib/servicio.ts`). Ni el navegador ni la IA los calculan.
+- **Tiempo real**: se hace por *polling* liviano.
+  - El cliente refresca cada 5 s en el inicio; así ve al instante un Modo Rescate recién activado.
+  - El gráfico del gestor se actualiza cada 20 s y sus notificaciones cada 10 s.
+  - Si la respuesta no cambió, no se vuelve a pintar.
+- **Rendimiento**:
+  - las vistas secundarias se cargan con `next/dynamic`;
+  - la fuente es local (`next/font`, Plus Jakarta Sans);
+  - las animaciones usan solo `opacity` y `transform`;
+  - la pantalla de carga con Pareas está hecha en CSS puro;
+  - las sentencias SQLite se preparan una sola vez y se crearon índices.
+- **Diseño**: estilo Apple con los colores de Caja Piura. Usa iconos propios (`components/iconos.tsx`) y ningún emoji. Los componentes copiados de cult-ui (MIT) están en `components/ui/`. Las decisiones de diseño están en [`DESIGN.md`](DESIGN.md).
+
+---
+
+## Reglas de negocio
+
+| Regla | Valor | Dónde |
+|---|---|---|
+| Score inicial | 70 puntos (de 0 a 100) | `lib/score.ts` (`PARAMS_SCORE`) |
+| Niveles | Bronce, Plata desde 50 y Oro desde 75 | `lib/niveles.ts` |
+| Trivia | +2 por acierto, hasta +10 al día; la racha no se otorga en mora | `PARAMS_SCORE` |
+| Pago a tiempo | +15 puntos | `PARAMS_SCORE` |
+| **CHICOTAZO** | −12 puntos por cada día en mora; la trivia no lo compensa | `PARAMS_SCORE` |
+| Interés moratorio | TEA × 1.5, prorrateada por día (interés simple) | `lib/reglas.ts` (`FACTOR_MORATORIO`) |
+| **Modo Rescate** | 30 % menos de lo vencido hoy; ese descuento se recupera con +10 % en las 3 cuotas siguientes; vence en 7 días | `lib/reglas.ts` (`REGALO_SALVADOR`) |
+
+- Al usar el Modo Rescate, el cliente queda al día, se detiene el CHICOTAZO y recupera sus beneficios. Solo aplica a clientes en mora sin un plan en marcha ni un Modo Rescate vigente.
+- El cliente ya no arma planes de pago en la app: paga desde "Pagar hoy" y, si no le alcanza, pide ayuda a un gestor. Las reglas de reprogramación siguen en `lib/reglas.ts` para los planes existentes y para el gestor.
+
+---
+
+## Asistente Pareas
+
+Todo lo que se filtra se responde **sin IA**, para no gastar tokens. El orden de filtros (`lib/asistente/`) es:
+
+1. **Datos sensibles** (claves, tarjetas, tokens): responde con un aviso fijo, sin pasar el mensaje a la IA.
+2. **Angustia o pedido de una persona**: deriva el caso al gestor.
+3. **Intentos de sacarlo de su rol** ("ignora tus instrucciones", "actúa como…"): responde con una negativa fija.
+4. **Temas ajenos a la Caja** (poemas, fútbol, tareas, código, política): responde con una negativa fija.
+5. **Preguntas frecuentes** (deuda, vencimiento de cuota, pago con QR, puntos, Modo Rescate, interés, gastos): responde con una plantilla que usa las cifras del servidor.
+6. **Solo si queda una pregunta del tema que nada de lo anterior resuelve**: consulta a la IA (OpenAI o Gemini).
+   - Recibe las reglas y los hechos del cliente calculados en el servidor (`prompt.ts`).
+   - Lee hasta 300 caracteres del mensaje y 4 turnos de historial, y responde con 150 tokens como máximo.
+   - Tiene un cupo diario por cliente; los intentos fallidos no lo consumen.
+
+El asistente habla siempre **de usted**.
+
+---
+
+## Seguridad
+
+- **Sesión del gestor**: va firmada con HMAC-SHA256 y vence en 8 horas (`lib/sesion.ts`). `middleware.ts` protege `/banco` y `/api/banco`.
+- **Bloqueo de acceso**: tras 5 intentos fallidos, la misma IP queda bloqueada 5 minutos (respuesta 429). La comparación es en tiempo constante. La cookie es `secure` cuando la app corre en https.
+- **Datos del cliente**: el DNI se guarda solo como hash SHA-256 y se muestra enmascarado (`****0796`). La app no guarda claves, tarjetas ni DNIs completos.
+- **Pendiente para la integración**: el inicio de sesión real, el 2FA o las passkeys, y los permisos los aporta la app de Caja Piura (SSO).
+
+---
+
+## Cartera en Excel
+
+Se puede usar con los botones de *Cartera* en el panel del gestor o desde la consola:
+
+```bash
+npm run plantilla:xlsx                 # crea data/plantilla-cartera.xlsx
+npm run importar:xlsx -- archivo.xlsx  # agrega clientes nuevos y actualiza los existentes
+npm run export:xlsx                    # descarga la cartera actual a data/cartera.xlsx
+```
+
+- La importación actualiza por *ID sistema* o por DNI y nunca borra filas.
+- Si en la columna "¿Ya pagó?" dice **Sí**, se registra el pago como hecho en agencia.
+- El formato de columnas está en `lib/excel-cartera.ts` y la lógica en `importarCartera` (`lib/servicio.ts`).
+
+---
+
+## Rutas
+
+### Páginas
+| Ruta | Qué es |
+|---|---|
+| `/` | Portada con accesos a la app del cliente y al panel del gestor |
+| `/cliente` | App del cliente (`?id=N` para otro cliente, `?ver=finanzas` para abrir Mis Finanzas) |
+| `/banco/login` | Ingreso del gestor |
+| `/banco` | Resumen |
+| `/banco/cartera` | Cartera |
+| `/banco/rescate` | Modo Rescate |
+| `/banco/cliente/[id]` | Ficha de un cliente |
+
+### API
+| Método y ruta | Uso |
+|---|---|
+| `GET /api/cliente/[id]` | Situación del cliente (deuda, score, CHICOTAZO, campañas) |
+| `GET /api/notificaciones?clienteId=` | Avisos del cliente |
+| `GET` · `POST /api/finanzas` | Mis Finanzas: consulta, alta, edición y borrado |
+| `GET` · `POST /api/pago` | Cobro con QR y pago |
+| `GET /api/trivia` · `POST /api/trivia/responder` | Trivia del día |
+| `POST /api/asistente` · `GET /api/asistente/estado` | Chat de Pareas y estado del proveedor de IA |
+| `POST /api/ayuda` | El cliente pide ayuda a un gestor |
+| `POST` · `DELETE /api/banco/login` | Iniciar y cerrar la sesión del gestor |
+| `GET /api/banco/resumen` · `kpis` · `distribucion` · `derivados` · `feed` | Datos del Resumen |
+| `GET /api/banco/cartera` · `GET /api/banco/cliente/[id]` | Cartera y ficha |
+| `GET` · `POST /api/banco/rescate` | Vista previa y activación del Modo Rescate masivo |
+| `POST /api/banco/regalo` | Modo Rescate individual |
+| `GET` · `POST /api/banco/excel` | Descargar y subir la cartera en Excel |
+| `POST /api/pruebas/reset` · `avanzar-dia` | Herramientas de prueba (404 si están apagadas) |
+
+---
+
+## Pruebas
+
+```bash
+npm test          # 99 pruebas unitarias: reglas, score, servicio, Mis Finanzas, Excel, sesión y asistente
+npm run build     # incluye la verificación de tipos
+```
+
+Las pruebas de caja negra corren contra la app en marcha y con una base aparte (ver [`scripts/qa/README.md`](scripts/qa/README.md)):
+- `api.mjs`: 71 casos de API;
+- `interfaz.cjs`: 54 casos de interfaz en 320, 390 y 1366 px;
+- `recorrido.cjs`: 11 pasos de punta a punta entre cliente y gestor.
+
+El plan y el último diagnóstico están en [`docs/PLAN-DE-PRUEBAS.md`](docs/PLAN-DE-PRUEBAS.md).
+
+---
+
+## Video del pitch
+
+`npm run video:pitch` graba un video de **3:00 exactos** (1920 × 1080) que recorre la plataforma real mientras el presentador expone. Muestra:
+- el aviso del CHICOTAZO;
+- Mis Finanzas;
+- el chat con Pareas;
+- el Modo Rescate masivo y el pago con QR;
+- las cifras públicas del problema y el Business Model Canvas.
+
+Instrucciones en [`scripts/video/README.md`](scripts/video/README.md).
+
+---
+
+## Despliegue
+
+En un servidor con Node.js 20 o superior (por ejemplo, un VPS con Ubuntu):
+
+```bash
+git clone https://github.com/laboratoryheod/PAREAS-CAJA-PIURA.git && cd PAREAS-CAJA-PIURA
+npm ci
+cp .env.example .env.local     # complete OPENAI_API_KEY, SESION_SECRETO, BANCO_USUARIO y BANCO_CLAVE
+npm run build
+npx next start -p 3000         # o con un gestor de procesos: pm2 start "npx next start -p 3000" --name pareas
+```
+
+Antes de abrirlo al público:
+1. Ponga `MOSTRAR_HERRAMIENTAS_PRUEBA = false` en `lib/config.ts` y vuelva a compilar.
+2. Defina un `SESION_SECRETO` largo y aleatorio, y cambie las credenciales del gestor con `BANCO_USUARIO` y `BANCO_CLAVE`.
+3. Sirva la app detrás de un proxy (por ejemplo, Nginx) con https, para que la cookie de sesión viaje como `secure`.
+4. Respalde el archivo SQLite, o mejor aún, conecte el core bancario implementando `Repo`.
+
+---
+
+## Dónde se ajusta cada cosa
 
 | Qué | Archivo |
 |---|---|
-| Nombre de la app | `lib/config.ts` (`APP_NOMBRE`) |
-| Reglas de reprogramación (tramos, inicial, cuota mínima, interés moratorio, beneficios por nivel, Modo Rescate) | `lib/reglas.ts` |
-| Tono y apelativo | `lib/config.ts` (`APELATIVO`) |
-| Blindaje y cupos del asistente | `lib/asistente/guardia.ts` (`LIMITES_ASISTENTE`) |
-| Puntos del score y chicotazo | `lib/score.ts` (`PARAMS_SCORE`) |
-| Niveles Bronce/Plata/Oro | `lib/niveles.ts` |
-| Mascota Pareas (componente y animaciones) | `components/Pareas.tsx` |
-| Iconos propios (sin emojis) | `components/iconos.tsx` |
-| Inicio del cliente (widgets del boceto) | `components/cliente/inicio/` |
-| Mis Finanzas (calculadora de ingresos y gastos) | `lib/finanzas.ts` (cálculos), `lib/consejos-finanzas.ts` (consejos), `components/cliente/Finanzas.tsx` · ver [`MODULO_MIS_FINANZAS.md`](MODULO_MIS_FINANZAS.md) |
-| Excel de cartera (columnas) | `lib/excel-cartera.ts` |
-| Pantalla de carga con Pareas | `components/PantallaCarga.tsx` (frases en `FRASES_CARGA`) |
-| Imágenes de Pareas | `public/pareas/pareas.png` (mascota), `public/pareas/logo.png` (logo), `app/icon.png` y `app/apple-icon.png` (favicon) |
-| Decisiones de diseño | `DESIGN.md` |
-| Acceso a datos | `lib/db/repo.ts` (interfaz) · `repo-sqlite.ts` |
+| Nombre de la app, apelativo del tono coloquial y herramientas de prueba | `lib/config.ts` (`APP_NOMBRE`, `APELATIVO`, `MOSTRAR_HERRAMIENTAS_PRUEBA`) |
+| Reprogramación, interés moratorio, beneficios por nivel y Modo Rescate | `lib/reglas.ts` |
+| Puntos del score y CHICOTAZO | `lib/score.ts` (`PARAMS_SCORE`) |
+| Niveles | `lib/niveles.ts` |
+| Atajos del Modo Rescate masivo | `lib/servicio.ts` (`ATAJOS_SCORE_RESCATE`) |
+| Textos de las notificaciones del cliente | `lib/servicio.ts` (`notificacionesCliente`) |
+| Mis Finanzas | `lib/finanzas.ts`, `lib/consejos-finanzas.ts`, `components/cliente/Finanzas.tsx` (ver [`MODULO_MIS_FINANZAS.md`](MODULO_MIS_FINANZAS.md)) |
+| Blindaje, FAQ, reglas de la IA y cupos | `lib/asistente/` (`guardia.ts`, `faq.ts`, `prompt.ts`) |
+| Columnas del Excel de cartera | `lib/excel-cartera.ts` |
+| Inicio del cliente (widgets) | `components/cliente/inicio/` |
+| Chat de Pareas | `components/cliente/ChatPareas.tsx` |
+| Iconos | `components/iconos.tsx` |
+| Pantalla de carga y sus frases | `components/PantallaCarga.tsx` (`FRASES_CARGA`) |
+| Imágenes de Pareas y de la Caja | `public/pareas/`, `public/caja/`, `app/icon.png` y `app/apple-icon.png` |
+| Acceso a datos | `lib/db/repo.ts` (interfaz) y `lib/db/repo-sqlite.ts` |
 
-Los montos y fechas siempre se calculan en el servidor (`lib/servicio.ts`); el navegador solo muestra.
+---
 
-## Reglas clave (acordadas con el equipo)
-- **Chicotazo:** −12 por cada día que el cliente sigue en mora (una vez por día). En mora o impago **no hay racha**: aunque acierte toda la trivia (+10 máx.) el neto diario es −2.
-- **El cliente ya no arma planes en la app** ("Mi plan" se reemplazó por **Mis Finanzas**): paga su deuda vencida desde "Pagar hoy" y, si no le alcanza, un asesor revisa su caso. Las reglas de reprogramación (`lib/reglas.ts`) siguen en el servidor para los planes que ya existen y para el gestor.
-- **Plan de pago (planes existentes):** aceptarlo **no** detiene el chicotazo. Recién con el **primer pago** del plan la deuda vencida queda "en plan" y Pareas deja de pegar. Cada pago a tiempo: +15. Cumplir todo el plan: +20.
-- **Incumplir el plan:** no hay castigo fijo; vuelve el chicotazo diario y el cliente **pierde sus beneficios** (de nivel y de volver a reprogramar).
-- **Modo Rescate:** campaña que activa el gestor desde su panel: masiva para todos los clientes con un **score mínimo o más** que elige el gestor (atajos 40/50/60/70/80 o cualquier número; `ATAJOS_SCORE_RESCATE` en `lib/servicio.ts`) o individual (casos derivados, búsqueda por DNI o nombre, detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
-- Más de 60 días: la propuesta (con inicial ≥ 30 %) queda **derivada** al gestor; el cliente sigue en mora.
-- Interés moratorio: TEA × 1,5 prorrateada por día (simple). Ajustable en `FACTOR_MORATORIO`.
+## Documentación relacionada
+- [`docs/CONTEXTO-MAESTRO.md`](docs/CONTEXTO-MAESTRO.md): contexto completo para retomar el trabajo, con preferencias, reglas e historial de decisiones.
+- [`AGENTS.md`](AGENTS.md): reglas para agentes de código. Se complementa con `.agents/rules/`, `.agents/workflows/` y `.agents/skills/`.
+- [`DESIGN.md`](DESIGN.md): decisiones de diseño.
+- [`MODULO_MIS_FINANZAS.md`](MODULO_MIS_FINANZAS.md): especificación de Mis Finanzas.
+- [`docs/PLAN-DE-PRUEBAS.md`](docs/PLAN-DE-PRUEBAS.md): plan de pruebas y diagnóstico.
+- [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md): cómo abrir el proyecto en Antigravity.
 
-## Asistente blindado (para no gastar tokens)
-Orden de filtros en `lib/asistente/` (todo lo que se filtra se responde **sin IA**):
-1. Datos sensibles (claves, tarjetas, token) → aviso fijo.
-2. Angustia o pedido de una persona → deriva a gestor.
-3. Intentos de sacarlo de su rol ("ignora tus instrucciones", "actúa como…") → negativa fija.
-4. Temas ajenos a la Caja / PAREAS (poemas, fútbol, tareas, código, política…) → negativa fija.
-5. Preguntas frecuentes (deuda, plan, pago, puntos, regalo, interés) → plantilla con cifras del servidor.
-6. Solo si queda una pregunta en tema que nada de lo anterior resuelve → Gemini, con cupo diario por cliente (`GEMINI_MAX_CLIENTE_DIA`, 15) y global (`GEMINI_MAX_DIA`, 300), mensaje ≤ 300 caracteres, 4 turnos de historial y ≤ 150 tokens de respuesta.
-
-## Pareas, la mascota
-Pareas es la iguana (el "pacaso" piurano) que acompaña al cliente y responde en el asistente. Sus imágenes viven en `public/pareas/`:
-- `pareas.png`: ilustración con la bolsa (sin fondo). La usan `components/Pareas.tsx` (dashboard, trivia) y el hero de la landing.
-- `logo.png`: logo cuadrado. Aparece en la barra flotante, el encabezado del cliente y el pie. De él salen `app/icon.png` y `app/apple-icon.png`.
-
-Para cambiar una imagen basta con reemplazar el archivo con el mismo nombre. Para tener varias expresiones (feliz, seria, chicotazo), agrega `pareas-feliz.png`, etc. y elige la imagen según `humor` en `components/Pareas.tsx`.
-
-## Tono
-Formal (de usted) en toda la app. Solo el juego de la trivia y las notificaciones usan tono coloquial del norte ("compare", "chévere"); el apelativo está en `APELATIVO` (`lib/config.ts`). Si ya tenía la base creada, ejecute `npm run seed` para cargar las preguntas de la trivia actualizadas.
-
-## Notificaciones del cliente
-Campana en la barra superior del cliente (`components/cliente/Notificaciones.tsx`), con banners estilo iOS y centro de avisos. Se encienden con la píldora **Activar avisos** y se apagan desde el propio centro. El servidor decide qué avisar (`notificacionesCliente` en `lib/servicio.ts`, API `GET /api/notificaciones?clienteId=`):
-- **Modo Rescate** vigente otorgado por el gestor.
-- **Pago cerca**: un pago del plan vence en 3 días o menos (`DIAS_AVISO_PAGO`).
-- **CHICOTAZO**: el cliente sigue en mora hoy.
-- **Trivia pendiente**: aún puede ganar puntos hoy.
-Con `MOSTRAR_HERRAMIENTAS_PRUEBA` el centro muestra **Volver a enviar** para repetir los banners.
-
-## Inicio del cliente
-Según el boceto del equipo, cada cliente ve primero:
-1. **Juego del día** (botón para empezar la trivia) y **Score** (anillos tipo Actividad de Apple).
-2. **Calendario de pagos** (cuotas vencidas, pagos del plan, recargos, días con CHICOTAZO) y **Pagos y juegos**.
-3. **Beneficios de la Caja**: beneficios por nivel, mis campañas (Modo Rescate / descuento) y el **CHICOTAZO**; y **Consejos** con el botón para hablar con Pareas.
-La primera vez aparece la hoja **"Empieza el juego"** con las reglas.
-
-## UI con cult-ui
-De https://github.com/nolly-studio/cult-ui (MIT) se copiaron **solo** los componentes usados a `components/ui/` (ver `components/ui/README.md`): `texture-button`, `texture-card`, `rolling-number`, `text-animate`, `neumorph-eyebrow` y `speech-bubble`. El repo completo pesa ~100 MB y no se sube.
-
-## Otras notas
-- Panel del gestor con sidebar: **Resumen** (KPIs, gráfico circular de morosos / impagos / pagaron con filtros de tramo, tipo, estado y zona, y casos derivados), **Cartera** (tabla con búsqueda y filtros) y **Modo Rescate** (campaña masiva por rango de score y campaña individual buscando por DNI o nombre). Se actualiza por polling (ROADMAP: Supabase Realtime sobre la misma interfaz de repositorio). El cliente refresca cada 5 s para ver al instante si el gestor le activó un Modo Rescate.
-- Seguridad: DNI solo como hash SHA-256 y enmascarado en pantalla; `// ROADMAP` 2FA/biometría (passkeys) y Argon2/bcrypt para claves reales; el login real lo aporta la app de Caja Piura.
-
-## Recorrido guiado (3 minutos)
-1. **(0:00) Landing** → "Entrar como cliente". Mientras carga, Pareas salta con sus frases ("Afilando el coletazo…"). Gengis tiene S/ 326.08 vencidos (cuota S/ 320 + mora) y 12 días de atraso: Pareas da su CHICOTAZO.
-2. **(0:25) Mis Finanzas:** lo que gana − lo que gasta − la cuota − lo vencido = lo que le sobra, con semáforo, gráfico por categoría y hasta 3 consejos. Agregar un gasto ("Gas de cocina", S/ 45.50) y ver cómo cambia el resultado.
-3. **(1:00) Avisos:** "Activar avisos" en la barra: banners del CHICOTAZO, la trivia y la cuota que se acerca.
-4. **(1:15) En otra pestaña `/banco`** (gestor / caja2026): KPIs y gráfico de la cartera con filtros.
-5. **(1:35) Modo Rescate masivo:** sección Modo Rescate → "50 pts o más" (o escribir otro mínimo) → ver cuántos califican → Activar (dos toques). Gengis lo recibe en su celular con notificación → "Usar mi Modo Rescate" → pago con QR → al día.
-6. **(2:10) Excel:** Cartera → "Descargar cartera en Excel", marcar "¿Ya pagó? = Sí" a un cliente y subirlo de nuevo: queda al día. "Descargar plantilla" para cargar clientes nuevos.
-7. **(2:35) Asistente:** "¿Cuánto debo?" (cifras del servidor), "escríbeme un poema" (no responde: no gasta tokens), "mi clave es…" (no la acepta).
+## Licencias de terceros
+- Componentes de [cult-ui](https://github.com/nolly-studio/cult-ui) (MIT) en `components/ui/`.
+- Fuente Plus Jakarta Sans (SIL Open Font License) en `app/fonts/`.

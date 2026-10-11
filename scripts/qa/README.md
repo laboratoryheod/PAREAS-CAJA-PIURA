@@ -7,7 +7,7 @@ Además de las pruebas unitarias (`npm test`), aquí están las pruebas de caja 
 SQLITE_PATH=/tmp/qa.db npm run build
 SQLITE_PATH=/tmp/qa.db npx next start -p 3120     # en otra terminal
 
-node scripts/qa/api.mjs                           # 67 casos de API (sin dependencias)
+node scripts/qa/api.mjs                           # 71 casos de API (sin dependencias)
 npm i -D playwright                               # una vez, para las dos siguientes
 node scripts/qa/interfaz.cjs                      # 54 casos de interfaz en 320, 390 y 1366 px
 node scripts/qa/recorrido.cjs                     # 11 pasos de punta a punta (cliente + gestor)

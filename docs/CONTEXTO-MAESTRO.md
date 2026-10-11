@@ -230,12 +230,12 @@ Rendimiento:
 5. Para matar el servidor, usar el PID que da `ps` (no `pkill -f`, que mata la propia shell).
 
 ### Suites de QA (`scripts/qa/`, ver `docs/PLAN-DE-PRUEBAS.md`)
-- `node scripts/qa/api.mjs` corre 67 casos de API; `interfaz.cjs`, 54 de interfaz (320/390/1366 px); `recorrido.cjs`, 11 pasos de punta a punta.
+- `node scripts/qa/api.mjs` corre 71 casos de API; `interfaz.cjs`, 54 de interfaz (320/390/1366 px); `recorrido.cjs`, 11 pasos de punta a punta.
 - Se ejecutan contra `next start` con `SQLITE_PATH=/tmp/qa.db`. En este contenedor: `CHROMIUM_PATH=/opt/pw-browsers/chromium NODE_PATH=$(npm root -g)`.
 - Las rutas `/api/pruebas/*` responden 404 con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` (las suites las necesitan activas).
 
 ## 9. Git
-- Rama de trabajo: **`claude/dreamy-hamilton-fz0ouj`**. Se sube con `git push -u origin claude/dreamy-hamilton-fz0ouj`. No crear PR salvo que se pida.
+- Rama principal y de trabajo: **`master`** (la rama por defecto del repositorio). Se sube con `git push -u origin master`. No crear PR salvo que se pida.
 - Los commits van en español y terminan con:
   ```
   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
