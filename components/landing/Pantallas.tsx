@@ -3,13 +3,13 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { AnilloScore } from "@/components/cliente/inicio/AnilloScore";
-import { FichaApp, IcBurbuja, IcCalculadora, IcLatigo, IcMando, IcTarjeta, IcEnVivo, IcBillete, IcGestor } from "@/components/iconos";
+import { FichaApp, IcBurbuja, IcBilletera, IcLatigo, IcMando, IcTarjeta, IcEnVivo, IcBillete, IcGestor } from "@/components/iconos";
 
 export function PantallaCliente() {
   return (
     <div className="flex h-full flex-col gap-2 overflow-hidden bg-gradient-to-b from-[#DCE9F8] to-white px-3 pb-6 text-[#1C1C1E]">
       <div>
-        <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Sábado 10 de octubre</p>
+        <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Hoy</p>
         <p className="text-[20px] font-bold leading-tight tracking-[-0.03em]">Hola, Gengis</p>
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -34,7 +34,7 @@ export function PantallaCliente() {
       <div className="rounded-[16px] bg-white p-2.5">
         <p className="text-[8px] font-semibold uppercase tracking-[0.08em] text-neutral-500">Su deuda de hoy</p>
         <p className="text-[18px] font-bold tracking-[-0.03em] text-[#C9182B]">S/ 326.08</p>
-        {[[IcTarjeta, "azul", "Pagar hoy"], [IcCalculadora, "sol", "Armar mi plan"]].map(([I, c, t]) => (
+        {[[IcTarjeta, "azul", "Pagar hoy"], [IcBilletera, "verde", "Mis Finanzas"]].map(([I, c, t]) => (
           <div key={t as string} className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-neutral-50 p-1.5"><FichaApp icono={I as typeof IcTarjeta} color={c as "azul"} tam={18} /><span className="text-[10px] font-medium">{t as string}</span></div>
         ))}
       </div>
@@ -61,7 +61,7 @@ export function IslaChicotazo() {
 export function PantallaGestor() {
   const kpis = [["Avisos", "100"], ["Abrieron", "36%"], ["Planes", "13"], ["Comprometido", "S/ 9,840"]];
   const feed = [
-    [IcCalculadora, "sol", "Gengis G. aceptó pagar en 2 cuotas", "hace 5 s"],
+    [IcTarjeta, "azul", "Gengis G. pagó su deuda", "hace 5 s"],
     [IcBillete, "rescate", "Modo Rescate para Elena N.", "hace 1 min"],
     [IcLatigo, "rojo", "Carmen N. incumplió su plan", "hace 3 min"],
     [IcGestor, "grafito", "Santos Z. pidió hablar con un gestor", "hace 8 min"],

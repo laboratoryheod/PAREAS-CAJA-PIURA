@@ -154,17 +154,15 @@ function DockCardInner({ src, id, children }: DockCardInnerProps) {
         {animatingIndexes.includes(parseInt(id)) && children ? (
           <motion.div
             className="relative z-0 h-full w-full rounded-full"
-            initial={{ scale: 0, opacity: 0, filter: "blur(4px)" }}
+            initial={{ scale: 0, opacity: 0 }}
             animate={{
               scale: 1,
               opacity: 1,
-              filter: "blur(0px)",
               transition: { type: "spring", delay: 0.2 }, // Animation to spring into place with a delay so our layoutId animations can be smooth
             }}
             exit={{
               scale: 0,
               opacity: 0,
-              filter: "blur(4px)",
               transition: { duration: 0 }, // Exit animation with no delay
             }}
           >

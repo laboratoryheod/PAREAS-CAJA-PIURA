@@ -3,17 +3,27 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { IPhone17ProMax } from "@/components/ui/apple-iphone-17-pro";
-import { BrowserWindow } from "@/components/ui/mock-browser-window";
+import dynamic from "next/dynamic";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
 import { RollingNumber } from "@/components/ui/rolling-number";
 import { TarjetaChicotazo } from "@/components/cliente/inicio/Chicotazo";
 import { AnilloScore } from "@/components/cliente/inicio/AnilloScore";
 import { PantallaCliente, PantallaGestor, IslaChicotazo } from "@/components/landing/Pantallas";
-import { FichaApp, IcBurbuja, IcCalendario, IcEscudo, IcBillete, IcEnVivo, IcFlecha, IcMando, IcTarjeta, IcCandado, IcGestor, IcCaja } from "@/components/iconos";
+import { FichaApp, IcBurbuja, IcCalendario, IcEscudo, IcBillete, IcBilletera, IcEnVivo, IcFlecha, IcMando, IcCandado, IcGestor, IcCaja } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 
-const ENTRA = (k: number) => ({ initial: { opacity: 0, y: 14, filter: "blur(8px)" }, whileInView: { opacity: 1, y: 0, filter: "blur(0px)" }, viewport: { once: true, margin: "-60px" }, transition: { type: "spring" as const, bounce: 0, duration: 0.8, delay: 0.08 * k } });
+// Los mockups de iPhone y Mac son pesados: se descargan aparte, con un marcador del mismo tamaño (sin saltos)
+const IPhone17ProMax = dynamic(() => import("@/components/ui/apple-iphone-17-pro").then((m) => m.IPhone17ProMax), {
+  ssr: false,
+  loading: () => <div className="h-[min(620px,76vh)] w-[min(300px,70vw)] animate-pulse rounded-[54px] bg-neutral-200/70" aria-hidden />,
+});
+const BrowserWindow = dynamic(() => import("@/components/ui/mock-browser-window").then((m) => m.BrowserWindow), {
+  ssr: false,
+  loading: () => <div className="aspect-[16/10] w-full animate-pulse rounded-[18px] bg-neutral-200/70" aria-hidden />,
+});
+
+// Solo opacidad y transform: animaciones de compositor, a 60 fps y sin repintar
+const ENTRA = (k: number) => ({ initial: { opacity: 0, y: 14 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-60px" }, transition: { type: "spring" as const, bounce: 0, duration: 0.8, delay: 0.08 * k } });
 const CHICOTAZO_DEMO = { activo: true, porDia: -12 as const, diasEnMora: 12, golpes: 2, puntosPerdidos: -24, topeTriviaDia: 10 as const };
 
 // ---------------------------------------------------------------- isla de navegación (flotante arriba)
@@ -26,7 +36,7 @@ function IslaNav() {
         style={{ borderRadius: 28 }} transition={{ type: "spring", bounce: 0.18, duration: 0.55 }} aria-label="Principal">
         <motion.div layout className="flex items-center gap-3 py-1.5 pl-1.5 pr-1.5">
           <button onClick={() => setAbierta((x) => !x)} aria-expanded={abierta} className="flex min-h-[40px] items-center gap-2 rounded-full pr-2">
-            <span className="relative h-9 w-9 overflow-hidden rounded-full bg-white"><Image src="/pareas/logo.png" alt="" fill sizes="36px" className="object-cover" /></span>
+            <span className="relative h-9 w-9 overflow-hidden rounded-full bg-white"><Image src="/pareas/logo.png" alt="" fill sizes="36px" className="object-cover" priority /></span>
             <span className="text-[15px] font-semibold tracking-[-0.01em]">Ponte al Día</span>
             <span className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold text-white"><motion.span className="h-1.5 w-1.5 rounded-full bg-[#FF453A]" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />En vivo</span>
           </button>
@@ -34,7 +44,7 @@ function IslaNav() {
         </motion.div>
         <AnimatePresence initial={false}>
           {abierta && (
-            <motion.div layout initial={{ opacity: 0, filter: "blur(6px)" }} animate={{ opacity: 1, filter: "blur(0px)" }} exit={{ opacity: 0, filter: "blur(6px)" }} className="grid grid-cols-2 gap-1 px-2 pb-2 sm:flex">
+            <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-2 gap-1 px-2 pb-2 sm:flex">
               {enlaces.map(([h, t]) => <a key={h} href={h} onClick={() => setAbierta(false)} className="flex min-h-[40px] items-center justify-center rounded-full px-3 text-[13px] font-medium text-white/80 hover:bg-white/10 hover:text-white">{t}</a>)}
             </motion.div>
           )}
@@ -104,7 +114,7 @@ export default function Landing() {
           Ponte al día.<br /><span className="bg-gradient-to-r from-[#0047AB] via-[#0072C6] to-[#F9A825] bg-clip-text text-transparent">Con Pareas.</span>
         </motion.h1>
         <motion.p {...ENTRA(2)} className="mx-auto mt-4 max-w-xl text-[19px] leading-relaxed text-[#6E6E73] md:text-[21px]">
-          Su deuda clara, un plan de pago a su medida y un juego que premia la puntualidad. Y si hay atraso, el CHICOTAZO.
+          Su deuda clara, sus finanzas en orden y un juego que premia la puntualidad. Y si hay atraso, el CHICOTAZO.
         </motion.p>
         <motion.div {...ENTRA(3)} className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <Link href="/cliente" className="flex min-h-[48px] items-center rounded-full bg-[#F9A825] px-6 text-[17px] font-semibold text-[#1A1A1A] transition-transform active:scale-[0.96] hover:bg-[#FFB733]">Entrar como cliente</Link>
@@ -117,7 +127,7 @@ export default function Landing() {
           <div className="relative flex min-h-[560px] w-full max-w-5xl items-center justify-center md:min-h-[640px]">
             <AnimatePresence mode="wait" initial={false}>
               {vista === "cliente" ? (
-                <motion.div key="cel" className="relative flex items-end justify-center" initial={{ opacity: 0, scale: 0.96, filter: "blur(8px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 0.96, filter: "blur(8px)" }} transition={{ type: "spring", bounce: 0, duration: 0.6 }}>
+                <motion.div key="cel" className="relative flex items-end justify-center" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ type: "spring", bounce: 0, duration: 0.6 }}>
                   <motion.div className="absolute -left-40 bottom-6 hidden h-64 w-64 md:block" animate={reducir ? undefined : { y: [0, -10, 0] }} transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}>
                     <Image src="/pareas/pareas.png" alt="Pareas, la iguana de la Caja" fill sizes="256px" className="object-contain drop-shadow-[0_24px_30px_rgba(0,30,80,0.25)]" priority />
                   </motion.div>
@@ -126,7 +136,7 @@ export default function Landing() {
                   </IPhone17ProMax>
                 </motion.div>
               ) : (
-                <motion.div key="mac" className="w-full max-w-4xl" initial={{ opacity: 0, scale: 0.96, filter: "blur(8px)" }} animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 0.96, filter: "blur(8px)" }} transition={{ type: "spring", bounce: 0, duration: 0.6 }}>
+                <motion.div key="mac" className="w-full max-w-4xl" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ type: "spring", bounce: 0, duration: 0.6 }}>
                   <BrowserWindow variant="safari" headerStyle="full" size="xl" url="caja-piura.pe/ponte-al-dia/gestor" className="w-full bg-white text-left">
                     <PantallaGestor />
                   </BrowserWindow>
@@ -154,18 +164,18 @@ export default function Landing() {
           <Bento className="md:col-span-2">
             <FichaApp icono={IcMando} color="violeta" tam={48} />
             <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Score de 0 a 100</h3>
-            <p className="mt-1 text-[15px] text-[#6E6E73]">Bronce, Plata u Oro. Trivia, pagos a tiempo y planes cumplidos suman.</p>
+            <p className="mt-1 text-[15px] text-[#6E6E73]">Bronce, Plata u Oro. La trivia y los pagos a tiempo suman.</p>
             <div className="mt-4 flex justify-center"><AnilloScore score={82} nivel="Oro" trivia={8} topeTrivia={10} mora={false} /></div>
           </Bento>
           <Bento className="md:col-span-2">
             <FichaApp icono={IcCalendario} color="rojo" tam={48} />
             <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Su calendario</h3>
-            <p className="mt-1 text-[15px] text-[#6E6E73]">Cuotas vencidas, pagos del plan, recargos y vencimiento de campañas, día por día.</p>
+            <p className="mt-1 text-[15px] text-[#6E6E73]">Cuotas vencidas, próximos pagos, recargos y vencimiento de campañas, día por día.</p>
           </Bento>
           <Bento className="md:col-span-2">
-            <FichaApp icono={IcTarjeta} color="azul" tam={48} />
-            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Plan a su medida</h3>
-            <p className="mt-1 text-[15px] text-[#6E6E73]">Usted elige cuotas, inicial y fecha. Si no cumple las condiciones, le ofrecemos de inmediato la alternativa más cercana.</p>
+            <FichaApp icono={IcBilletera} color="verde" tam={48} />
+            <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Mis Finanzas</h3>
+            <p className="mt-1 text-[15px] text-[#6E6E73]">Anote lo que gana y lo que gasta: le decimos cuánto le sobra después de su cuota y le damos consejos.</p>
           </Bento>
           <Bento className="md:col-span-2 bg-gradient-to-br from-[#0072C6] via-[#0047AB] to-[#00347A] text-white !shadow-none">
             <FichaApp icono={IcBillete} color="rescate" tam={48} className="ring-2 ring-white/30" />
@@ -175,7 +185,7 @@ export default function Landing() {
           <Bento className="md:col-span-3">
             <FichaApp icono={IcBurbuja} color="cielo" tam={48} />
             <h3 className="mt-4 text-[24px] font-semibold tracking-[-0.03em]">Pareas, su asistente</h3>
-            <p className="mt-1 text-[15px] text-[#6E6E73]">Responde sobre su deuda, su plan y la Caja. Solo eso: así es rápido, seguro y preciso.</p>
+            <p className="mt-1 text-[15px] text-[#6E6E73]">Responde sobre su deuda, sus finanzas y la Caja. Solo eso: así es rápido, seguro y preciso.</p>
             <div className="mt-4 space-y-2 text-[14px]">
               <p className="ml-auto w-fit rounded-[18px] rounded-br-[6px] bg-[#0072C6] px-3 py-2 text-white">¿Cuánto debo hoy?</p>
               <p className="w-fit max-w-[85%] rounded-[18px] rounded-bl-[6px] bg-[#E9E9EB] px-3 py-2">Hoy su deuda es de S/ 326.08. ¿Desea pasarla a cuotas?</p>
@@ -200,7 +210,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-5">
           <motion.h2 {...ENTRA(0)} className="text-[40px] font-semibold leading-tight tracking-[-0.04em] md:text-[56px]">Para la Caja,<br /><span className="text-[#86868B]">todo en tiempo real.</span></motion.h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {[{ v: 100, s: "", e: "avisos enviados", I: IcEnVivo, c: "rojo" as const }, { v: 36, s: "%", e: "abrieron el módulo", I: IcCalendario, c: "azul" as const }, { v: 13, s: "", e: "planes aceptados hoy", I: IcGestor, c: "verde" as const }].map((k, i) => (
+            {[{ v: 100, s: "", e: "avisos enviados", I: IcEnVivo, c: "rojo" as const }, { v: 36, s: "%", e: "abrieron el módulo", I: IcCalendario, c: "azul" as const }, { v: 13, s: "", e: "pagos registrados hoy", I: IcGestor, c: "verde" as const }].map((k, i) => (
               <motion.div key={k.e} {...ENTRA(i)} className="rounded-[26px] bg-white/[0.06] p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
                 <FichaApp icono={k.I} color={k.c} tam={40} />
                 <p className="mt-4 text-[56px] font-semibold leading-none tracking-[-0.05em] tabular-nums"><RollingNumber value={k.v} />{k.s}</p>

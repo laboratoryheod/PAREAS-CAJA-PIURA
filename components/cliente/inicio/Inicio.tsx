@@ -6,7 +6,7 @@ import { Beneficios } from "./Beneficios";
 import { IslaPareas } from "./Isla";
 import RegaloSalvador from "../RegaloSalvador";
 
-type Destino = "pagar" | "simulador" | "plan" | "trivia" | "asistente";
+type Destino = "pagar" | "finanzas" | "trivia" | "asistente";
 
 /**
  * Página principal del cliente (según el boceto del equipo):

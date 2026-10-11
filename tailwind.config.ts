@@ -17,8 +17,8 @@ export default {
         border: "hsl(var(--border))",
       },
       fontFamily: {
-        display: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Display"', '"Plus Jakarta Sans Variable"', "system-ui", "sans-serif"],
-        sans: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Text"', '"Plus Jakarta Sans Variable"', "system-ui", "sans-serif"],
+        display: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Display"', "var(--font-plus-jakarta)", "system-ui", "sans-serif"],
+        sans: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Text"', "var(--font-plus-jakarta)", "system-ui", "sans-serif"],
       },
       borderRadius: { tarjeta: "14px" },
     },

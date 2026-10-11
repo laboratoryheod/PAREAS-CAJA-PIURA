@@ -20,8 +20,10 @@
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-synthesis: none; }
 /* Estilo Apple: San Francisco en dispositivos Apple; Plus Jakarta como respaldo en el resto */
 /* Fondo institucional: azul Caja Piura suave (cliente, landing y gestor) */
-body { background-color: #DCE8F7; background-image: linear-gradient(180deg, #C7DBF3 0%, #D6E5F7 35%, #E3EDF9 70%, #EDF3FB 100%); background-attachment: fixed; color: #1C1C1E; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Plus Jakarta Sans Variable", system-ui, sans-serif; letter-spacing: -0.005em; }
-h1, h2, h3, .font-display { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans Variable", system-ui, sans-serif; text-wrap: balance; }
+body { background-color: #DCE8F7; color: #1C1C1E; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-plus-jakarta), system-ui, sans-serif; letter-spacing: -0.005em; }
+/* Fondo azul fijo en una capa propia (background-attachment: fixed obliga a repintar en cada scroll en móviles) */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: linear-gradient(180deg, #C7DBF3 0%, #D6E5F7 35%, #E3EDF9 70%, #EDF3FB 100%); }
+h1, h2, h3, .font-display { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-plus-jakarta), system-ui, sans-serif; text-wrap: balance; }
 p { text-wrap: pretty; }
 .tabular, .tabular-nums { font-variant-numeric: tabular-nums; }
 
@@ -32,3 +34,16 @@ input[type="range"] { width: 100%; height: 28px; }
 input, select, textarea { font-size: 16px; }
 
 input[type="range"] { accent-color: #0072C6; }
+
+/* ---- Pantalla de carga con Pareas (solo CSS: funciona antes de que cargue JavaScript) ---- */
+@keyframes carga-salto { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-14px) rotate(2deg); } }
+@keyframes carga-sombra { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.7); opacity: 0.6; } }
+@keyframes carga-frase { 0% { opacity: 0; transform: translateY(8px); } 3%, 23% { opacity: 1; transform: translateY(0); } 25.5%, 100% { opacity: 0; transform: translateY(-8px); } }
+@keyframes carga-barra { 0% { transform: translateX(-110%); } 100% { transform: translateX(320%); } }
+.carga-pareas { animation: carga-salto 1.1s ease-in-out infinite; will-change: transform; }
+.carga-sombra { animation: carga-sombra 1.1s ease-in-out infinite; }
+.carga-frase { opacity: 0; animation: carga-frase 6.4s ease-in-out infinite; }
+.carga-barra { animation: carga-barra 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .carga-pareas, .carga-sombra, .carga-barra { animation: none; }
+}

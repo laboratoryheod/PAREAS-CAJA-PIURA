@@ -7,3 +7,7 @@
 - Modo Rescate (lo otorga el gestor, masivo por rango de score o individual): paga hoy 30% menos y recupera el descuento con +10% en sus 3 cuotas siguientes; vence en 7 días; al usarlo recupera beneficios.
 - Score 0–100 (parte en 70): trivia +2 (tope +10/día), racha +5 (solo al día), pago a tiempo +15, plan cumplido +20, CHICOTAZO −12 por día en mora.
 - Toda regla nueva va con su test en `tests/`.
+- El cliente **no arma planes** en la app: "Mi plan" fue reemplazado por Mis Finanzas. Las reglas de reprogramación siguen en el servidor para planes existentes.
+- Modo Rescate masivo: siempre "score mínimo o más" (`vistaPreviaRescate` / `otorgarRescateMasivo`).
+- Fecha del sistema = fecha real de Perú + días adelantados (herramienta de prueba). Nunca fijar fechas a mano en la interfaz.
+- Excel de cartera: importa por ID sistema o DNI (hash), nunca borra; "¿Ya pagó? = Sí" registra el pago (`pagoEnAgencia`).

@@ -52,6 +52,6 @@ export function clasificar(texto: string): Clase {
   return "sin_tema";
 }
 
-export const RESPUESTA_AJENO = "Disculpe, solo puedo ayudarle con su deuda, su plan de pago, sus puntos, temas de la Caja y consejos de finanzas personales. ¿Desea consultar su deuda o armar su plan?";
+export const RESPUESTA_AJENO = "Disculpe, solo puedo ayudarle con su deuda, su plan de pago, sus puntos, temas de la Caja y consejos de finanzas personales. ¿Desea consultar su deuda o revisar sus finanzas?";
 export const RESPUESTA_INYECCION = "No puedo realizar esa acción. Solo puedo ayudarle con su deuda, su plan de pago y temas de la Caja. ¿En qué le ayudo?";
 export const RESPUESTA_CUPO = "Hoy ya realizó muchas consultas. Puedo seguir ayudándole con las preguntas frecuentes: su deuda, su plan y cómo pagar.";

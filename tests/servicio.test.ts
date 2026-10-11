@@ -237,14 +237,33 @@ describe("panel del gestor: distribución y Modo Rescate masivo", () => {
     const soloMora = S.distribucionCartera({ estado: "en_mora" });
     expect(soloMora.grupos.find((g) => g.grupo === "morosos")!.pct).toBe(soloMora.total ? 100 : 0);
   });
-  it("activa el Modo Rescate a todos los elegibles de un rango y no repite", () => {
-    const rango = S.segmentosRescate().find((r) => r.elegibles > 0)!;
-    const r = S.otorgarRescateMasivo(rango.id);
-    expect(r.otorgados).toBe(rango.elegibles);
-    const despues = S.segmentosRescate().find((x) => x.id === rango.id)!;
+  it("activa el Modo Rescate a todos los elegibles desde un score mínimo y no repite", () => {
+    const previa = S.vistaPreviaRescate(60);
+    expect(previa.elegibles).toBeGreaterThan(0);
+    expect(previa.atajos.find((x) => x.min === 60)!.elegibles).toBe(previa.elegibles);
+    expect(S.vistaPreviaRescate(80).elegibles).toBeLessThanOrEqual(previa.elegibles); // a mayor mínimo, menos clientes
+    const r = S.otorgarRescateMasivo(60);
+    expect(r.otorgados).toBe(previa.elegibles);
+    expect(S.cartera().filter((c) => c.regaloVigente).every((c) => c.score >= 60)).toBe(true);
+    const despues = S.vistaPreviaRescate(60);
     expect(despues.elegibles).toBe(0);
-    expect(despues.conRescate).toBeGreaterThanOrEqual(rango.elegibles);
-    expect(S.otorgarRescateMasivo(rango.id).otorgados).toBe(0);
-    expect(() => S.otorgarRescateMasivo("999")).toThrow(/Rango/);
+    expect(despues.conRescate).toBe(previa.elegibles);
+    expect(S.otorgarRescateMasivo(60).otorgados).toBe(0);
+    expect(() => S.otorgarRescateMasivo(101)).toThrow(/score mínimo/);
+    expect(() => S.vistaPreviaRescate("abc")).toThrow(/score mínimo/);
+  });
+});
+
+describe("fecha real del sistema", () => {
+  it("al pasar un día real se procesa solo la mora y el CHICOTAZO, una sola vez", () => {
+    const antes = S.situacion(GENGIS);
+    process.env.FECHA_SISTEMA = "2026-10-11";
+    try {
+      const s = S.situacion(GENGIS);
+      expect(s.fechaHoy).toBe("2026-10-11");
+      expect(s.diasAtraso).toBe(antes.diasAtraso + 1);
+      expect(s.score).toBe(antes.score - 12);
+      expect(S.situacion(GENGIS).score).toBe(antes.score - 12); // no se repite
+    } finally { process.env.FECHA_SISTEMA = "2026-10-10"; }
   });
 });

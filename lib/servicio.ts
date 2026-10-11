@@ -1,11 +1,43 @@
 // Lógica de negocio del módulo. TODOS los montos y fechas se calculan aquí (servidor); el cliente nunca los inventa.
 import { createHash } from "node:crypto";
 import QRCode from "qrcode";
-import { getRepo, type CampanaRow, type ClienteRow, type CreditoRow, type CuotaRow, type EventoRow, type PagoPlan, type PropuestaRow, type Repo } from "./db/repo";
-import { diferenciaDias, fechaLarga, soles, sumarDias } from "./fecha";
+import { getRepo as repoBase, type CampanaRow, type ClienteRow, type CreditoRow, type CuotaRow, type EventoRow, type PagoPlan, type PropuestaRow, type Repo } from "./db/repo";
+import { diferenciaDias, fechaLarga, soles, sumarDias, sumarMeses } from "./fecha";
+import { CATEGORIAS_BASE, COLORES_ETIQUETA, DatoInvalido, FRECUENCIAS, ICONOS_ETIQUETA, resumenMensual, validarFecha, validarMonto, validarNombre, type Categoria, type CuotaCredito, type IconoCategoria } from "./finanzas";
+import { consejosFinanzas } from "./consejos-finanzas";
 import { calcularRegaloSalvador, interesMoratorio, limitesPara, REGALO_SALVADOR, validarPropuesta, type CreditoReglas, type PropuestaPlan } from "./reglas";
 import { APELATIVO } from "./config";
+import { nivelDe } from "./niveles";
 import { beneficiosDeNivel, chicotazoDelDia, estadoPareas, PARAMS_SCORE, puntosParaSiguienteNivel, rachaPermitida, recalcularScore, triviaPermitida, type Movimiento } from "./score";
+
+/**
+ * Repositorio "al día": antes de cada operación se procesan los días que pasaron desde la última visita
+ * (mora, interés, planes vencidos y CHICOTAZO), porque la fecha del sistema es la fecha real de Perú.
+ */
+function getRepo(): Repo {
+  const repo = repoBase();
+  sincronizarDias(repo);
+  return repo;
+}
+
+const MAX_DIAS_POR_PROCESAR = 120;
+
+/** Devuelve cuántos CHICOTAZOS se dieron al procesar los días pendientes. */
+function sincronizarDias(repo: Repo): number {
+  const hoy = repo.fechaHoy();
+  let ultima = repo.fechaProcesada();
+  if (!ultima) { repo.setFechaProcesada(hoy); return 0; }
+  if (ultima >= hoy) return 0;
+  let golpes = 0;
+  // Si la app estuvo apagada muchísimo tiempo, se procesa como máximo un tramo razonable
+  if (diferenciaDias(ultima, hoy) > MAX_DIAS_POR_PROCESAR) ultima = sumarDias(hoy, -MAX_DIAS_POR_PROCESAR);
+  while (ultima < hoy) {
+    ultima = sumarDias(ultima, 1);
+    golpes += procesarDia(repo, ultima);
+    repo.setFechaProcesada(ultima);
+  }
+  return golpes;
+}
 
 export class ErrorNegocio extends Error {
   constructor(mensaje: string, public status = 400) { super(mensaje); }
@@ -452,11 +484,17 @@ export function otorgarRegalo(clienteId: number, gestor = "gestor") {
 
 // ------------------------------------------------------------------ paso del tiempo (herramienta de pruebas)
 
-/** Avanza un día la fecha del sistema: sube la mora, Pareas da su chicotazo y se evalúan planes y campañas vencidas. */
+/** Herramienta de prueba: adelanta un día la fecha del sistema y procesa ese día. */
 export function avanzarDia() {
   const repo = getRepo();
-  const nueva = sumarDias(repo.fechaHoy(), 1);
-  repo.setFechaHoy(nueva);
+  repo.setDiasAdelantados(repo.diasAdelantados() + 1);
+  const golpes = sincronizarDias(repo);
+  const nueva = repo.fechaHoy();
+  return { fechaHoy: nueva, fechaHoyLarga: fechaLarga(nueva), clientesConChicotazo: golpes };
+}
+
+/** Procesa un día: sube la mora, Pareas da su CHICOTAZO y se evalúan planes y campañas vencidas. */
+function procesarDia(repo: Repo, nueva: string) {
   const afectados: number[] = [];
 
   for (const c of repo.todasLasCampanas()) if (c.estado === "ofrecida" && c.vence < nueva) repo.actualizarEstadoCampana(c.id, "vencida");
@@ -489,7 +527,7 @@ export function avanzarDia() {
       if (!yaGolpeado) { moverScore(repo, cliente.id, "chicotazo_mora", chicotazoDelDia(dias), `Día ${dias} en mora`); afectados.push(cliente.id); }
     }
   }
-  return { fechaHoy: nueva, fechaHoyLarga: fechaLarga(nueva), clientesConChicotazo: afectados.length };
+  return afectados.length;
 }
 
 export function reiniciarApp() {
@@ -503,7 +541,7 @@ export function reiniciarApp() {
 export const DIAS_AVISO_PAGO = 3;
 
 export type TipoNotificacion = "rescate" | "pago_cerca" | "mora" | "trivia";
-export interface Notificacion { id: string; tipo: TipoNotificacion; titulo: string; mensaje: string; accion: "pagar" | "trivia" | "plan" | "simulador"; urgencia: number }
+export interface Notificacion { id: string; tipo: TipoNotificacion; titulo: string; mensaje: string; accion: "pagar" | "trivia" | "finanzas"; urgencia: number }
 
 /**
  * Avisos para el cliente, en tono coloquial y con humor (como los de un pata que te cuida).
@@ -531,12 +569,21 @@ export function notificacionesCliente(clienteId: number): Notificacion[] {
         mensaje: `${p.tipo === "inicial" ? "Tu inicial" : `Tu cuota ${p.n}`} de ${soles(p.monto)} vence ${cuando} (${p.fechaLarga}). Págala a tiempo, ${APELATIVO}, sino te caerá el CHICOTAZO.` });
       break; // basta con el pago más próximo
     }
+  } else {
+    // Cuota regular del crédito que se acerca
+    const c = cuotaParaFinanzas(clienteId).proxima;
+    if (c && c.diasFaltan <= DIAS_AVISO_PAGO) {
+      const cuando = c.diasFaltan === 0 ? "hoy" : c.diasFaltan === 1 ? "mañana" : `en ${c.diasFaltan} días`;
+      out.push({ id: `cuota-${c.fecha}-${hoy}`, tipo: "pago_cerca", urgencia: c.diasFaltan === 0 ? 3 : 2, accion: "pagar",
+        titulo: c.diasFaltan === 0 ? "¡Hoy vence tu cuota!" : `Tu cuota vence ${cuando}`,
+        mensaje: `Tu cuota de ${soles(c.monto)} vence ${cuando} (${fechaLarga(c.fecha)}). Sepárala a tiempo, ${APELATIVO}, sino te caerá el CHICOTAZO.` });
+    }
   }
 
   if (s.diasAtraso > 0 && !s.regalo) {
-    out.push({ id: `mora-${hoy}`, tipo: "mora", urgencia: 2, accion: s.limites ? "simulador" : "pagar",
+    out.push({ id: `mora-${hoy}`, tipo: "mora", urgencia: 2, accion: "pagar",
       titulo: "¡Chas! Te cayó el CHICOTAZO",
-      mensaje: `Llevas ${s.diasAtraso} ${s.diasAtraso === 1 ? "día" : "días"} de atraso y hoy Pareas te dio un CHICOTAZO de ${PARAMS_SCORE.chicotazoPorDia} puntos. ${s.limites ? "Arma tu plan" : "Ponte al día"} y guarda el látigo, ${APELATIVO}.` });
+      mensaje: `Llevas ${s.diasAtraso} ${s.diasAtraso === 1 ? "día" : "días"} de atraso y hoy Pareas te dio un CHICOTAZO de ${PARAMS_SCORE.chicotazoPorDia} puntos. Ponte al día y guarda el látigo, ${APELATIVO}.` });
   }
 
   const t = triviaSiguiente(clienteId).progreso;
@@ -686,36 +733,39 @@ export function distribucionCartera(f: Omit<FiltrosCartera, "q"> = {}) {
   return { total, grupos };
 }
 
-// ------------------------------------------------------------------ Modo Rescate masivo (por rango de puntos)
+// ------------------------------------------------------------------ Modo Rescate masivo (desde un score mínimo)
 
-export const RANGOS_RESCATE = [
-  { id: "0-39", min: 0, max: 39 },
-  { id: "40-59", min: 40, max: 59 },
-  { id: "60-79", min: 60, max: 79 },
-  { id: "80-100", min: 80, max: 100 },
-] as const;
+/** Atajos que ve el gestor; puede escribir cualquier otro mínimo entre 0 y 100. */
+export const ATAJOS_SCORE_RESCATE = [40, 50, 60, 70, 80] as const;
 
-const elegiblesRescate = (lista: ReturnType<typeof cartera>, min: number, max: number) =>
-  lista.filter((c) => c.puedeRecibirRegalo && c.score >= min && c.score <= max);
-
-/** Para cada rango de puntos: cuántos clientes pueden recibir hoy el Modo Rescate y cuánto deben. */
-export function segmentosRescate() {
-  const lista = cartera();
-  return RANGOS_RESCATE.map((r) => {
-    const el = elegiblesRescate(lista, r.min, r.max);
-    return { ...r, elegibles: el.length, conRescate: lista.filter((c) => c.regaloVigente && c.score >= r.min && c.score <= r.max).length, deuda: r2(el.reduce((x, c) => x + c.deuda, 0)) };
-  });
+function scoreMinimo(v: unknown): number {
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < PARAMS_SCORE.min || n > PARAMS_SCORE.max) throw new ErrorNegocio(`El score mínimo debe ser un número entero entre ${PARAMS_SCORE.min} y ${PARAMS_SCORE.max}.`);
+  return n;
 }
 
-/** Activa el Modo Rescate a todos los clientes elegibles de un rango de puntos. */
-export function otorgarRescateMasivo(rangoId: string, gestor = "gestor") {
-  const rango = RANGOS_RESCATE.find((r) => r.id === rangoId);
-  if (!rango) throw new ErrorNegocio("Rango de puntos no válido.");
+const elegiblesRescate = (lista: ReturnType<typeof cartera>, min: number) => lista.filter((c) => c.puedeRecibirRegalo && c.score >= min);
+
+/** Cuántos clientes con score igual o mayor al mínimo pueden recibir hoy el Modo Rescate y cuánto deben. */
+export function vistaPreviaRescate(minimo: unknown) {
+  const min = scoreMinimo(minimo);
+  const lista = cartera();
+  const el = elegiblesRescate(lista, min);
+  return {
+    min, elegibles: el.length, deuda: r2(el.reduce((x, c) => x + c.deuda, 0)),
+    conRescate: lista.filter((c) => c.regaloVigente && c.score >= min).length,
+    atajos: ATAJOS_SCORE_RESCATE.map((m) => ({ min: m, elegibles: elegiblesRescate(lista, m).length })),
+  };
+}
+
+/** Activa el Modo Rescate a todos los clientes elegibles con score igual o mayor al mínimo. */
+export function otorgarRescateMasivo(minimo: unknown, gestor = "gestor") {
+  const min = scoreMinimo(minimo);
   let otorgados = 0, omitidos = 0;
-  for (const c of elegiblesRescate(cartera(), rango.min, rango.max)) {
+  for (const c of elegiblesRescate(cartera(), min)) {
     try { otorgarRegalo(c.id, gestor); otorgados++; } catch { omitidos++; }
   }
-  return { rango: rango.id, otorgados, omitidos };
+  return { min, otorgados, omitidos };
 }
 
 export function derivados(listaPrevia?: ReturnType<typeof cartera>) {
@@ -761,4 +811,212 @@ export function opcionesFiltros() {
   const zonas = new Set<string>(), tipos = new Set<string>();
   for (const c of repo.clientes()) { zonas.add(c.zona); const cr = repo.creditoDeCliente(c.id); if (cr) tipos.add(cr.tipo_credito); }
   return { zonas: [...zonas].sort(), tipos: [...tipos].sort(), tramos: ["1-15", "16-30", "31-60", ">60", "al_dia"], estados: ["en_mora", "plan_pendiente", "reprogramado", "incumplido", "derivado", "al_dia"] };
+}
+
+// ------------------------------------------------------------------ Mis Finanzas (calculadora de ingresos y gastos)
+
+/**
+ * Lo que el cliente debe destinar a su crédito, para la calculadora. PUNTO DE INTEGRACIÓN con la calculadora de
+ * mora del core: hoy se arma con las cuotas de la base local.
+ */
+export function cuotaParaFinanzas(clienteId: number): CuotaCredito {
+  const repo = getRepo();
+  const { credito, cuotas, propuestas, regalo } = cargar(repo, clienteId);
+  const hoy = repo.fechaHoy();
+  const cr = reglasDe(credito, cuotas, propuestas);
+  const activa = propuestaActiva(propuestas);
+  const conFecha = (fecha: string, monto: number, concepto: "cuota" | "plan") => ({ monto: r2(monto), fecha, diasFaltan: Math.max(0, diferenciaDias(hoy, fecha)), concepto });
+
+  // Con un plan aceptado, lo que toca es el siguiente pago del plan (la deuda vencida ya está dentro del plan)
+  const pagoPlan = activa?.cronograma.find((p) => !p.pagado);
+  if (pagoPlan) return { proxima: conFecha(pagoPlan.fecha, pagoPlan.monto, "plan"), vencido: 0, conRescate: false };
+
+  // Próxima cuota regular: un mes después de la última cuota conocida, hasta caer en una fecha futura
+  let fecha = cuotas.length ? cuotas[cuotas.length - 1].fecha_vencimiento : sumarDias(hoy, 30);
+  for (let i = 0; fecha <= hoy && i < 36; i++) fecha = sumarMeses(fecha, 1);
+  const proxima = credito.cuotas_pendientes > 0 ? conFecha(fecha, credito.cuota_mensual, "cuota") : null;
+  const vencido = regalo ? regalo.monto_hoy : r2(cr.montoVencido + cr.interesMoratorio);
+  return { proxima, vencido: r2(vencido), conRescate: !!regalo };
+}
+
+function categoriasDe(repo: Repo, clienteId: number): Categoria[] {
+  return [
+    ...CATEGORIAS_BASE,
+    ...repo.categoriasPropias(clienteId).map((c) => ({ id: `propia-${c.id}`, nombre: c.nombre, color: c.color, icono: c.icono as IconoCategoria, propia: true })),
+  ];
+}
+
+/** Todo lo que muestra Mis Finanzas: resumen del mes, crédito, consejos, ingresos y gastos (calculado aquí). */
+export function finanzasCliente(clienteId: number) {
+  const repo = getRepo();
+  cargar(repo, clienteId); // valida que exista
+  const hoy = repo.fechaHoy();
+  const ingresos = repo.ingresos(clienteId);
+  const gastos = repo.gastos(clienteId);
+  const categorias = categoriasDe(repo, clienteId);
+  const credito = cuotaParaFinanzas(clienteId);
+  const resumen = resumenMensual({ ingresos, gastos, credito, hoy });
+  const mes = resumen.mes;
+  return {
+    hoy, mesLargo: fechaLarga(hoy).replace(/^\d+ de /, ""),
+    resumen,
+    credito: { ...credito, proxima: credito.proxima ? { ...credito.proxima, fechaLarga: fechaLarga(credito.proxima.fecha) } : null },
+    consejos: consejosFinanzas(resumen, categorias),
+    categorias,
+    ingresos: ingresos.map((i) => ({ ...i, frecuenciaTexto: FRECUENCIAS[i.frecuencia].nombre, mensual: r2(i.monto * FRECUENCIAS[i.frecuencia].porMes) })),
+    gastos: gastos.map((g) => ({ ...g, fechaLarga: fechaLarga(g.fecha), delMes: g.tipo === "fijo" ? g.fecha.slice(0, 7) <= mes : g.fecha.slice(0, 7) === mes })),
+  };
+}
+
+type AccionFinanzas = "guardar_ingreso" | "borrar_ingreso" | "guardar_gasto" | "borrar_gasto" | "crear_categoria";
+
+/** Altas, cambios y bajas de Mis Finanzas. Devuelve el módulo recalculado. */
+export function accionFinanzas(clienteId: number, accion: AccionFinanzas, d: Record<string, any> = {}) {
+  const repo = getRepo();
+  cargar(repo, clienteId);
+  const id = d.id === undefined || d.id === null || d.id === "" ? undefined : Number(d.id);
+  try {
+    switch (accion) {
+      case "guardar_ingreso": {
+        if (!(d.frecuencia in FRECUENCIAS)) throw new DatoInvalido("Elija cada cuánto recibe este ingreso.");
+        repo.guardarIngreso(clienteId, { id, nombre: validarNombre(d.nombre, "el ingreso"), monto: validarMonto(d.monto), frecuencia: d.frecuencia });
+        break;
+      }
+      case "borrar_ingreso":
+        if (!id || !repo.borrarIngreso(clienteId, id)) throw new DatoInvalido("No encontramos ese ingreso.");
+        break;
+      case "guardar_gasto": {
+        if (!categoriasDe(repo, clienteId).some((c) => c.id === d.categoria)) throw new DatoInvalido("Elija una categoría para el gasto.");
+        if (d.tipo !== "fijo" && d.tipo !== "variable") throw new DatoInvalido("Indique si el gasto es fijo o variable.");
+        if (d.ambito !== "personal" && d.ambito !== "negocio") throw new DatoInvalido("Indique si el gasto es personal o del negocio.");
+        repo.guardarGasto(clienteId, { id, nombre: validarNombre(d.nombre), monto: validarMonto(d.monto), categoria: d.categoria, fecha: d.fecha ? validarFecha(d.fecha) : repo.fechaHoy(), tipo: d.tipo, ambito: d.ambito });
+        break;
+      }
+      case "borrar_gasto":
+        if (!id || !repo.borrarGasto(clienteId, id)) throw new DatoInvalido("No encontramos ese gasto.");
+        break;
+      case "crear_categoria": {
+        const nombre = validarNombre(d.nombre, "la etiqueta");
+        if (categoriasDe(repo, clienteId).some((c) => c.nombre.toLowerCase() === nombre.toLowerCase())) throw new DatoInvalido("Ya tiene una etiqueta con ese nombre.");
+        if (repo.categoriasPropias(clienteId).length >= 12) throw new DatoInvalido("Ya tiene 12 etiquetas propias. Use una de las que ya creó.");
+        const color = COLORES_ETIQUETA.includes(d.color) ? d.color : COLORES_ETIQUETA[0];
+        const icono = ICONOS_ETIQUETA.includes(d.icono) ? d.icono : ICONOS_ETIQUETA[0];
+        repo.crearCategoria(clienteId, { nombre, color, icono });
+        break;
+      }
+      default:
+        throw new DatoInvalido("Acción no reconocida.");
+    }
+  } catch (e) {
+    if (e instanceof DatoInvalido) throw new ErrorNegocio(e.message);
+    throw e;
+  }
+  return finanzasCliente(clienteId);
+}
+
+// ------------------------------------------------------------------ cartera en Excel (importar y exportar)
+
+/** Una fila del Excel ya leída (los nombres de columna los resuelve lib/excel-cartera.ts). */
+export interface FilaImportacion {
+  fila: number;
+  idSistema?: number; dni?: string; nombres?: string; telefono?: string; zona?: string; negocio?: string;
+  tipoCredito?: string; montoDesembolsado?: number; saldoCapital?: number; tea?: number; cuotaMensual?: number;
+  cuotasPendientes?: number; diasAtraso?: number; montoVencido?: number; yaPago?: boolean;
+}
+export interface ResultadoImportacion { filas: number; creados: number; actualizados: number; pagados: number; nuevaMora: number; errores: { fila: number; mensaje: string }[] }
+
+const hashDni = (dni: string) => createHash("sha256").update(dni).digest("hex");
+const tea = (v?: number) => (v === undefined ? undefined : v > 1 ? r2(v / 100) : v);
+
+/** Pago total registrado fuera de la app (agencia, Excel del gestor): cancela lo vencido y cierra plan o campaña. */
+function pagoEnAgencia(repo: Repo, clienteId: number): boolean {
+  const { credito, cuotas, propuestas, regalo } = cargar(repo, clienteId);
+  const pendientes = cuotas.filter((c) => c.pagada !== 1);
+  const plan = propuestas.find((p) => p.estado === "aceptada" || p.estado === "derivada");
+  if (!pendientes.length && !plan && !regalo) return false;
+  const monto = r2(reglasDe(credito, cuotas, propuestas).montoVencido);
+  cancelarVencidas(repo, credito, cuotas);
+  if (plan) repo.actualizarPropuesta(plan.id, { estado: "cumplida", cronograma: plan.cronograma.map((x) => ({ ...x, pagado: true })) });
+  if (regalo) repo.actualizarEstadoCampana(regalo.id, "vencida");
+  repo.insertarEvento(clienteId, "pago_registrado", { concepto: "agencia", monto, origen: "excel" });
+  return true;
+}
+
+/** Agrega clientes nuevos y actualiza los existentes (por ID del sistema o por DNI). Nunca borra a nadie. */
+export function importarCartera(filas: FilaImportacion[]): ResultadoImportacion {
+  const repo = getRepo();
+  const hoy = repo.fechaHoy();
+  const res: ResultadoImportacion = { filas: filas.length, creados: 0, actualizados: 0, pagados: 0, nuevaMora: 0, errores: [] };
+  const error = (fila: number, mensaje: string) => res.errores.push({ fila, mensaje });
+
+  for (const f of filas) {
+    try {
+      if (f.dni !== undefined && !/^\d{8}$/.test(f.dni) && !/^\*+\d{4}$/.test(f.dni)) { error(f.fila, "El DNI debe tener 8 dígitos."); continue; }
+      for (const [k, v] of Object.entries({ "Cuota mensual": f.cuotaMensual, "Monto desembolsado": f.montoDesembolsado, "Saldo capital": f.saldoCapital, "Cuotas vencidas": f.montoVencido, "Días de atraso": f.diasAtraso, "Cuotas pendientes": f.cuotasPendientes, TEA: f.tea }))
+        if (v !== undefined && (!Number.isFinite(v) || v < 0)) throw new ErrorNegocio(`${k}: debe ser un número positivo.`);
+      const dniCompleto = f.dni && /^\d{8}$/.test(f.dni) ? f.dni : undefined;
+      const existente = (f.idSistema ? repo.cliente(f.idSistema) : undefined) ?? (dniCompleto ? repo.clientePorDniHash(hashDni(dniCompleto)) : undefined);
+
+      if (!existente) {
+        if (!dniCompleto) { error(f.fila, "Cliente nuevo: escriba su DNI completo (8 dígitos)."); continue; }
+        if (!f.nombres?.trim()) { error(f.fila, "Cliente nuevo: falta el nombre."); continue; }
+        if (!f.tipoCredito?.trim()) { error(f.fila, "Cliente nuevo: falta el tipo de crédito."); continue; }
+        if (!f.cuotaMensual) { error(f.fila, "Cliente nuevo: falta la cuota mensual."); continue; }
+        const pendientes = Math.round(f.cuotasPendientes ?? 12);
+        const dias = f.yaPago ? 0 : Math.round(f.diasAtraso ?? 0);
+        const t = tea(f.tea) ?? 0.38;
+        const { clienteId, creditoId } = repo.crearClienteConCredito(
+          { nombres: f.nombres.trim(), dni_hash: hashDni(dniCompleto), dni_mascara: "****" + dniCompleto.slice(-4), telefono: f.telefono ?? "", zona: f.zona ?? "", negocio: f.negocio ?? "", score: PARAMS_SCORE.inicial, nivel: nivelDe(PARAMS_SCORE.inicial) },
+          { tipo_credito: f.tipoCredito.trim(), monto_desembolsado: f.montoDesembolsado ?? r2(f.cuotaMensual * 12), saldo_capital: f.saldoCapital ?? r2(f.cuotaMensual * pendientes), tea: t, cuota_mensual: f.cuotaMensual, cuotas_pendientes: pendientes, dias_atraso: dias },
+        );
+        if (dias > 0) {
+          const monto = f.montoVencido || f.cuotaMensual;
+          repo.crearCuota(creditoId, monto, sumarDias(hoy, -dias), dias, interesMoratorio(monto, dias, t));
+          repo.insertarEvento(clienteId, "aviso_enviado", { canal: "importacion" });
+        }
+        res.creados++;
+        continue;
+      }
+
+      const { credito, cuotas } = cargar(repo, existente.id);
+      repo.actualizarDatosCliente(existente.id, { nombres: f.nombres?.trim() || undefined, telefono: f.telefono || undefined, zona: f.zona || undefined, negocio: f.negocio || undefined });
+      repo.actualizarCredito(credito.id, {
+        tipo_credito: f.tipoCredito?.trim() || undefined, monto_desembolsado: f.montoDesembolsado, saldo_capital: f.saldoCapital,
+        tea: tea(f.tea), cuota_mensual: f.cuotaMensual || undefined, cuotas_pendientes: f.cuotasPendientes === undefined ? undefined : Math.round(f.cuotasPendientes),
+      });
+      if (f.yaPago) { if (pagoEnAgencia(repo, existente.id)) res.pagados++; }
+      else if ((f.diasAtraso ?? 0) > 0 && !cuotas.some((c) => c.pagada !== 1)) {
+        // Un cliente al día que el Excel trae con atraso: se registra la cuota vencida
+        const dias = Math.round(f.diasAtraso!);
+        const monto = f.montoVencido || f.cuotaMensual || credito.cuota_mensual;
+        repo.crearCuota(credito.id, monto, sumarDias(hoy, -dias), dias, interesMoratorio(monto, dias, tea(f.tea) ?? credito.tea));
+        repo.actualizarDiasCredito(credito.id, dias);
+        res.nuevaMora++;
+      }
+      res.actualizados++;
+    } catch (e) {
+      error(f.fila, e instanceof ErrorNegocio ? e.message : "No se pudo procesar esta fila.");
+    }
+  }
+  return res;
+}
+
+const ETIQUETA_ESTADO: Record<EstadoCliente, string> = { al_dia: "Al día", en_mora: "En mora", plan_pendiente: "Plan sin primer pago", reprogramado: "Plan en marcha", derivado: "Derivado a gestor", incumplido: "Incumplió su plan" };
+
+/** Filas para descargar la cartera en Excel, con su estado actualizado al día de hoy. */
+export function filasExportacion() {
+  const repo = getRepo();
+  const lista = cartera();
+  return lista.map((c) => {
+    const { credito, cuotas, propuestas } = cargar(repo, c.id);
+    const cr = reglasDe(credito, cuotas, propuestas);
+    return {
+      idSistema: c.id, dni: c.dni, nombres: c.nombres, telefono: repo.cliente(c.id)?.telefono ?? "", zona: c.zona, negocio: c.negocio,
+      tipoCredito: credito.tipo_credito, montoDesembolsado: credito.monto_desembolsado, saldoCapital: credito.saldo_capital, tea: r2(credito.tea * 100),
+      cuotaMensual: credito.cuota_mensual, cuotasPendientes: credito.cuotas_pendientes, diasAtraso: cr.diasAtraso, montoVencido: cr.montoVencido,
+      yaPago: "", // lo llena el gestor con "Sí" para registrar un pago; vacío no cambia nada
+      interesMoratorio: cr.interesMoratorio, deudaHoy: c.deuda, estado: ETIQUETA_ESTADO[c.estado], score: c.score, nivel: c.nivel,
+      modoRescate: c.regaloVigente ? "Vigente" : "", fechaCorte: repo.fechaHoy(),
+    };
+  });
 }

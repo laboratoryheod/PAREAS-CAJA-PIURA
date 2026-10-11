@@ -8,11 +8,12 @@
     "start": "next start",
     "test": "vitest run",
     "seed": "tsx scripts/seed.ts",
-    "export:xlsx": "tsx scripts/export-xlsx.ts"
+    "export:xlsx": "tsx scripts/export-xlsx.ts",
+    "importar:xlsx": "tsx scripts/importar-xlsx.ts",
+    "plantilla:xlsx": "tsx scripts/importar-xlsx.ts --plantilla"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
-    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@radix-ui/react-slot": "^1.4.0",
     "better-sqlite3": "^13.0.3",
     "class-variance-authority": "^0.7.1",

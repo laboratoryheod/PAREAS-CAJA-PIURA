@@ -10,16 +10,17 @@ Ver [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md). El contexto 
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm test             # reglas, score, servicio y asistente
+npm test             # reglas, score, servicio, Mis Finanzas, Excel y asistente
 npm run build && npm start
 ```
 
 - La base SQLite (`data/ponte.db`) se crea y se llena sola la primera vez (100 deudores, trivia, actividad previa).
-- `npm run seed` la recrea de cero · `npm run export:xlsx` regenera `data/deudores.xlsx`.
+- `npm run seed` la recrea de cero.
+- **Cartera en Excel** (también con botones en Panel del gestor › Cartera): `npm run plantilla:xlsx` crea `data/plantilla-cartera.xlsx` · `npm run importar:xlsx -- archivo.xlsx` agrega clientes nuevos y actualiza los existentes por ID sistema o DNI (nunca borra; "¿Ya pagó? = Sí" registra el pago) · `npm run export:xlsx` descarga la cartera actual a `data/cartera.xlsx`.
 - Opcional: copie `.env.example` a `.env.local` y ponga `GEMINI_API_KEY` para usar Gemini; sin clave el asistente responde con FAQ local.
 - Panel del banco: usuario `gestor` · clave `caja2026`.
-- Cliente de ejemplo: **Gengis Guerrero** (`/cliente`, id 1): cuota S/ 320, 12 días de atraso, score 70. Otros: `/cliente?id=N`.
-- La fecha del sistema es fija (`FECHA_SISTEMA`, 10 de octubre de 2026).
+- Cliente de ejemplo: **Gengis Guerrero** (`/cliente`, id 1): cuota S/ 320, 12 días de atraso el día en que se crea la base, score 70, con ingresos y gastos de ejemplo en Mis Finanzas. Otros: `/cliente?id=N`.
+- **Fecha del sistema: la fecha real de Perú** (America/Lima). Cada día que pasa se procesan solos la mora, el interés y el CHICOTAZO (una vez por día, aunque nadie abra la app ese día). `FECHA_SISTEMA=AAAA-MM-DD` la fija (lo usan las pruebas automáticas) y "Pasar un día" la adelanta.
 - **Herramientas de prueba** (temporales): botón **Reiniciar** en la barra superior del cliente y del gestor (deja toda la app en su estado inicial y vuelve a la bienvenida) y **Pasar un día** al final del inicio. Se ocultan con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` en `lib/config.ts`.
 
 ## Dónde se ajusta todo
@@ -35,6 +36,9 @@ npm run build && npm start
 | Mascota Pareas (componente y animaciones) | `components/Pareas.tsx` |
 | Iconos propios (sin emojis) | `components/iconos.tsx` |
 | Inicio del cliente (widgets del boceto) | `components/cliente/inicio/` |
+| Mis Finanzas (calculadora de ingresos y gastos) | `lib/finanzas.ts` (cálculos), `lib/consejos-finanzas.ts` (consejos), `components/cliente/Finanzas.tsx` · ver [`MODULO_MIS_FINANZAS.md`](MODULO_MIS_FINANZAS.md) |
+| Excel de cartera (columnas) | `lib/excel-cartera.ts` |
+| Pantalla de carga con Pareas | `components/PantallaCarga.tsx` (frases en `FRASES_CARGA`) |
 | Imágenes de Pareas | `public/pareas/pareas.png` (mascota), `public/pareas/logo.png` (logo), `app/icon.png` y `app/apple-icon.png` (favicon) |
 | Decisiones de diseño | `DESIGN.md` |
 | Acceso a datos | `lib/db/repo.ts` (interfaz) · `repo-sqlite.ts` |
@@ -43,9 +47,10 @@ Los montos y fechas siempre se calculan en el servidor (`lib/servicio.ts`); el n
 
 ## Reglas clave (acordadas con el equipo)
 - **Chicotazo:** −12 por cada día que el cliente sigue en mora (una vez por día). En mora o impago **no hay racha**: aunque acierte toda la trivia (+10 máx.) el neto diario es −2.
-- **Plan de pago:** aceptarlo **no** detiene el chicotazo. Recién con el **primer pago** del plan la deuda vencida queda "en plan" y Pareas deja de pegar. Cada pago a tiempo: +15. Cumplir todo el plan: +20.
+- **El cliente ya no arma planes en la app** ("Mi plan" se reemplazó por **Mis Finanzas**): paga su deuda vencida desde "Pagar hoy" y, si no le alcanza, un asesor revisa su caso. Las reglas de reprogramación (`lib/reglas.ts`) siguen en el servidor para los planes que ya existen y para el gestor.
+- **Plan de pago (planes existentes):** aceptarlo **no** detiene el chicotazo. Recién con el **primer pago** del plan la deuda vencida queda "en plan" y Pareas deja de pegar. Cada pago a tiempo: +15. Cumplir todo el plan: +20.
 - **Incumplir el plan:** no hay castigo fijo; vuelve el chicotazo diario y el cliente **pierde sus beneficios** (de nivel y de volver a reprogramar).
-- **Modo Rescate:** campaña que activa el gestor desde su panel: masiva por rango de score (0–39, 40–59, 60–79, 80–100; `RANGOS_RESCATE` en `lib/servicio.ts`) o individual (casos derivados, búsqueda por DNI o nombre, detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
+- **Modo Rescate:** campaña que activa el gestor desde su panel: masiva para todos los clientes con un **score mínimo o más** que elige el gestor (atajos 40/50/60/70/80 o cualquier número; `ATAJOS_SCORE_RESCATE` en `lib/servicio.ts`) o individual (casos derivados, búsqueda por DNI o nombre, detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
 - Más de 60 días: la propuesta (con inicial ≥ 30 %) queda **derivada** al gestor; el cliente sigue en mora.
 - Interés moratorio: TEA × 1,5 prorrateada por día (simple). Ajustable en `FACTOR_MORATORIO`.
 
@@ -91,10 +96,10 @@ De https://github.com/nolly-studio/cult-ui (MIT) se copiaron **solo** los compon
 - Seguridad: DNI solo como hash SHA-256 y enmascarado en pantalla; `// ROADMAP` 2FA/biometría (passkeys) y Argon2/bcrypt para claves reales; el login real lo aporta la app de Caja Piura.
 
 ## Recorrido guiado (3 minutos)
-1. **(0:00) Landing** → "Entrar como cliente". ¡Habla, Gengis!: S/ 326.08 (cuota S/ 320 + mora), 12 días. Pareas da su chicotazo con humor.
-2. **(0:25) Armar mi plan:** subir a 3 cuotas → semáforo ámbar con el porqué y la alternativa más cercana → "Usar esta alternativa" → verde. Poner el primer pago para mañana.
-3. **(0:55) Confirmar:** motivo "Bajaron mis ventas", aceptar → "¡Plan aceptado! Falta tu primer pago": Pareas sigue pegando hasta pagar.
-4. **(1:15) En otra pestaña `/banco`** (gestor / caja2026): suben los KPIs y cambia el gráfico de la cartera.
-5. **(1:35) Incumplir:** en el cliente, "Herramientas de prueba → Pasar un día" dos veces sin pagar → "Beneficios en pausa". En el banco pasa a "Impagos" en el gráfico y aparece en casos derivados como candidato a Modo Rescate.
-6. **(2:00) Modo Rescate:** el gestor pulsa "Activar Modo Rescate" (en derivados, o en la sección Modo Rescate: por rango de puntos o buscando al cliente). En el celular del cliente llega la notificación y aparece la tarjeta: paga 30 % menos hoy, +10 % en sus 3 cuotas siguientes → "Usar mi Modo Rescate" → pago con QR → al día y con beneficios de vuelta.
+1. **(0:00) Landing** → "Entrar como cliente". Mientras carga, Pareas salta con sus frases ("Afilando el coletazo…"). Gengis tiene S/ 326.08 vencidos (cuota S/ 320 + mora) y 12 días de atraso: Pareas da su CHICOTAZO.
+2. **(0:25) Mis Finanzas:** lo que gana − lo que gasta − la cuota − lo vencido = lo que le sobra, con semáforo, gráfico por categoría y hasta 3 consejos. Agregar un gasto ("Gas de cocina", S/ 45.50) y ver cómo cambia el resultado.
+3. **(1:00) Avisos:** "Activar avisos" en la barra: banners del CHICOTAZO, la trivia y la cuota que se acerca.
+4. **(1:15) En otra pestaña `/banco`** (gestor / caja2026): KPIs y gráfico de la cartera con filtros.
+5. **(1:35) Modo Rescate masivo:** sección Modo Rescate → "50 pts o más" (o escribir otro mínimo) → ver cuántos califican → Activar (dos toques). Gengis lo recibe en su celular con notificación → "Usar mi Modo Rescate" → pago con QR → al día.
+6. **(2:10) Excel:** Cartera → "Descargar cartera en Excel", marcar "¿Ya pagó? = Sí" a un cliente y subirlo de nuevo: queda al día. "Descargar plantilla" para cargar clientes nuevos.
 7. **(2:35) Asistente:** "¿Cuánto debo?" (cifras del servidor), "escríbeme un poema" (no responde: no gasta tokens), "mi clave es…" (no la acepta).

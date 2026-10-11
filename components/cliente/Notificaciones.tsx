@@ -9,7 +9,7 @@ import { MOSTRAR_HERRAMIENTAS_PRUEBA } from "@/lib/config";
 import { FichaApp, IcCalendario, IcCampana, IcCerrar, IcLatigo, IcMando, IcBillete, type ColorFicha } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 
-export type AccionNotificacion = "pagar" | "trivia" | "plan" | "simulador";
+export type AccionNotificacion = "pagar" | "trivia" | "finanzas";
 interface Notif { id: string; tipo: "rescate" | "pago_cerca" | "mora" | "trivia"; titulo: string; mensaje: string; accion: AccionNotificacion }
 
 const CLAVE_ACTIVAS = "pareas-notificaciones";

@@ -44,3 +44,9 @@ El logo de Caja Piura aparece en blanco en la barra superior y en dorado al pie 
 - **Formal (de usted)** en toda la app: inicio, pagos, plan, asistente, landing y panel del gestor.
 - **Solo dentro del juego de la trivia** se usa tono coloquial del norte ("compare", "chévere", "bacán"): la pantalla de la trivia, sus mensajes y sus preguntas. También las **notificaciones** del cliente (banners y centro de avisos), que buscan ser cercanas y divertidas ("…sino te caerá el CHICOTAZO").
 - El CHICOTAZO conserva su nombre y su humor, nunca una amenaza.
+
+## Rendimiento y carga
+- Fuente Plus Jakarta Sans servida localmente con `next/font/local` (`app/fonts/`, licencia OFL): precargada y con respaldo ajustado (sin saltos).
+- Animaciones de entrada solo con `opacity` y `transform`; nunca `filter: blur` (obliga a repintar en cada fotograma).
+- El fondo azul fijo vive en `body::before` (no `background-attachment: fixed`, que repinta al hacer scroll en móviles).
+- Pantalla de carga: Pareas saltando con las frases "Preparando tus mejores planes", "Afilando el coletazo", "Optimizando mejoras" y "Buscando las mejores promociones" (solo CSS, `components/PantallaCarga.tsx`).

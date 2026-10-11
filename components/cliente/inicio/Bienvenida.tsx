@@ -6,7 +6,7 @@ import { FichaApp, IcLatigo, IcMando, IcTarjeta, IcBillete } from "@/components/
 
 const REGLAS = [
   { i: IcMando, c: "violeta" as const, t: "Trivia del día", d: "+2 puntos por acierto, hasta +10 al día. Al completar las 5 preguntas suma racha (si está al día)." },
-  { i: IcTarjeta, c: "verde" as const, t: "Pagos a tiempo", d: "+15 puntos por cada pago puntual y +20 al cumplir su plan." },
+  { i: IcTarjeta, c: "verde" as const, t: "Pagos a tiempo", d: "+15 puntos por cada pago puntual. En Mis Finanzas verá cuánto le queda para su cuota." },
   { i: IcLatigo, c: "rojo" as const, t: "El CHICOTAZO", d: "En mora, Pareas resta 12 puntos por día. Se detiene cuando usted paga." },
   { i: IcBillete, c: "rescate" as const, t: "Campañas de la Caja", d: "Si presenta atraso, la Caja puede otorgarle un Modo Rescate para regularizarse." },
 ];
@@ -31,7 +31,7 @@ export function Bienvenida({ clienteId, nombre }: { clienteId: number; nombre: s
             <p className="mt-1 text-center text-[15px] text-neutral-600">Soy Pareas. Su puntaje inicia en 70 puntos. Así se ganan y se pierden puntos:</p>
             <ul className="mt-4 space-y-3">
               {REGLAS.map((r, k) => (
-                <motion.li key={r.t} className="flex items-start gap-3" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ delay: 0.15 + k * 0.08, type: "spring", bounce: 0 }}>
+                <motion.li key={r.t} className="flex items-start gap-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + k * 0.08, type: "spring", bounce: 0 }}>
                   <FichaApp icono={r.i} color={r.c} tam={40} />
                   <div><p className="text-[15px] font-semibold">{r.t}</p><p className="text-[13px] text-neutral-600">{r.d}</p></div>
                 </motion.li>

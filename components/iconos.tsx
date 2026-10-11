@@ -52,6 +52,18 @@ export const IcBillete = (p: P) => <Glifo {...p}><rect x="2.8" y="7" width="15.5
 export const IcGraficoCircular = (p: P) => <Glifo {...p}><path d="M20.5 13A8.5 8.5 0 1 1 11 3.5" /><path d="M14 3.6A7 7 0 0 1 20.4 10H14Z" /></Glifo>;
 /** Lista de clientes (cartera). */
 export const IcLista = (p: P) => <Glifo {...p}><path d="M9 6.5h11M9 12h11M9 17.5h11" /><circle cx="4.8" cy="6.5" r="1.1" fill="currentColor" stroke="none" /><circle cx="4.8" cy="12" r="1.1" fill="currentColor" stroke="none" /><circle cx="4.8" cy="17.5" r="1.1" fill="currentColor" stroke="none" /></Glifo>;
+// ---- Mis Finanzas: categorías y acciones
+export const IcBilletera = (p: P) => <Glifo {...p}><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h10A1.5 1.5 0 0 1 18 6.5V8" /><rect x="3.5" y="8" width="17" height="11.5" rx="2.6" /><path d="M20.5 11.5h-4a2 2 0 0 0 0 4h4" /><circle cx="16.6" cy="13.5" r=".9" fill="currentColor" stroke="none" /></Glifo>;
+export const IcCanasta = (p: P) => <Glifo {...p}><path d="M3.5 10h17l-1.6 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z" /><path d="m8 10 3-5.5M16 10l-3-5.5M9.5 13.5v3M14.5 13.5v3" /></Glifo>;
+export const IcBus = (p: P) => <Glifo {...p}><rect x="4.5" y="3.8" width="15" height="13.5" rx="3" /><path d="M4.5 11h15M8 17.3v2.2M16 17.3v2.2" /><circle cx="8.2" cy="14.2" r=".95" fill="currentColor" stroke="none" /><circle cx="15.8" cy="14.2" r=".95" fill="currentColor" stroke="none" /></Glifo>;
+export const IcSalud = (p: P) => <Glifo {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" /><path d="M12 8v8M8 12h8" strokeWidth={2.4} /></Glifo>;
+export const IcLibro = (p: P) => <Glifo {...p}><path d="M12 6.5c-1.8-1.3-4.2-1.8-7.5-1.5v13c3.3-.3 5.7.2 7.5 1.5 1.8-1.3 4.2-1.8 7.5-1.5V5c-3.3-.3-5.7.2-7.5 1.5Z" /><path d="M12 6.5v13" /></Glifo>;
+export const IcTienda = (p: P) => <Glifo {...p}><path d="M4 9.5 5.3 4.5h13.4L20 9.5" /><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0" /><path d="M5.5 11.8v7.7h13v-7.7M10 19.5v-4.5h4v4.5" /></Glifo>;
+export const IcEtiqueta = (p: P) => <Glifo {...p}><path d="M3.8 12.6V5.4a1.6 1.6 0 0 1 1.6-1.6h7.2l7.8 7.8a1.6 1.6 0 0 1 0 2.3l-6.6 6.6a1.6 1.6 0 0 1-2.3 0Z" /><circle cx="8.3" cy="8.3" r="1.4" fill="currentColor" stroke="none" /></Glifo>;
+export const IcEstrella = (p: P) => <Glifo {...p}><path d="m12 3.8 2.5 5.1 5.6.8-4 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-4 5.6-.8Z" /></Glifo>;
+export const IcCorazon = (p: P) => <Glifo {...p}><path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10Z" /></Glifo>;
+export const IcLapiz = (p: P) => <Glifo {...p}><path d="M4.5 19.5 5.3 15.8 15.6 5.5a1.9 1.9 0 0 1 2.7 0l.2.2a1.9 1.9 0 0 1 0 2.7L8.2 18.7Z" /><path d="m14 7.1 2.9 2.9" /></Glifo>;
+export const IcBasura = (p: P) => <Glifo {...p}><path d="M4.5 6.8h15M9.5 6.8V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.8" /><path d="M6.5 6.8 7.4 19a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12.2M10.2 10.5v6M13.8 10.5v6" /></Glifo>;
 export const IcDescuento = (p: P) => <Glifo {...p}><path d="M3.8 12.6V5.4a1.6 1.6 0 0 1 1.6-1.6h7.2l7.8 7.8a1.6 1.6 0 0 1 0 2.3l-6.6 6.6a1.6 1.6 0 0 1-2.3 0Z" /><circle cx="8.3" cy="8.3" r="1.3" /><path d="m11 15.2 4.2-4.2" /></Glifo>;
 
 /** Pareas en silueta (cabeza de iguana con cresta) para avatares pequeños. */

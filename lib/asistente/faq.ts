@@ -32,7 +32,7 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
   if (tiene(t, "condon", "perdon", "perdonar", "rebaja", "bajar la tasa", "cambiar la tasa", "quitar el interes", "quitar la mora"))
     return ok(s.regalo
       ? `Actualmente tiene un Modo Rescate: paga ${soles(s.regalo.montoHoy)} hoy en lugar de ${soles(s.regalo.base)}. Es la condición que puedo ofrecerle.`
-      : "No puedo ofrecer condonaciones ni cambios de tasa. Sí puedo ayudarle a armar un plan de pago con las condiciones vigentes. ¿Desea verlo?");
+      : "No puedo ofrecer condonaciones ni cambios de tasa. Si su dinero no alcanza, un asesor de la Caja puede revisar su caso. ¿Desea que lo contacte?");
 
   if (tiene(t, "regalo", "campana", "salvador", "rescate", "descuento")) {
     if (!s.regalo) return ok("Las campañas como el Modo Rescate las activa la Caja según cada caso. Si se le otorga una, la verá aquí.");
@@ -46,16 +46,13 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
       const p = s.propuestaActiva.pagos.find((x) => !x.pagado);
       return ok(p ? `Tiene un plan por ${soles(s.propuestaActiva.total)}. Su próximo pago es de ${soles(p.monto)} el ${p.fechaLarga}.${s.estado === "plan_pendiente" ? " Con ese primer pago se activa su plan y se detiene el CHICOTAZO." : ""}` : "Su plan de pago está completo. Gracias.");
     }
-    return ok(`Hoy su deuda es de ${soles(s.deuda.total)}: ${soles(s.deuda.montoVencido)} de cuotas vencidas y ${soles(s.deuda.interesMoratorio)} de interés moratorio, con ${s.diasAtraso} días de atraso. ¿Desea pasarla a cuotas?`);
+    return ok(`Hoy su deuda es de ${soles(s.deuda.total)}: ${soles(s.deuda.montoVencido)} de cuotas vencidas y ${soles(s.deuda.interesMoratorio)} de interés moratorio, con ${s.diasAtraso} días de atraso. Puede pagarla desde “Pagar hoy”.`);
   }
 
   if (tiene(t, "reprogram", "plan", "cuotas", "opcion", "fraccion", "en partes", "facilidad", "refinanc")) {
-    if (s.sinBeneficios) return ok("Como no se cumplió un pago de su plan anterior, por ahora no puede armar otro. Puede pagar lo pendiente desde “Pagar hoy” o esperar una campaña de la Caja.");
-    if (!s.limites) return ok(s.propuestaActiva ? "Ya tiene un plan activo; solo se permite uno a la vez. Puede pagarlo desde “Pagar hoy”." : "No necesita reprogramar: está al día.");
-    const l = s.limites;
-    const inicial = l.inicialMin > 0 ? `con una inicial desde ${soles(l.inicialMin)}` : "sin inicial";
-    if (l.derivado) return ok(`Con ${s.diasAtraso} días de atraso, su propuesta la revisa un gestor. Puede dejarla en “Armar mi plan” con una inicial de al menos ${soles(l.inicialMin)}.`);
-    return ok(`En su caso puede pagar hasta en ${l.maxCuotas} cuotas, ${inicial}. El plan se activa con el primer pago. Puede verlo en “Armar mi plan”.`);
+    if (s.propuestaActiva) return ok("Ya tiene un plan activo. Puede pagar su siguiente cuota desde “Pagar hoy”.");
+    if (s.estado === "al_dia") return ok("No necesita reprogramar: está al día. En “Mis Finanzas” puede ver cuánto le queda cada mes para su cuota.");
+    return ok("La reprogramación la revisa un asesor de la Caja. Puede pedir que lo contacten con el botón de ayuda y, mientras tanto, ver en “Mis Finanzas” cuánto puede destinar a su cuota.");
   }
 
   if (tiene(t, "como pago", "donde pago", "pagar", "qr", "yape", "agencia", "familiar", "transferencia"))
@@ -68,13 +65,13 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
     return ok(`El interés moratorio se suma por cada día de atraso. Hoy asciende a ${soles(s.deuda.interesMoratorio)}. Mientras antes se ponga al día, menos pagará.`);
 
   if (tiene(t, "presupuesto", "ahorro", "ahorrar", "gastos", "negocio", "ventas"))
-    return ok("Una buena práctica: al cobrar sus ventas, separe primero el monto de su cuota y no mezcle el dinero del negocio con los gastos del hogar. En la trivia del día encontrará más consejos.");
+    return ok("Una buena práctica: al cobrar sus ventas, separe primero el monto de su cuota y no mezcle el dinero del negocio con los gastos del hogar. En “Mis Finanzas” puede anotar sus ingresos y gastos y ver cuánto le sobra.");
 
   if (tiene(t, "hola", "buenas", "habla", "que tal", "ayuda"))
-    return ok(`Hola, ${s.cliente.nombre}. Puedo informarle cuánto debe, qué plan puede armar y cómo pagar. ¿En qué le ayudo?`);
+    return ok(`Hola, ${s.cliente.nombre}. Puedo informarle cuánto debe, cómo pagar y cómo organizar sus gastos. ¿En qué le ayudo?`);
 
   if (tiene(t, "gracias", "chevere", "listo", "ok"))
-    return ok("Con gusto. Quedo atento a cualquier consulta sobre su deuda o su plan.");
+    return ok("Con gusto. Quedo atento a cualquier consulta sobre su deuda o sus finanzas.");
 
   return null;
 }

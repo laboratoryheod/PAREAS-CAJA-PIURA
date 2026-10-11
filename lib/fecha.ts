@@ -1,6 +1,12 @@
-// Fecha "hoy" del sistema: fija y configurable (FECHA_SISTEMA) para que los días de atraso sean estables.
-// Se puede mover con el botón "pasar un día" (se guarda en la tabla app_estado).
-export const FECHA_INICIAL = process.env.FECHA_SISTEMA ?? "2026-10-10";
+// Fecha "hoy" del sistema: la fecha real de Perú (America/Lima). FECHA_SISTEMA la fija (pruebas automáticas).
+// La herramienta "Pasar un día" suma días a esta fecha (desfase guardado en la tabla app_estado).
+export const ZONA_HORARIA = "America/Lima";
+
+/** Fecha de hoy en Perú, YYYY-MM-DD. */
+export function hoyReal(): string {
+  if (process.env.FECHA_SISTEMA) return process.env.FECHA_SISTEMA;
+  return new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_HORARIA, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
 
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 

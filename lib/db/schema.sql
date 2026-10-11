@@ -104,6 +104,48 @@ CREATE TABLE IF NOT EXISTS campanas (
   creado_en TEXT NOT NULL
 );
 
+-- Mis Finanzas: ingresos, gastos y etiquetas propias que registra el cliente (sin datos sensibles)
+CREATE TABLE IF NOT EXISTS fin_ingresos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id INTEGER NOT NULL REFERENCES clientes(id),
+  nombre TEXT NOT NULL,
+  monto REAL NOT NULL,
+  frecuencia TEXT NOT NULL,        -- unico | semanal | quincenal | mensual
+  creado_en TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS fin_gastos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id INTEGER NOT NULL REFERENCES clientes(id),
+  nombre TEXT NOT NULL,
+  monto REAL NOT NULL,
+  categoria TEXT NOT NULL,         -- id de categoría base o "propia-N"
+  fecha TEXT NOT NULL,             -- YYYY-MM-DD
+  tipo TEXT NOT NULL,              -- fijo | variable
+  ambito TEXT NOT NULL,            -- personal | negocio
+  creado_en TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS fin_categorias (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  cliente_id INTEGER NOT NULL REFERENCES clientes(id),
+  nombre TEXT NOT NULL,
+  color TEXT NOT NULL,
+  icono TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_fin_ingresos_cliente ON fin_ingresos(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_fin_gastos_cliente ON fin_gastos(cliente_id, fecha);
+CREATE INDEX IF NOT EXISTS idx_fin_categorias_cliente ON fin_categorias(cliente_id);
+-- Índices para evitar escaneos completos en las consultas frecuentes
+CREATE INDEX IF NOT EXISTS idx_eventos_cliente ON eventos(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_eventos_tipo ON eventos(tipo);
+CREATE INDEX IF NOT EXISTS idx_campanas_cliente ON campanas(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_campanas_estado ON campanas(estado, vence);
+CREATE INDEX IF NOT EXISTS idx_cuotas_vencidas_pagada ON cuotas_vencidas(credito_id, pagada);
+CREATE INDEX IF NOT EXISTS idx_propuestas_credito ON propuestas(credito_id);
+CREATE INDEX IF NOT EXISTS idx_trivia_resp_cliente ON trivia_respuestas(cliente_id, fecha);
+CREATE INDEX IF NOT EXISTS idx_clientes_dni ON clientes(dni_hash);
 CREATE INDEX IF NOT EXISTS idx_creditos_cliente ON creditos(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_cuotas_credito ON cuotas_vencidas(credito_id);
 CREATE INDEX IF NOT EXISTS idx_mov_cliente ON movimientos_score(cliente_id);

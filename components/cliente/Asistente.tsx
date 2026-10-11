@@ -5,7 +5,7 @@ import { TextureButton } from "@/components/ui/texture-button";
 import { api, type Situacion } from "@/lib/cliente-api";
 
 interface Msg { rol: "usuario" | "asistente"; texto: string }
-const SUGERENCIAS = ["¿Cuánto debo hoy?", "¿Qué plan puedo armar?", "¿Cómo pago?", "¿Qué es el Modo Rescate?", "Quiero hablar con un gestor"];
+const SUGERENCIAS = ["¿Cuánto debo hoy?", "¿Cómo organizo mis gastos?", "¿Cómo pago?", "¿Qué es el Modo Rescate?", "Quiero hablar con un gestor"];
 
 export default function Asistente({ sit, onVolver }: { sit: Situacion; onVolver: () => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([{ rol: "asistente", texto: `Hola, ${sit.cliente.nombre}. Soy Pareas, su asistente de la Caja. Puedo ayudarle con su deuda, su plan y cómo pagar. Nunca le pediré claves ni datos de tarjeta.` }]);

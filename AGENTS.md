@@ -4,8 +4,8 @@ Contexto para agentes (Antigravity, Claude Code, Codex, etc.). **Para retomar el
 
 ## Qué es
 Módulo web mobile-first de autogestión de deuda para clientes con 1–30+ días de atraso. Tiene dos interfaces:
-- `/cliente`: inicio en widgets (juego/trivia, score, calendario, pagos y juegos, beneficios/campañas/CHICOTAZO, consejos + agente Pareas), simulador de plan, pagos con QR, trivia y asistente.
-- `/banco`: panel del gestor (usuario `gestor`, clave `caja2026`) con sidebar: Resumen (KPIs, gráfico circular de la cartera con filtros, casos derivados), Cartera y **Modo Rescate** (masivo por rango de puntos o individual por DNI/nombre).
+- `/cliente`: inicio en widgets (juego/trivia, score, calendario, pagos y juegos, beneficios/campañas/CHICOTAZO, consejos + agente Pareas), **Mis Finanzas** (calculadora de ingresos y gastos; reemplazó a "Mi plan": el cliente ya no arma planes), pagos con QR, trivia, notificaciones y asistente.
+- `/banco`: panel del gestor (usuario `gestor`, clave `caja2026`) con sidebar: Resumen (KPIs, gráfico circular de la cartera con filtros, casos derivados), Cartera (con importar/exportar Excel) y **Modo Rescate** (masivo para todos los que tengan un score mínimo o más, o individual por DNI/nombre).
 Usa una cartera de ejemplo en SQLite; la conexión al core bancario se hace implementando la interfaz `Repo`.
 
 ## Stack
@@ -14,12 +14,14 @@ Next.js 15 (App Router) + TypeScript 5 + Tailwind 3 + motion. SQLite local (`bet
 
 ## Comandos
 - `npm install` · `npm run dev` · `npm test` · `npm run build`
-- `npm run seed` (recrea la base) · `npm run export:xlsx`
+- `npm run seed` (recrea la base) · `npm run plantilla:xlsx` · `npm run importar:xlsx -- archivo.xlsx` · `npm run export:xlsx`
 
 ## Mapa del código
 - `lib/reglas.ts`: reglas de reprogramación, interés moratorio, beneficios por nivel y Modo Rescate (un solo archivo editable).
 - `lib/score.ts`: `PARAMS_SCORE`, CHICOTAZO, niveles y estado de Pareas.
-- `lib/servicio.ts`: toda la lógica de negocio. **Montos y fechas se calculan solo aquí (servidor).**
+- `lib/servicio.ts`: toda la lógica de negocio. **Montos y fechas se calculan solo aquí (servidor).** La fecha del sistema es la **fecha real de Perú** (`hoyReal` en `lib/fecha.ts`); los días pendientes (mora, CHICOTAZO) se procesan solos en `sincronizarDias`.
+- `lib/finanzas.ts` + `lib/consejos-finanzas.ts`: cálculos y consejos de Mis Finanzas (ver `MODULO_MIS_FINANZAS.md`).
+- `lib/excel-cartera.ts`: formato del Excel de cartera (la lógica de importación está en `servicio.ts` → `importarCartera`).
 - `lib/db/`: esquema, seed y repositorio (interfaz `Repo` + implementación SQLite).
 - `lib/asistente/`: blindaje (`guardia.ts`), FAQ y Gemini.
 - `components/iconos.tsx`: **iconos propios** (no usar emojis ni librerías de iconos en la app).
@@ -35,3 +37,4 @@ Next.js 15 (App Router) + TypeScript 5 + Tailwind 3 + motion. SQLite local (`bet
 5. Antes de entregar: `npm test` y `npm run build` en verde.
 6. Redactar textos, comentarios y documentación como producto entregado a Caja Piura (sin menciones a maquetas ni concursos).
 7. Las herramientas de prueba (Reiniciar, Pasar un día) se controlan con `MOSTRAR_HERRAMIENTAS_PRUEBA` en `lib/config.ts`.
+8. Rendimiento: animaciones solo con `opacity`/`transform` (sin `filter: blur`), vistas pesadas con `next/dynamic`, fuente local con `next/font` y pantalla de carga en CSS puro (`components/PantallaCarga.tsx`).

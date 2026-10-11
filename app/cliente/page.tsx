@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-const VISTAS: Vista[] = ["inicio", "pagar", "trivia", "asistente", "simulador", "plan"];
+const VISTAS: Vista[] = ["inicio", "pagar", "finanzas", "trivia", "asistente"];
 
 // El id de cliente lo entrega la sesión de la app de Caja Piura (aquí: ?id=, por defecto 1 = Gengis Guerrero).
 // La situación inicial se calcula aquí, en el servidor, y viaja con el HTML: sin spinner ni salto de diseño al cargar.

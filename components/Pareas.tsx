@@ -58,7 +58,7 @@ export default function Pareas({ humor, mensaje, grande = false, fiesta = false,
     <div className="flex items-end gap-1" aria-label={`Pareas ${humor}`}>
       <Figura humor={humor} tam={t} />
       {mensaje && (
-        <motion.div key={mensaje} className="min-w-0" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ type: "spring", bounce: 0, duration: 0.5 }}>
+        <motion.div key={mensaje} className="min-w-0" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", bounce: 0, duration: 0.5 }}>
           <SpeechBubble tono={fiesta ? "fiesta" : humor === "chicotazo" ? "alerta" : "info"}>{mensaje}</SpeechBubble>
         </motion.div>
       )}

@@ -1,8 +1,7 @@
 "use client";
 // Piezas compartidas por las páginas del gestor (Resumen, Cartera, Modo Rescate).
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/cliente-api";
 import { usarPolling } from "@/lib/usar-polling";
 
 export const ETIQ_ESTADO: Record<string, string> = { en_mora: "En mora", plan_pendiente: "Plan sin 1er pago", reprogramado: "Plan en marcha", incumplido: "Incumplió (sin beneficios)", derivado: "Derivado a gestor", al_dia: "Al día" };
@@ -31,14 +30,31 @@ export function usarSinSesion() {
   return useCallback((e: any) => { if (String(e?.message).includes("Sesión")) router.push("/banco/login"); }, [router]);
 }
 
-/** Lee `url` al montar, cuando cambia y cada `ms` (pausado con la pestaña en segundo plano). */
+/**
+ * Lee `url` al montar, cuando cambia y cada `ms` (pausado con la pestaña en segundo plano).
+ * Compara el texto crudo de la respuesta con el anterior: si no cambió, no se parsea ni se vuelve a pintar
+ * (evita JSON.stringify de listas grandes en cada consulta).
+ */
 export function usarDatos<T>(url: string, ms = 5000) {
   const [datos, setDatos] = useState<T | null>(null);
   const sinSesion = usarSinSesion();
-  const leer = useCallback(() => (!url ? Promise.resolve() : api<T>(url).then((d) => setDatos((prev) => (JSON.stringify(prev) === JSON.stringify(d) ? prev : d))).catch(sinSesion)), [url, sinSesion]);
+  const ultimo = useRef<{ url: string; texto: string } | null>(null);
+  const leer = useCallback(async () => {
+    if (!url) return;
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      const texto = await r.text();
+      if (!r.ok) { let msg = "Tuvimos un problema. Intente de nuevo."; try { msg = JSON.parse(texto).error ?? msg; } catch { /* sin cuerpo */ } throw new Error(msg); }
+      if (ultimo.current?.url === url && ultimo.current.texto === texto) return;
+      ultimo.current = { url, texto };
+      setDatos(JSON.parse(texto) as T);
+    } catch (e) { sinSesion(e); }
+  }, [url, sinSesion]);
   useEffect(() => { leer(); }, [leer]);
   usarPolling(leer, ms);
-  return { datos, recargar: leer };
+  /** Fuerza la lectura aunque la respuesta sea igual (tras una acción del gestor). */
+  const recargar = useCallback(() => { ultimo.current = null; return leer(); }, [leer]);
+  return { datos, recargar };
 }
 
 export const consulta = (o: Record<string, string>) => new URLSearchParams(Object.entries(o).filter(([, v]) => v)).toString();

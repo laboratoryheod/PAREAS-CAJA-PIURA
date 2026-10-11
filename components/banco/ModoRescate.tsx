@@ -1,5 +1,5 @@
 "use client";
-// Campañas de Modo Rescate: masivas por rango de puntos o individuales buscando al cliente por DNI o nombre.
+// Campañas de Modo Rescate: masivas desde un score mínimo (el gestor elige cuál) o individuales buscando al cliente por DNI o nombre.
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { FichaApp, IcBillete } from "@/components/iconos";
@@ -11,14 +11,18 @@ import { MarcoGestor } from "./MarcoGestor";
 import { AvisoGestor } from "./BancoDashboard";
 import { consulta, ETIQ_ESTADO, usarDatos } from "./comun";
 
-interface Rango { id: string; min: number; max: number; elegibles: number; conRescate: number; deuda: number }
+interface Previa { min: number; elegibles: number; conRescate: number; deuda: number; atajos: { min: number; elegibles: number }[] }
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 export default function ModoRescate() {
-  const { datos, recargar } = usarDatos<{ rangos: Rango[] }>("/api/banco/rescate", 10000);
+  const [minimo, setMinimo] = useState(60);
+  const [texto, setTexto] = useState("60");
+  const minDebounced = usarDebounce(minimo, 250);
+  const { datos, recargar } = usarDatos<Previa>(`/api/banco/rescate?min=${minDebounced}`, 10000);
+  const previa = datos && datos.min === minDebounced ? datos : null;
   const [aviso, setAviso] = useState("");
-  const [confirmar, setConfirmar] = useState<string | null>(null);
+  const [confirmar, setConfirmar] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [q, setQ] = useState("");
   const qDebounced = usarDebounce(q.trim(), 300);
@@ -26,12 +30,14 @@ export default function ModoRescate() {
 
   const avisar = (t: string) => { setAviso(t); setTimeout(() => setAviso(""), 6000); };
 
-  async function masivo(r: Rango) {
-    if (confirmar !== r.id) { setConfirmar(r.id); setTimeout(() => setConfirmar((x) => (x === r.id ? null : x)), 4000); return; }
-    setConfirmar(null); setEnviando(true);
+  const elegir = (n: number) => { const v = Math.max(0, Math.min(100, Math.round(n))); setMinimo(v); setTexto(String(v)); setConfirmar(false); };
+
+  async function masivo() {
+    if (!confirmar) { setConfirmar(true); setTimeout(() => setConfirmar(false), 4000); return; }
+    setConfirmar(false); setEnviando(true);
     try {
-      const res = await api<{ otorgados: number; omitidos: number }>("/api/banco/rescate", { rango: r.id });
-      avisar(`Modo Rescate activado a ${res.otorgados} cliente(s) con ${r.min}–${r.max} puntos.${res.omitidos ? ` ${res.omitidos} no aplicaban.` : ""}`);
+      const res = await api<{ otorgados: number; omitidos: number }>("/api/banco/rescate", { min: minimo });
+      avisar(`Modo Rescate activado a ${res.otorgados} cliente(s) con ${minimo} puntos o más.${res.omitidos ? ` ${res.omitidos} no aplicaban.` : ""}`);
       recargar(); busqueda.recargar();
     } catch (e: any) { avisar(e.message); }
     finally { setEnviando(false); }
@@ -63,23 +69,41 @@ export default function ModoRescate() {
         </p>
       </section>
 
-      <section className="card space-y-3">
+      <section className="card space-y-4">
         <div>
           <h2 className="font-bold text-caja">Campaña masiva por puntos</h2>
-          <p className="text-sm text-gray-600">Elija el rango de score: se activa a todos los clientes elegibles de ese rango.</p>
+          <p className="text-sm text-gray-600">Elija el score mínimo: se activa a todos los clientes elegibles con ese puntaje <b>o más</b>.</p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {(datos?.rangos ?? []).map((r) => (
-            <div key={r.id} className="flex flex-col rounded-2xl border border-caja-borde bg-white p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">Score</p>
-              <p className="text-2xl font-bold text-caja tabular-nums">{r.min}–{r.max} pts</p>
-              <p className="mt-1 text-sm"><b className="tabular-nums">{r.elegibles}</b> cliente(s) elegibles</p>
-              <p className="text-xs text-gray-500">{r.elegibles ? `Deuda vencida ${soles(r.deuda)}` : "Nadie para activar"}{r.conRescate ? ` · ${r.conRescate} ya con Modo Rescate` : ""}</p>
-              <TextureButton variant="regalo" size="sm" className="mt-3" disabled={!r.elegibles || enviando} onClick={() => masivo(r)}>
-                <IcBillete tam={16} />{!r.elegibles ? "Sin clientes elegibles" : confirmar === r.id ? `Confirmar: activar a ${r.elegibles}` : `Activar a ${r.elegibles}`}
-              </TextureButton>
-            </div>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Score mínimo rápido">
+          {(previa?.atajos ?? datos?.atajos ?? []).map((a) => (
+            <button key={a.min} onClick={() => elegir(a.min)} aria-pressed={minimo === a.min}
+              className={`min-h-[44px] rounded-full border px-4 text-[15px] font-semibold tabular-nums transition-colors ${minimo === a.min ? "border-caja bg-caja text-white" : "border-caja-borde bg-white text-caja hover:bg-[#EAF2FC]"}`}>
+              {a.min} pts o más <span className={minimo === a.min ? "text-white/80" : "text-gray-500"}>· {a.elegibles}</span>
+            </button>
           ))}
+        </div>
+        <div className="flex flex-col gap-3 rounded-2xl border border-caja-borde bg-[#F5F9FE] p-4 md:flex-row md:items-center">
+          <label className="flex items-center gap-3 text-sm font-semibold text-caja">
+            Score mínimo
+            <input type="number" inputMode="numeric" min={0} max={100} value={texto} aria-label="Score mínimo personalizado"
+              onChange={(e) => { setTexto(e.target.value); const n = Number(e.target.value); if (e.target.value !== "" && Number.isFinite(n)) { setMinimo(Math.max(0, Math.min(100, Math.round(n)))); setConfirmar(false); } }}
+              onBlur={() => setTexto(String(minimo))}
+              className="h-12 w-24 rounded-xl border border-caja-borde bg-white px-3 text-center text-lg font-bold tabular-nums text-[#1C1C1E]" />
+          </label>
+          <input type="range" min={0} max={100} value={minimo} onChange={(e) => elegir(Number(e.target.value))} aria-label="Deslizar score mínimo" className="h-11 flex-1 accent-[#0047AB]" />
+        </div>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="text-sm" aria-live="polite">
+            {previa ? (
+              <>
+                <p><b className="text-lg tabular-nums text-caja">{previa.elegibles}</b> cliente(s) elegibles con <b>{previa.min} puntos o más</b></p>
+                <p className="text-xs text-gray-500">{previa.elegibles ? `Deuda vencida ${soles(previa.deuda)}` : "Nadie para activar con este mínimo"}{previa.conRescate ? ` · ${previa.conRescate} ya tienen Modo Rescate vigente` : ""}</p>
+              </>
+            ) : <p className="text-gray-500">Calculando…</p>}
+          </div>
+          <TextureButton variant="regalo" className="md:w-auto" disabled={!previa?.elegibles || enviando} onClick={masivo}>
+            <IcBillete tam={18} />{!previa?.elegibles ? "Sin clientes elegibles" : confirmar ? `Confirmar: activar a ${previa.elegibles}` : `Activar a ${previa.elegibles} cliente(s)`}
+          </TextureButton>
         </div>
       </section>
 

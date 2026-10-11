@@ -66,7 +66,7 @@ export function Calendario({ sit, className }: { sit: Situacion; className?: str
       </div>
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div key={`${mes.y}-${mes.m}`} className="grid grid-cols-7 gap-y-1 text-center"
-          initial={{ opacity: 0, x: 12, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={{ opacity: 0, x: -12, filter: "blur(4px)" }} transition={{ type: "spring", bounce: 0, duration: 0.35 }}>
+          initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ type: "spring", bounce: 0, duration: 0.35 }}>
           {Array.from({ length: offset }, (_, i) => <span key={`v${i}`} />)}
           {Array.from({ length: dias }, (_, i) => {
             const d = i + 1, f = iso(d), ms = porDia.get(f) ?? [], hoy = f === sit.fechaHoy, sel = f === elegido;

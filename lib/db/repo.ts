@@ -1,5 +1,6 @@
 // Interfaz de acceso a datos. Hoy hay una sola implementación (SQLite local, lib/db/repo-sqlite.ts).
 // ROADMAP: una implementación Supabase/Postgres con Realtime solo tendría que cumplir esta interfaz.
+import type { Gasto, Ingreso } from "@/lib/finanzas";
 import type { Movimiento } from "@/lib/score";
 import type { Nivel } from "@/lib/niveles";
 import { crearRepoSqlite } from "./repo-sqlite";
@@ -18,11 +19,22 @@ export interface CampanaRow { id: number; cliente_id: number; tipo: "regalo_salv
 export interface EventoRow { id: number; cliente_id: number; tipo: TipoEvento; detalle: Record<string, unknown>; creado_en: string }
 
 export interface Repo {
+  /** Fecha real de hoy + los días adelantados con "Pasar un día". */
   fechaHoy(): string;
-  setFechaHoy(f: string): void;
+  diasAdelantados(): number;
+  setDiasAdelantados(n: number): void;
+  /** Último día cuya mora y CHICOTAZO ya se procesaron. */
+  fechaProcesada(): string | undefined;
+  setFechaProcesada(f: string): void;
   reset(): void;
 
   cliente(id: number): ClienteRow | undefined;
+  clientePorDniHash(hash: string): ClienteRow | undefined;
+  /** Alta de un cliente con su crédito (importación de cartera). Devuelve el id del cliente. */
+  crearClienteConCredito(c: Omit<ClienteRow, "id" | "creado_en" | "sin_beneficios">, cr: Omit<CreditoRow, "id" | "cliente_id">): { clienteId: number; creditoId: number };
+  actualizarDatosCliente(id: number, patch: Partial<Pick<ClienteRow, "nombres" | "telefono" | "zona" | "negocio">>): void;
+  actualizarCredito(id: number, patch: Partial<Omit<CreditoRow, "id" | "cliente_id">>): void;
+  crearCuota(creditoId: number, monto: number, fechaVencimiento: string, diasAtraso: number, interesMoratorio: number): void;
   clientes(): ClienteRow[];
   actualizarScoreCliente(id: number, score: number, nivel: Nivel): void;
   setSinBeneficios(id: number, valor: boolean): void;
@@ -61,6 +73,16 @@ export interface Repo {
   idsConEvento(tipo: TipoEvento): number[];
   /** Respuestas generadas por IA desde una fecha ISO (para los cupos del asistente). */
   contarChatsIA(desdeIso: string, clienteId?: number): number;
+
+  // Mis Finanzas
+  ingresos(clienteId: number): Ingreso[];
+  guardarIngreso(clienteId: number, i: Omit<Ingreso, "id"> & { id?: number }): number;
+  borrarIngreso(clienteId: number, id: number): boolean;
+  gastos(clienteId: number): Gasto[];
+  guardarGasto(clienteId: number, g: Omit<Gasto, "id"> & { id?: number }): number;
+  borrarGasto(clienteId: number, id: number): boolean;
+  categoriasPropias(clienteId: number): { id: number; nombre: string; color: string; icono: string }[];
+  crearCategoria(clienteId: number, c: { nombre: string; color: string; icono: string }): number;
 }
 
 const g = globalThis as unknown as { __repo?: Repo };

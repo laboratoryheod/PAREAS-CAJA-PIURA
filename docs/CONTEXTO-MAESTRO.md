@@ -13,11 +13,11 @@ Tiene dos interfaces:
   - beneficios, campañas y CHICOTAZO;
   - consejos, más el asistente Pareas.
 
-  Tiene además el simulador de plan, el pago con QR, la trivia, el asistente, **notificaciones** y el **Modo Rescate**.
+  Tiene además **Mis Finanzas** (calculadora de ingresos y gastos, que reemplazó a "Mi plan": el cliente ya no arma planes en la app), el pago con QR, la trivia, el asistente, **notificaciones** y el **Modo Rescate**. Mientras carga, aparece una pantalla con Pareas y frases rotativas (`components/PantallaCarga.tsx`).
 - **`/banco`**: el panel del gestor (usuario `gestor`, clave `caja2026`). Tiene un sidebar (`components/banco/MarcoGestor.tsx`) con tres secciones; en celular, el sidebar se convierte en tres pestañas.
   - **Resumen** (`/banco`, `BancoDashboard.tsx`): KPIs, el **gráfico circular** de la cartera y los casos derivados. El gráfico (`GraficoCartera.tsx`, API `/api/banco/distribucion`) muestra morosos, impagos y pagaron con filtros de tramo, tipo, estado y zona, sin DNI.
-  - **Cartera** (`/banco/cartera`, `Cartera.tsx`): tabla con búsqueda y filtros.
-  - **Modo Rescate** (`/banco/rescate`, `ModoRescate.tsx`, API `/api/banco/rescate`): campaña **masiva** por rango de score (0–39, 40–59, 60–79 y 80–100; pide dos toques para confirmar) y campaña **individual** buscando por DNI o nombre.
+  - **Cartera** (`/banco/cartera`, `Cartera.tsx`): tabla con búsqueda y filtros, y **Cartera en Excel**: descargar plantilla, subir Excel (agrega o actualiza por ID sistema o DNI, nunca borra; "¿Ya pagó? = Sí" registra el pago) y descargar la cartera con su estado (API `/api/banco/excel`, formato en `lib/excel-cartera.ts`, lógica en `importarCartera`/`filasExportacion`).
+  - **Modo Rescate** (`/banco/rescate`, `ModoRescate.tsx`, API `/api/banco/rescate`): campaña **masiva** para todos los clientes con un **score mínimo o más** que elige el gestor (atajos 40/50/60/70/80, campo libre y deslizador; pide dos toques para confirmar) y campaña **individual** buscando por DNI o nombre.
   - El detalle del cliente (`/banco/cliente/[id]`) también permite activar el Modo Rescate.
 - **`/`**: landing estilo Apple, con mock de iPhone y Mac y botones flotantes.
 
@@ -28,11 +28,11 @@ La cartera es de ejemplo (100 deudores) y vive en SQLite. Para conectarse al cor
 - **Datos:** `better-sqlite3`. La base `data/ponte.db` se crea y se llena sola; `SQLITE_PATH` permite apuntar a otra.
 - **Pruebas:** Vitest (`tests/*.test.ts`, 65 tests).
 - **Asistente:** Gemini opcional (`GEMINI_API_KEY`), con FAQ local de respaldo.
-- **Librerías:** `qrcode` (QR en el servidor), `exceljs` (solo el script de export) y `@base-ui/react`. También `class-variance-authority`, `clsx` y `tailwind-merge`. La fuente es `@fontsource-variable/plus-jakarta-sans`. `lucide-react` se usa **solo** en la barra de estado del mock de iPhone.
+- **Librerías:** `qrcode` (QR en el servidor), `exceljs` (Excel de cartera, solo en el servidor) y `@base-ui/react`. También `class-variance-authority`, `clsx` y `tailwind-merge`. La fuente Plus Jakarta Sans se sirve con `next/font/local` desde `app/fonts/` (OFL). `lucide-react` se usa **solo** en la barra de estado del mock de iPhone.
 - **Comandos:**
   - `npm install`, `npm run dev`, `npm test` y `npm run build`, luego `npm start`.
-  - `npm run seed` recrea la base; `npm run export:xlsx` regenera `data/deudores.xlsx`.
-- **Fecha del sistema:** es fija (`FECHA_SISTEMA`, 10 de octubre de 2026) y se guarda en `app_estado.fecha_sistema`. "Pasar un día" la avanza.
+  - `npm run seed` recrea la base; `npm run plantilla:xlsx`, `npm run importar:xlsx -- archivo.xlsx` y `npm run export:xlsx` (a `data/cartera.xlsx`) manejan la cartera en Excel.
+- **Fecha del sistema:** es la **fecha real de Perú** (`hoyReal()` en `lib/fecha.ts`, zona America/Lima) más los días adelantados con "Pasar un día" (`app_estado.dias_adelantados`). `sincronizarDias` (en `getRepo()` de `servicio.ts`) procesa cada día pendiente desde `app_estado.fecha_procesada` (mora, interés, planes vencidos y CHICOTAZO), con un tope de 120 días. La cartera de ejemplo se crea respecto del día en que se crea la base. `FECHA_SISTEMA=AAAA-MM-DD` fija la fecha; los tests la fijan en 2026-10-10 (`vitest.config.mts`).
 
 ## 3. Preferencias del usuario (respetar siempre)
 - **Empezar toda respuesta al usuario con "Hola patrón"** (regla pedida por el usuario).
@@ -83,7 +83,7 @@ Internamente todavía se llama `regalo`: constante `REGALO_SALVADOR`, tabla `cam
 - El cliente paga **hoy un 30 % menos** y recupera ese monto con **+10 % en sus 3 cuotas siguientes**.
 - Vence en 7 días.
 - Al usarlo, el cliente se pone al día y recupera sus beneficios.
-- **Masivo:** `segmentosRescate()` y `otorgarRescateMasivo(rangoId)` (`RANGOS_RESCATE`) solo alcanzan a los elegibles (`puedeRecibirRegalo`).
+- **Masivo:** `vistaPreviaRescate(min)` y `otorgarRescateMasivo(min)` (atajos en `ATAJOS_SCORE_RESCATE`) alcanzan a todos los elegibles (`puedeRecibirRegalo`) con score **igual o mayor** al mínimo.
 - **Búsqueda por DNI completo:** se compara el SHA-256 de 8 dígitos con `dni_hash`. También funcionan los últimos 4 dígitos y el nombre.
 - **Grupos del gráfico** (`GRUPO_DE_ESTADO`):
   - Morosos: `en_mora`, `plan_pendiente` y `derivado`.
@@ -96,8 +96,8 @@ Internamente todavía se llama `regalo`: constante `REGALO_SALVADOR`, tabla `cam
 | Tipo | Cuándo | Acción |
 |---|---|---|
 | `rescate` | Modo Rescate vigente | pagar |
-| `pago_cerca` | pago del plan pendiente en 0–3 días (`DIAS_AVISO_PAGO = 3`) | pagar |
-| `mora` | sigue en mora hoy ("¡Chas! Te cayó el CHICOTAZO") | simulador o plan |
+| `pago_cerca` | pago del plan o cuota regular del crédito en 0–3 días (`DIAS_AVISO_PAGO = 3`) | pagar |
+| `mora` | sigue en mora hoy ("¡Chas! Te cayó el CHICOTAZO") | pagar |
 | `trivia` | le quedan preguntas hoy | trivia |
 
 En la interfaz (`components/cliente/Notificaciones.tsx`):
@@ -108,6 +108,18 @@ En la interfaz (`components/cliente/Notificaciones.tsx`):
 - También puede usar la API `Notification` del navegador, si se concede permiso.
 - Guarda el estado en `localStorage` con las claves `pareas-notificaciones` y `pareas-notif-vistas`.
 - El Dashboard le pasa una `firma` (fecha, estado, score, rescate, pagos y trivia) para que vuelva a consultar cuando algo cambia.
+
+### Mis Finanzas (ver `MODULO_MIS_FINANZAS.md`)
+- Cálculos puros en `lib/finanzas.ts`:
+  - el resumen del mes es ingresos mensualizados − gastos del mes − próxima cuota − lo vencido (o el Modo Rescate) = lo que sobra;
+  - semáforo: verde por encima del 20 %, amarillo del 5 % al 20 %, rojo por debajo del 5 % o negativo;
+  - los gastos fijos se repiten cada mes.
+- Los consejos (como máximo 3) salen de `lib/consejos-finanzas.ts`.
+- El servicio expone `cuotaParaFinanzas` (punto de integración con el core), `finanzasCliente` y `accionFinanzas`.
+- Persistencia: tablas `fin_ingresos`, `fin_gastos` y `fin_categorias`.
+- API: `/api/finanzas`.
+- Interfaz pensada para adultos mayores (letra ≥ 16 px, botones ≥ 48 px).
+- "Hablar con un asesor" usa `/api/ayuda`.
 
 ### Asistente blindado (`lib/asistente/`)
 Los filtros se aplican en este orden; todo lo que se filtra se responde sin IA:
@@ -153,46 +165,54 @@ app/
   cliente/page.tsx         calcula la situación inicial en el servidor → Dashboard
   banco/page.tsx           BancoDashboard · banco/login · banco/cliente/[id] (detalle + Modo Rescate)
   api/
-    cliente/[id]  simular  propuesta  pago  trivia  trivia/responder  asistente  ayuda  notificaciones
-    banco/{login,resumen,kpis,feed,cartera,derivados,cliente/[id],regalo}
+    cliente/[id]  pago  trivia  trivia/responder  asistente  ayuda  notificaciones  finanzas
+    banco/{login,resumen,kpis,feed,cartera,derivados,distribucion,rescate,excel,cliente/[id],regalo}
     pruebas/{reset,avanzar-dia}
-  globals.css · icon.png · apple-icon.png
+  globals.css · icon.png · apple-icon.png · fonts/ · loading.tsx (y cliente/, banco/)
 components/
   cliente/  Dashboard (header, dock, herramientas de prueba, vistas dinámicas) · Notificaciones
-            Simulador · Plan · Confirmar · Pagar · Trivia · Asistente · RegaloSalvador (Modo Rescate)
+            Finanzas (Mis Finanzas) · Pagar · Trivia · Asistente · RegaloSalvador (Modo Rescate)
             inicio/  Inicio · Widgets · Widget · AnilloScore · Calendario · Beneficios · Chicotazo · Isla · Bienvenida
-  banco/    BancoDashboard · BarraGestor
-  landing/Pantallas · Landing · Pareas · BotonReinicio · iconos · ui/ (cult-ui)
+  banco/    MarcoGestor (sidebar) · BarraGestor · BancoDashboard (Resumen) · GraficoCartera · Cartera (+ Excel) · ModoRescate · comun
+  landing/Pantallas · Landing · Pareas · BotonReinicio · PantallaCarga · iconos · ui/ (cult-ui)
 lib/
-  config.ts   reglas.ts   score.ts   niveles.ts   servicio.ts (TODA la lógica)
+  config.ts   reglas.ts   score.ts   niveles.ts   servicio.ts (TODA la lógica)   finanzas.ts   consejos-finanzas.ts   excel-cartera.ts
   cronograma.ts  fecha.ts  api.ts  cliente-api.ts (api(), soles())  usar-polling.ts (usarPolling, usarDebounce)
   db/  repo.ts (interfaz)  repo-sqlite.ts  sqlite.ts  schema.sql  seed.ts  trivia-data.ts
   asistente/  guardia.ts  faq.ts  gemini.ts
-tests/  reglas · score · servicio (incluye notificaciones) · asistente · asistente-ia
+tests/  reglas · score · servicio (notificaciones, gestor, fecha real) · finanzas · excel · asistente · asistente-ia
+scripts/  seed · export-xlsx · importar-xlsx (también --plantilla)
+MODULO_MIS_FINANZAS.md
 .agents/  rules/{negocio,diseno,asistente}.md · workflows/{levantar,verificar}.md · skills/
 .claude/skills/   docs/MIGRAR-A-ANTIGRAVITY.md   DESIGN.md   AGENTS.md   README.md
 ```
 
 Funciones principales de `lib/servicio.ts`:
-- **Cliente:** `situacion`, `simular`, `registrarPropuesta`, `registrarPago`, `cobroPendiente`, `triviaSiguiente`, `responderTrivia`, `pedirAyudaHumana`, `registrarEventoCliente` y `notificacionesCliente`.
-- **Gestor:** `otorgarRegalo`, `feed`, `cartera`, `resumenBanco`, `kpis`, `derivados`, `detalleCliente` y `opcionesFiltros`.
+- **Cliente:** `situacion`, `registrarPago`, `finanzasCliente`, `accionFinanzas`, `cuotaParaFinanzas`, `cobroPendiente`, `triviaSiguiente`, `responderTrivia`, `pedirAyudaHumana`, `registrarEventoCliente` y `notificacionesCliente`.
+- **Gestor:** `otorgarRegalo`, `vistaPreviaRescate`, `otorgarRescateMasivo`, `distribucionCartera`, `importarCartera`, `filasExportacion`, `feed`, `cartera`, `resumenBanco`, `kpis`, `derivados`, `detalleCliente` y `opcionesFiltros`.
+- **Sin uso desde el cliente** (se conservan para planes existentes y pruebas): `simular` y `registrarPropuesta`. Se quitaron las rutas `/api/simular` y `/api/propuesta`.
 - **Pruebas:** `avanzarDia` y `reiniciarApp`.
+- **Fechas:** `sincronizarDias` y `procesarDia` (internas).
 
 Rendimiento:
 - `/cliente` carga sin peticiones, porque la situación llega del servidor.
 - Las vistas secundarias se cargan con `next/dynamic`.
 - El polling es de 5 s solo en el inicio y se pausa en segundo plano (Page Visibility).
 - En el banco, la búsqueda tiene debounce de 300 ms y las filas están memoizadas.
-- El feed del banco evita lecturas concurrentes (ref `leyendo`) y descarta ids duplicados.
+- `usarDatos` (`components/banco/comun.tsx`) compara el texto crudo de la respuesta: si no cambió, no parsea ni vuelve a pintar. El gráfico consulta cada 20 s.
+- Sentencias SQLite preparadas una sola vez (`prep` en `repo-sqlite.ts`), con índices de eventos, campañas, cuotas, propuestas, trivia y DNI en `schema.sql` (se crean solos en bases existentes).
+- La landing carga el iPhone y el Mac con `next/dynamic` (`ssr: false` y un marcador del mismo tamaño). Sin `filter: blur` en las animaciones y con `priority` en las imágenes de arriba. El fondo va en `body::before`.
+- `next.config.mjs`: `optimizePackageImports` (lucide-react, motion), AVIF/WebP, `removeConsole` (salvo error/warn) y caché de 1 día para `/pareas` y `/caja`.
+- `loading.tsx` (raíz, `/cliente` y `/banco`) muestra `PantallaCarga`, hecha solo con CSS. Las vistas dinámicas del cliente usan su versión compacta. `public/pareas/pareas-carga.webp` pesa 15 KB.
 
 ## 8. Cómo verificar
 1. `npm test` y `rm -rf .next && npm run build`. Si se renombran rutas, hay que borrar `.next`, porque los tipos viejos rompen el build.
 2. Levantar con una base aislada: `SQLITE_PATH=/tmp/e2e.db npx next start -p 3112`. No correr `next dev` sobre el mismo `.next` antes de `next start`.
 3. Antes de cada recorrido: `curl -XPOST localhost:3112/api/pruebas/reset`.
 4. Hacer el recorrido E2E con Playwright, usando Chromium preinstalado (`executablePath: "/opt/pw-browsers/chromium"`, `NODE_PATH=$(npm root -g)`). El recorrido completo es:
-   1. bienvenida, inicio, simulador y plan pendiente;
-   2. incumplir;
-   3. gestor: "Activar Modo Rescate";
+   1. bienvenida, inicio y Mis Finanzas (agregar un gasto con error primero, borrar con confirmación);
+   2. gestor: Cartera (descargar plantilla y cartera, subir Excel) y Modo Rescate masivo ("70 pts o más", campo libre, dos toques);
+   3. gestor: "Activar Modo Rescate" individual;
    4. cliente: "Usar mi Modo Rescate", "Pago con Modo Rescate", "Pagar ahora" y "Pago hecho";
    5. trivia ("A jugar, compare");
    6. asistente.
@@ -221,8 +241,10 @@ Rendimiento:
 9. Se optimizó el rendimiento de `/cliente` y `/banco`.
 10. Se agregaron las notificaciones del cliente y la barra con logo en el gestor.
 11. El gestor pasó a tener sidebar (Resumen, Cartera y Modo Rescate). El gráfico circular reemplazó al feed y llegó el Modo Rescate masivo por puntos. El Modo Rescate quedó en azul y blanco con icono de billete, y se corrigió la superposición de las notificaciones.
+12. Modo Rescate masivo con "score mínimo o más". "Mi plan" se reemplazó por **Mis Finanzas**. Excel de cartera para importar y exportar (botones y scripts). La fecha real de Perú reemplazó a la fecha fija. Optimización de carga (fuente local, landing sin blur, statements preparados, índices, polling liviano) y pantalla de carga con Pareas.
 
 ## 11. Pendientes e ideas
+- Tras importar un Excel con DNIs nuevos no hay forma de "deshacer"; si se necesita, agregar un historial de importaciones.
 - El feed "En tiempo real" se quitó de la vista y lo reemplazó el gráfico; `/api/banco/feed` sigue disponible.
 - **Notificaciones para el gestor**, el siguiente paso natural. Por ejemplo: un cliente pidió ayuda, una propuesta quedó derivada, se usó un Modo Rescate o se incumplió un plan. Se puede reutilizar el patrón de `Notificaciones.tsx` sobre el feed.
 - Opcional: renombrar los identificadores internos `regalo` → `rescate`. Afecta la tabla, la API, los componentes y los tests, y requiere `npm run seed`.

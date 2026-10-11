@@ -16,9 +16,10 @@ describe("asistente (FAQ de respaldo)", () => {
     expect(r.respuesta).toContain("S/ 326.08");
     expect(r.respuesta).toContain("12 días");
   });
-  it("explica las opciones de plan según las reglas", async () => {
+  it("la reprogramación la ve un asesor y orienta a Mis Finanzas", async () => {
     const r = await A.conversar(1, "¿Qué opciones de reprogramación tengo?");
-    expect(r.respuesta).toContain("hasta en 2 cuotas");
+    expect(r.respuesta).toMatch(/asesor/);
+    expect(r.respuesta).toMatch(/Mis Finanzas/);
   });
   it("no promete condonaciones", async () => {
     const r = await A.conversar(1, "¿Me pueden perdonar los intereses? quiero una condonación");

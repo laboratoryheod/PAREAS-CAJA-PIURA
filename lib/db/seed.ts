@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import type Database from "better-sqlite3";
-import { FECHA_INICIAL, sumarDias } from "@/lib/fecha";
+import { hoyReal, sumarDias } from "@/lib/fecha";
 import { interesMoratorio, validarPropuesta } from "@/lib/reglas";
 import { generarCronograma } from "@/lib/cronograma";
 import { TRIVIA } from "./trivia-data";
@@ -41,7 +41,7 @@ export function seed(db: Database.Database) {
   const rnd = mulberry32(20261010);
   const pick = <T,>(a: T[]) => a[Math.floor(rnd() * a.length)];
   const between = (a: number, b: number) => a + Math.floor(rnd() * (b - a + 1));
-  const hoy = FECHA_INICIAL;
+  const hoy = hoyReal(); // la cartera de ejemplo se arma respecto del día en que se crea la base
   const ahora = new Date().toISOString();
 
   const insCliente = db.prepare("INSERT INTO clientes (nombres,dni_hash,dni_mascara,telefono,zona,negocio,score,nivel,creado_en) VALUES (?,?,?,?,?,?,?,?,?)");
@@ -50,7 +50,8 @@ export function seed(db: Database.Database) {
   const insMov = db.prepare("INSERT INTO movimientos_score (cliente_id,tipo,puntos,saldo_resultante,detalle,fecha,creado_en) VALUES (?,?,?,?,?,?,?)");
 
   const tx = db.transaction(() => {
-    db.prepare("INSERT OR REPLACE INTO app_estado (clave,valor) VALUES ('fecha_sistema',?)").run(hoy);
+    db.prepare("INSERT OR REPLACE INTO app_estado (clave,valor) VALUES ('fecha_procesada',?)").run(hoy);
+    db.prepare("INSERT OR REPLACE INTO app_estado (clave,valor) VALUES ('dias_adelantados','0')").run();
 
     const crear = (nombre: string, negocioIdx: number, dias: number, cuota: number, score: number, tea: number, esPrincipal = false) => {
       const dni = String(between(10000000, 79999999));
@@ -89,6 +90,7 @@ export function seed(db: Database.Database) {
     }
 
     sembrarActividad(db, rnd, hoy);
+    sembrarFinanzas(db, hoy);
 
     const insT = db.prepare("INSERT INTO trivia_preguntas (categoria,pregunta,opciones,correcta,explicacion) VALUES (?,?,?,?,?)");
     for (const t of TRIVIA) insT.run(t.categoria, t.pregunta, JSON.stringify(t.opciones), t.correcta, t.explicacion);
@@ -154,4 +156,24 @@ function sembrarActividad(db: Database.Database, rnd: () => number, hoy: string)
 
   // Dos clientes pidieron ayuda humana
   for (const f of filas.filter((x) => x.dias_atraso > 30).slice(0, 2)) ev(f.id, "ayuda_humana", { nota: "Quiero hablar con una persona" }, 15 + Math.floor(rnd() * 30));
+}
+
+
+/** Mis Finanzas de ejemplo para Gengis (id 1): ingresos y gastos del mes para ver el módulo funcionando. */
+function sembrarFinanzas(db: Database.Database, hoy: string) {
+  const ahora = new Date().toISOString();
+  const insI = db.prepare("INSERT INTO fin_ingresos (cliente_id,nombre,monto,frecuencia,creado_en) VALUES (1,?,?,?,?)");
+  insI.run("Ventas de la bodega", 2400, "mensual", ahora);
+  insI.run("Ventas del fin de semana", 150, "semanal", ahora);
+  const insG = db.prepare("INSERT INTO fin_gastos (cliente_id,nombre,monto,categoria,fecha,tipo,ambito,creado_en) VALUES (1,?,?,?,?,?,?,?)");
+  const g: [string, number, string, "fijo" | "variable", "personal" | "negocio"][] = [
+    ["Mercadería para la bodega", 700, "negocio", "variable", "negocio"],
+    ["Alquiler del local", 500, "negocio", "fijo", "negocio"],
+    ["Mercado de la semana", 450, "alimentacion", "variable", "personal"],
+    ["Colegio de mi hijo", 180, "educacion", "fijo", "personal"],
+    ["Luz y agua", 120, "vivienda", "fijo", "personal"],
+    ["Mototaxi", 80, "transporte", "variable", "personal"],
+    ["Medicinas", 60, "salud", "variable", "personal"],
+  ];
+  for (const [nombre, monto, cat, tipo, ambito] of g) insG.run(nombre, monto, cat, hoy, tipo, ambito, ahora);
 }

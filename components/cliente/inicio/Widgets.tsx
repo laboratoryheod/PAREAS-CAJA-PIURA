@@ -3,7 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { soles, type Situacion } from "@/lib/cliente-api";
-import { FichaApp, IcBombilla, IcBurbuja, IcCalculadora, IcCalendario, IcFlecha, IcLlama, IcMando, IcQR, IcTarjeta, IcBillete, IcAtras } from "@/components/iconos";
+import { FichaApp, IcBombilla, IcBurbuja, IcBilletera, IcFlecha, IcLlama, IcMando, IcQR, IcTarjeta, IcBillete, IcAtras } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 import { Widget, TituloWidget } from "./Widget";
 import { AnilloScore } from "./AnilloScore";
@@ -81,7 +81,7 @@ function Fila({ icono, color, titulo, sub, onClick, valor }: { icono: Parameters
   );
 }
 
-export function WidgetPagos({ sit, progreso, ir, className }: { sit: Situacion; progreso: ProgresoTrivia | null; ir: (v: "pagar" | "simulador" | "plan" | "trivia") => void; className?: string }) {
+export function WidgetPagos({ sit, progreso, ir, className }: { sit: Situacion; progreso: ProgresoTrivia | null; ir: (v: "pagar" | "finanzas" | "trivia") => void; className?: string }) {
   const proximo = sit.propuestaActiva?.pagos.find((x) => !x.pagado);
   const monto = sit.regalo ? sit.regalo.montoHoy : proximo ? proximo.monto : sit.deuda.total;
   const hayPago = monto > 0;
@@ -95,8 +95,7 @@ export function WidgetPagos({ sit, progreso, ir, className }: { sit: Situacion; 
       </div>
       <ul className="mx-3 mb-3 divide-y divide-black/5 overflow-hidden rounded-2xl bg-neutral-50">
         {hayPago && <Fila icono={sit.regalo ? IcBillete : IcTarjeta} color={sit.regalo ? "rescate" : "azul"} titulo={sit.estado === "plan_pendiente" ? "Hacer mi primer pago" : "Pagar hoy"} sub="Pago con código QR" onClick={() => ir("pagar")} />}
-        {sit.limites && !sit.propuestaActiva && !sit.propuestaDerivada && !sit.regalo && <Fila icono={IcCalculadora} color="sol" titulo="Armar mi plan" sub={`Hasta ${sit.limites.maxCuotas} cuotas`} onClick={() => ir("simulador")} />}
-        {(sit.propuestaActiva || sit.propuestaDerivada) && <Fila icono={IcCalendario} color="cielo" titulo="Ver mi plan" sub={sit.propuestaDerivada ? "En revisión del gestor" : sit.estado === "plan_pendiente" ? "Falta el primer pago" : "En marcha"} onClick={() => ir("plan")} />}
+        <Fila icono={IcBilletera} color="verde" titulo="Mis Finanzas" sub="Cuánto me queda para pagar mi cuota" onClick={() => ir("finanzas")} />
         {hayPago && <Fila icono={IcQR} color="grafito" titulo="QR para un familiar" sub="Para que un familiar pague por usted" onClick={() => ir("pagar")} />}
         <Fila icono={IcMando} color="violeta" titulo="Trivia del día" sub={progreso?.completo ? "Completada" : `${progreso?.respondidas ?? 0}/${progreso?.total ?? 5} respondidas`} onClick={() => ir("trivia")} />
       </ul>
@@ -110,9 +109,9 @@ const CONSEJOS = [
   { t: "Separe las cuentas del negocio", d: "No mezcle el dinero del negocio con el del hogar: así sabrá cuánto gana realmente." },
   { t: "Programe recordatorios", d: "Configure una alarma dos días antes de cada fecha de pago." },
   { t: "Forme un fondo de emergencia", d: "Ahorre un monto pequeño cada semana para cubrir los meses de menores ventas." },
-  { t: "Anticípese al atraso", d: "Si prevé que no llegará a pagar, arme su plan antes: pagará menos mora y conservará sus beneficios." },
+  { t: "Anticípese al atraso", d: "Si prevé que no llegará a pagar, converse antes con su asesor: pagará menos mora y conservará sus beneficios." },
   { t: "Evite pagar deudas con deudas", d: "Solicitar un préstamo para pagar otro suele aumentar el endeudamiento." },
-  { t: "Registre sus ingresos y gastos", d: "Un registro sencillo le muestra en qué se destina su dinero." },
+  { t: "Registre sus ingresos y gastos", d: "En Mis Finanzas verá en qué se va su dinero y cuánto le queda para su cuota." },
 ];
 
 export function WidgetConsejos({ sit, onAgente, className }: { sit: Situacion; onAgente: () => void; className?: string }) {
@@ -129,14 +128,14 @@ export function WidgetConsejos({ sit, onAgente, className }: { sit: Situacion; o
         Consejo del día
       </TituloWidget>
       <AnimatePresence mode="popLayout" initial={false}>
-        <motion.div key={i} className="flex-1" initial={{ opacity: 0, y: 8, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -6, filter: "blur(4px)" }} transition={{ type: "spring", bounce: 0, duration: 0.35 }}>
+        <motion.div key={i} className="flex-1" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ type: "spring", bounce: 0, duration: 0.35 }}>
           <p className="text-[18px] font-bold leading-snug tracking-[-0.02em]">{c.t}</p>
           <p className="mt-1 text-[14px] leading-relaxed text-neutral-600">{c.d}</p>
         </motion.div>
       </AnimatePresence>
       <button onClick={onAgente} className="mt-4 flex min-h-[52px] items-center gap-3 rounded-2xl bg-neutral-900 px-3 text-left text-white transition-transform active:scale-[0.98]">
         <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-[10px] bg-white"><Image src="/pareas/logo.png" alt="" fill sizes="36px" className="object-cover" /></span>
-        <span className="min-w-0 flex-1"><span className="block text-[15px] font-semibold">Hablar con Pareas</span><span className="block truncate text-[12px] text-white/60">Su asistente: deuda, plan y pagos</span></span>
+        <span className="min-w-0 flex-1"><span className="block text-[15px] font-semibold">Hablar con Pareas</span><span className="block truncate text-[12px] text-white/60">Su asistente: deuda, pagos y finanzas</span></span>
         <IcBurbuja tam={20} className="text-[#5AC8FA]" />
       </button>
     </Widget>

@@ -1,6 +1,6 @@
 "use client";
 // Gráfico circular de la cartera: porcentaje de morosos, impagos y clientes que pagaron.
-// Los conteos y porcentajes vienen del servidor (/api/banco/distribucion); aquí solo se dibujan.
+// La distribución cambia poco: se consulta cada 20 s. Los conteos y porcentajes vienen del servidor (/api/banco/distribucion); aquí solo se dibujan.
 import { useState } from "react";
 import { soles } from "@/lib/cliente-api";
 import { IcGraficoCircular } from "@/components/iconos";
@@ -28,7 +28,7 @@ function arco(desde: number, hasta: number) {
 
 export function GraficoCartera() {
   const [f, setF] = useState<Filtros>(FILTROS_VACIOS);
-  const { datos } = usarDatos<Distribucion>(`/api/banco/distribucion?${consulta({ ...f })}`, 5000);
+  const { datos } = usarDatos<Distribucion>(`/api/banco/distribucion?${consulta({ ...f })}`, 20000);
   const [foco, setFoco] = useState<Grupo | null>(null);
   const grupos = ORDEN.map((g) => datos?.grupos.find((x) => x.grupo === g) ?? { grupo: g, clientes: 0, pct: 0, deuda: 0 });
   const total = datos?.total ?? 0;
