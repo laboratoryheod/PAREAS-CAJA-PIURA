@@ -142,7 +142,7 @@ Los filtros se aplican en este orden; todo lo que se filtra se responde sin IA:
 Los cupos están en `LIMITES_ASISTENTE` (`guardia.ts`).
 
 ### Herramientas de prueba
-Se controlan con `MOSTRAR_HERRAMIENTAS_PRUEBA = true` en `lib/config.ts`.
+Se controlan con `MOSTRAR_HERRAMIENTAS_PRUEBA` en `lib/config.ts`: encendidas por defecto y apagadas si se compila con `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA=0`.
 - **Reiniciar** (`components/BotonReinicio.tsx`):
   - pide dos toques para confirmar;
   - hace POST a `/api/pruebas/reset`;
@@ -232,7 +232,7 @@ Rendimiento:
 ### Suites de QA (`scripts/qa/`, ver `docs/PLAN-DE-PRUEBAS.md`)
 - `node scripts/qa/api.mjs` corre 71 casos de API; `interfaz.cjs`, 54 de interfaz (320/390/1366 px); `recorrido.cjs`, 11 pasos de punta a punta.
 - Se ejecutan contra `next start` con `SQLITE_PATH=/tmp/qa.db`. En este contenedor: `CHROMIUM_PATH=/opt/pw-browsers/chromium NODE_PATH=$(npm root -g)`.
-- Las rutas `/api/pruebas/*` responden 404 con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` (las suites las necesitan activas).
+- Las rutas `/api/pruebas/*` responden 404 con `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA=0` (las suites las necesitan activas).
 
 ## 9. Git
 - Rama principal y de trabajo: **`master`** (la rama por defecto del repositorio). Se sube con `git push -u origin master`. No crear PR salvo que se pida.
@@ -258,6 +258,7 @@ Rendimiento:
 15. Sesión del gestor firmada (HMAC, vence en 8 h; `lib/sesion.ts`) con bloqueo tras 5 intentos fallidos (5 min). Notificaciones del gestor (`components/banco/NotificacionesGestor.tsx`): campana con pedidos de ayuda, planes incumplidos, propuestas por revisar y pagos, con aviso en vivo.
 14. Nombre de la app: **PAREAS**. (Se probó una barra con la distribución institucional de la Caja y al usuario no le gustó: se mantiene la barra anterior.) Mis Finanzas agrega el ámbito "Otros". Chatbot de Pareas con OpenAI y FAQ de vencimiento de cuota y Modo Rescate.
 13. Ronda de QA: 12 bugs corregidos (rutas de prueba abiertas, ingreso único que se repetía, trivia, fechas de gastos, montos con miles, migración `fecha_demo`, Escape, áreas táctiles, textos del asistente y del detalle del gestor).
+16. Despliegue en VPS con un comando (`scripts/deploy/instalar-vps.sh`, ver `docs/DESPLIEGUE-VPS.md`): Node.js propio, usuario `pareas`, systemd, Nginx con HTTPS y respeto por otros sitios del servidor. El middleware redirige al login con el host que pidió el navegador (detrás de Nginx, `req.url` trae `127.0.0.1`). Las herramientas de prueba pasaron a `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA`. Video del pitch de 3 minutos con la plataforma real (`scripts/video/`). README nuevo. La rama principal es `master`. `.agents/` y `.claude/skills/` quedan fuera del repositorio.
 12. Modo Rescate masivo con "score mínimo o más". "Mi plan" se reemplazó por **Mis Finanzas**. Excel de cartera para importar y exportar (botones y scripts). La fecha real de Perú reemplazó a la fecha fija. Optimización de carga (fuente local, landing sin blur, statements preparados, índices, polling liviano) y pantalla de carga con Pareas.
 
 ## 11. Pendientes e ideas
@@ -265,6 +266,6 @@ Rendimiento:
 - El feed "En tiempo real" se quitó de la vista y lo reemplazó el gráfico; `/api/banco/feed` sigue disponible.
 - (Hecho) Notificaciones para el gestor. Por ejemplo: un cliente pidió ayuda, una propuesta quedó derivada, se usó un Modo Rescate o se incumplió un plan. Se puede reutilizar el patrón de `Notificaciones.tsx` sobre el feed.
 - Opcional: renombrar los identificadores internos `regalo` → `rescate`. Afecta la tabla, la API, los componentes y los tests, y requiere `npm run seed`.
-- Antes de producción: poner `MOSTRAR_HERRAMIENTAS_PRUEBA = false` y quitar el botón Reiniciar si ya no se necesita.
+- Antes de producción: compilar con `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA=0` (apaga Reiniciar, Pasar un día y `/api/pruebas/*`).
 - La bolsa de la imagen de Pareas lleva un logo parecido al de la Caja; revisarlo con el área de marca.
 - Para conectar el core bancario, implementar `Repo` con la fuente real y quitar el seed automático.

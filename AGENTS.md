@@ -37,5 +37,5 @@ Next.js 15 (App Router) + TypeScript 5 + Tailwind 3 + motion. SQLite local (`bet
 4. Tono: **formal (de usted)** en toda la app, incluido el asistente Pareas. **Solo dentro del juego de la trivia y en las notificaciones** (avisos del cliente, `lib/servicio.ts` → `notificacionesCliente`) se usa tono coloquial del norte ("compare", "chévere", "sino te caerá el CHICOTAZO").
 5. Antes de entregar: `npm test` y `npm run build` en verde; para cambios grandes, también `scripts/qa/` (ver `docs/PLAN-DE-PRUEBAS.md`).
 6. Redactar textos, comentarios y documentación como producto entregado a Caja Piura (sin menciones a maquetas ni concursos).
-7. Las herramientas de prueba (Reiniciar, Pasar un día) se controlan con `MOSTRAR_HERRAMIENTAS_PRUEBA` en `lib/config.ts`.
+7. Las herramientas de prueba (Reiniciar, Pasar un día) se controlan con `MOSTRAR_HERRAMIENTAS_PRUEBA` en `lib/config.ts`, que se apaga compilando con `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA=0`. El despliegue en VPS está en `docs/DESPLIEGUE-VPS.md` (`scripts/deploy/instalar-vps.sh`).
 8. Rendimiento: animaciones solo con `opacity`/`transform` (sin `filter: blur`), vistas pesadas con `next/dynamic`, fuente local con `next/font` y pantalla de carga en CSS puro (`components/PantallaCarga.tsx`).

@@ -80,7 +80,7 @@ npm run build && npm start
 
 - La base SQLite (`data/ponte.db`) se crea y se llena sola la primera vez, con 100 deudores, la trivia y actividad previa. `npm run seed` la recrea de cero.
 - **Fecha del sistema**: es la fecha real de Perú (America/Lima). La mora, el interés y el CHICOTAZO de cada día se procesan solos, aunque nadie abra la app ese día.
-- **Herramientas de prueba**: *Reiniciar* (barra superior) y *Pasar un día* (final del inicio). Se ocultan con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` en `lib/config.ts`. Con ese valor, las rutas `/api/pruebas/*` responden 404.
+- **Herramientas de prueba**: *Reiniciar* (barra superior) y *Pasar un día* (final del inicio). Se apagan compilando con `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA=0` en `.env.local`. Con eso, las rutas `/api/pruebas/*` responden 404.
 
 ---
 
@@ -98,6 +98,7 @@ Copie `.env.example` a `.env.local`. Ese archivo **nunca** se sube al repositori
 | `SESION_SECRETO` | Secreto para firmar la sesión del gestor (texto largo y aleatorio en producción) | derivado de la clave del gestor |
 | `SQLITE_PATH` | Ruta de la base SQLite | `data/ponte.db` |
 | `FECHA_SISTEMA` | Fija la fecha (`AAAA-MM-DD`); la usan las pruebas automáticas | fecha real de Perú |
+| `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA` | `0` apaga Reiniciar, Pasar un día y `/api/pruebas/*` (se lee al compilar) | `1` |
 
 `GET /api/asistente/estado` indica qué proveedor de IA está activo y si responde.
 
@@ -260,21 +261,19 @@ Instrucciones en [`scripts/video/README.md`](scripts/video/README.md).
 
 ## Despliegue
 
-En un servidor con Node.js 20 o superior (por ejemplo, un VPS con Ubuntu):
+Un solo comando instala o actualiza PAREAS en un VPS con Ubuntu o Debian (por ejemplo, Hostinger). Se ejecuta desde su PC con su llave SSH:
 
 ```bash
-git clone https://github.com/laboratoryheod/PAREAS-CAJA-PIURA.git && cd PAREAS-CAJA-PIURA
-npm ci
-cp .env.example .env.local     # complete OPENAI_API_KEY, SESION_SECRETO, BANCO_USUARIO y BANCO_CLAVE
-npm run build
-npx next start -p 3000         # o con un gestor de procesos: pm2 start "npx next start -p 3000" --name pareas
+ssh -t -i ~/.ssh/SU_LLAVE usuario@IP_DEL_VPS 'curl -fsSL https://raw.githubusercontent.com/laboratoryheod/PAREAS-CAJA-PIURA/master/scripts/deploy/instalar-vps.sh | sudo bash'
 ```
 
-Antes de abrirlo al público:
-1. Ponga `MOSTRAR_HERRAMIENTAS_PRUEBA = false` en `lib/config.ts` y vuelva a compilar.
-2. Defina un `SESION_SECRETO` largo y aleatorio, y cambie las credenciales del gestor con `BANCO_USUARIO` y `BANCO_CLAVE`.
-3. Sirva la app detrás de un proxy (por ejemplo, Nginx) con https, para que la cookie de sesión viaje como `secure`.
-4. Respalde el archivo SQLite, o mejor aún, conecte el core bancario implementando `Repo`.
+El instalador hace lo siguiente:
+- Pregunta el dominio, las credenciales del gestor y la clave de OpenAI. Las claves se escriben en el servidor, no en el repositorio.
+- Instala un Node.js propio y compila la app.
+- Crea el servicio `pareas` (systemd).
+- La publica con Nginx y, si hay dominio, con HTTPS de Let's Encrypt.
+
+No toca otros sitios del servidor. Los detalles, la operación diaria y los respaldos están en [`docs/DESPLIEGUE-VPS.md`](docs/DESPLIEGUE-VPS.md).
 
 ---
 
@@ -282,7 +281,7 @@ Antes de abrirlo al público:
 
 | Qué | Archivo |
 |---|---|
-| Nombre de la app, apelativo del tono coloquial y herramientas de prueba | `lib/config.ts` (`APP_NOMBRE`, `APELATIVO`, `MOSTRAR_HERRAMIENTAS_PRUEBA`) |
+| Nombre de la app, apelativo del tono coloquial y herramientas de prueba | `lib/config.ts` (`APP_NOMBRE`, `APELATIVO`, `MOSTRAR_HERRAMIENTAS_PRUEBA` según `NEXT_PUBLIC_HERRAMIENTAS_PRUEBA`) |
 | Reprogramación, interés moratorio, beneficios por nivel y Modo Rescate | `lib/reglas.ts` |
 | Puntos del score y CHICOTAZO | `lib/score.ts` (`PARAMS_SCORE`) |
 | Niveles | `lib/niveles.ts` |
@@ -306,6 +305,7 @@ Antes de abrirlo al público:
 - [`DESIGN.md`](DESIGN.md): decisiones de diseño.
 - [`MODULO_MIS_FINANZAS.md`](MODULO_MIS_FINANZAS.md): especificación de Mis Finanzas.
 - [`docs/PLAN-DE-PRUEBAS.md`](docs/PLAN-DE-PRUEBAS.md): plan de pruebas y diagnóstico.
+- [`docs/DESPLIEGUE-VPS.md`](docs/DESPLIEGUE-VPS.md): instalación y operación en un VPS.
 - [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md): cómo abrir el proyecto en Antigravity.
 
 ## Licencias de terceros
