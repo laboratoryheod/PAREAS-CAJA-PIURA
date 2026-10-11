@@ -6,6 +6,7 @@ import BotonReinicio from "@/components/BotonReinicio";
 import { IcBillete, IcGraficoCircular, IcLista } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 import { BarraGestor } from "./BarraGestor";
+import { NotificacionesGestor } from "./NotificacionesGestor";
 
 const SECCIONES = [
   { href: "/banco", texto: "Resumen", icono: IcGraficoCircular },
@@ -19,6 +20,7 @@ export function MarcoGestor({ children }: { children: React.ReactNode }) {
   return (
     <>
       <BarraGestor>
+        <NotificacionesGestor />
         <BotonReinicio claro destino="/banco" />
         <button className="min-h-[44px] text-sm underline" onClick={async () => { await fetch("/api/banco/login", { method: "DELETE" }); window.location.assign("/banco/login"); }}>Salir</button>
       </BarraGestor>

@@ -1,4 +1,4 @@
-# AGENTS.md — Ponte al Día con Pareas (Caja Piura)
+# AGENTS.md — PAREAS (Caja Piura)
 
 Contexto para agentes (Antigravity, Claude Code, Codex, etc.). **Para retomar el trabajo, lea primero [`docs/CONTEXTO-MAESTRO.md`](docs/CONTEXTO-MAESTRO.md).** Las reglas detalladas están en `.agents/rules/`, los flujos en `.agents/workflows/` y las skills de diseño en `.agents/skills/` (también en `.claude/skills/`).
 

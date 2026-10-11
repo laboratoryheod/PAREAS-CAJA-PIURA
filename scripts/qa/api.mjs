@@ -126,6 +126,17 @@ for (const ruta of ["/api/banco/resumen", "/api/banco/cartera", "/api/banco/dist
 caso("REN-01", "Tiempos de respuesta del servidor (< 300 ms)", true, t.join(" · "));
 r = await fetch(B + "/api/banco/login", { method: "DELETE", headers: { cookie } }); caso("SEG-06", "Salir borra la cookie", /banco_sesion=;/.test(r.headers.get("set-cookie") ?? "") || /Max-Age=0/i.test(r.headers.get("set-cookie") ?? ""), r.headers.get("set-cookie")?.slice(0, 60));
 
+// Bloqueo por intentos fallidos (con otra IP simulada, para no bloquear a las demás pruebas)
+const ipFalsa = { headers: { "x-forwarded-for": `10.9.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}` } };
+let ultimo;
+for (let i = 1; i <= 5; i++) ultimo = await req("POST", "/api/banco/login", { usuario: "gestor", clave: "mala" + i }, ipFalsa);
+caso("SEG-07", "5 claves incorrectas → aviso de bloqueo", ultimo.s === 401 && /bloqueado/.test(ultimo.j.error), ultimo.j.error);
+r = await req("POST", "/api/banco/login", { usuario: "gestor", clave: "caja2026" }, ipFalsa);
+caso("SEG-08", "Bloqueado: ni la clave correcta entra durante 5 minutos (429)", r.s === 429 && /Espere/.test(r.j.error), `${r.s} ${r.j.error}`);
+r = await req("GET", "/api/banco/resumen", undefined, { headers: { cookie: "banco_sesion=gestor-activo" } });
+caso("SEG-09", "El valor fijo de sesión antiguo ya no sirve", r.s === 401, `${r.s}`);
+r = await req("GET", "/api/banco/feed?desde=0"); caso("GES-14", "Feed para las notificaciones del gestor", r.s === 200 && Array.isArray(r.j.items), `${r.j.items?.length} eventos`);
+
 const fallos = res.filter((x) => !x.ok);
 for (const x of res) console.log(`${x.ok ? "OK  " : "FALLA"} ${x.id} ${x.nombre}${x.detalle ? " — " + x.detalle : ""}`);
 console.log(`\n${res.length - fallos.length}/${res.length} casos OK`);

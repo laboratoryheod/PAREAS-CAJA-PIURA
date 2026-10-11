@@ -1,4 +1,4 @@
-# DESIGN.md — Ponte al Día con Pareas
+# DESIGN.md — PAREAS
 
 Las skills de `.agents/skills/` y `.claude/skills/` (traídas de cult-ui: `frontend-design`, `fixing-motion-performance`, `components-build`) se aplican sobre estas decisiones del proyecto. Lo que se define aquí prevalece.
 

@@ -1,4 +1,4 @@
-# Contexto maestro — Ponte al Día con Pareas (Caja Piura)
+# Contexto maestro — PAREAS (Caja Piura)
 
 Documento para retomar el trabajo en una conversación nueva (Claude Code, Antigravity, Codex u otro agente). Léalo junto con `AGENTS.md`. Si algo de aquí choca con el código, manda el código; actualice este archivo al cerrar cada ronda.
 
@@ -255,6 +255,7 @@ Rendimiento:
 9. Se optimizó el rendimiento de `/cliente` y `/banco`.
 10. Se agregaron las notificaciones del cliente y la barra con logo en el gestor.
 11. El gestor pasó a tener sidebar (Resumen, Cartera y Modo Rescate). El gráfico circular reemplazó al feed y llegó el Modo Rescate masivo por puntos. El Modo Rescate quedó en azul y blanco con icono de billete, y se corrigió la superposición de las notificaciones.
+15. Sesión del gestor firmada (HMAC, vence en 8 h; `lib/sesion.ts`) con bloqueo tras 5 intentos fallidos (5 min). Notificaciones del gestor (`components/banco/NotificacionesGestor.tsx`): campana con pedidos de ayuda, planes incumplidos, propuestas por revisar y pagos, con aviso en vivo.
 14. Nombre de la app: **PAREAS**. (Se probó una barra con la distribución institucional de la Caja y al usuario no le gustó: se mantiene la barra anterior.) Mis Finanzas agrega el ámbito "Otros". Chatbot de Pareas con OpenAI y FAQ de vencimiento de cuota y Modo Rescate.
 13. Ronda de QA: 12 bugs corregidos (rutas de prueba abiertas, ingreso único que se repetía, trivia, fechas de gastos, montos con miles, migración `fecha_demo`, Escape, áreas táctiles, textos del asistente y del detalle del gestor).
 12. Modo Rescate masivo con "score mínimo o más". "Mi plan" se reemplazó por **Mis Finanzas**. Excel de cartera para importar y exportar (botones y scripts). La fecha real de Perú reemplazó a la fecha fija. Optimización de carga (fuente local, landing sin blur, statements preparados, índices, polling liviano) y pantalla de carga con Pareas.
@@ -262,7 +263,7 @@ Rendimiento:
 ## 11. Pendientes e ideas
 - Tras importar un Excel con DNIs nuevos no hay forma de "deshacer"; si se necesita, agregar un historial de importaciones.
 - El feed "En tiempo real" se quitó de la vista y lo reemplazó el gráfico; `/api/banco/feed` sigue disponible.
-- **Notificaciones para el gestor**, el siguiente paso natural. Por ejemplo: un cliente pidió ayuda, una propuesta quedó derivada, se usó un Modo Rescate o se incumplió un plan. Se puede reutilizar el patrón de `Notificaciones.tsx` sobre el feed.
+- (Hecho) Notificaciones para el gestor. Por ejemplo: un cliente pidió ayuda, una propuesta quedó derivada, se usó un Modo Rescate o se incumplió un plan. Se puede reutilizar el patrón de `Notificaciones.tsx` sobre el feed.
 - Opcional: renombrar los identificadores internos `regalo` → `rescate`. Afecta la tabla, la API, los componentes y los tests, y requiere `npm run seed`.
 - Antes de producción: poner `MOSTRAR_HERRAMIENTAS_PRUEBA = false` y quitar el botón Reiniciar si ya no se necesita.
 - La bolsa de la imagen de Pareas lleva un logo parecido al de la Caja; revisarlo con el área de marca.

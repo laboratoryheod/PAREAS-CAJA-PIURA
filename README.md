@@ -1,4 +1,4 @@
-# Ponte al Día con Pareas — Caja Piura (Autogestión Dinámica de Deuda)
+# PAREAS — Caja Piura (autogestión de deuda y finanzas con Pareas)
 
 Módulo web mobile-first (Next.js + TypeScript + Tailwind) para integrarse en la app de Caja Piura, con **dos interfaces**: `/cliente` y `/banco`. Incluye una cartera de ejemplo de 100 clientes; la conexión al core bancario se hace implementando la interfaz `Repo` (`lib/db/repo.ts`).
 

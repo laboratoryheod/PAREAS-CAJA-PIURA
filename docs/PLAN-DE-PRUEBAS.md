@@ -1,4 +1,4 @@
-# Plan de pruebas y diagnóstico — Ponte al Día con Pareas
+# Plan de pruebas y diagnóstico — PAREAS
 
 Fecha de ejecución: 11 de octubre de 2026. Las pruebas corrieron sobre el build de producción (`next build` + `next start`) con una base aparte.
 
@@ -88,7 +88,7 @@ Además, el formateador de fecha de Perú ahora se crea una sola vez, en lugar d
 
 ## Recomendaciones antes de producción (no aplicadas)
 1. **Identidad del cliente:** las APIs del cliente (`/api/cliente/[id]`, `/api/finanzas`, `/api/pago`…) confían en el `clienteId` que llega en la petición. Al integrarse, el id debe salir de la sesión de la app de Caja Piura (SSO), nunca del navegador.
-2. **Login del gestor:** la cookie es un valor fijo y no hay límite de intentos. Conviene una sesión firmada (JWT) con 2FA y bloqueo tras varios intentos fallidos. Ya está marcado como ROADMAP en el código.
+2. **Login del gestor:** (aplicado) sesión firmada con vencimiento y bloqueo tras 5 intentos. Falta la doble verificación (2FA) del SSO de la Caja. Configure `SESION_SECRETO` en `.env.local` para producción.
 3. **Nuevas cuotas:** con la fecha real, un cliente al día no "cae" en mora por sí solo, porque la base local no genera cuotas futuras. En producción, las cuotas las entrega el core bancario mediante `Repo`.
 4. **Herramientas de prueba:** antes de publicar, poner `MOSTRAR_HERRAMIENTAS_PRUEBA = false`, lo que ahora también apaga sus rutas.
 5. **Importación de Excel:** no se puede deshacer. Si se necesita, agregar un historial de importaciones.
