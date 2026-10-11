@@ -13,13 +13,13 @@ export type EstadoPropuesta = "aceptada" | "rechazada" | "derivada" | "cumplida"
 export interface PropuestaRow { id: number; credito_id: number; n_cuotas: number; inicial: number; fecha_primer_pago: string; cronograma: PagoPlan[]; estado: EstadoPropuesta; motivo_atraso: string | null; creado_en: string }
 export interface MovimientoRow { id: number; cliente_id: number; tipo: Movimiento["tipo"]; puntos: number; saldo_resultante: number; detalle: string | null; fecha: string; creado_en: string }
 export interface PreguntaRow { id: number; categoria: string; pregunta: string; opciones: string[]; correcta: number; explicacion: string }
-export type TipoEvento = "aviso_enviado" | "modulo_abierto" | "simulacion" | "propuesta_enviada" | "pago_simulado" | "chat" | "trivia_jugada" | "ayuda_humana" | "promesa_incumplida" | "regalo_otorgado" | "regalo_usado";
+export type TipoEvento = "aviso_enviado" | "modulo_abierto" | "simulacion" | "propuesta_enviada" | "pago_registrado" | "chat" | "trivia_jugada" | "ayuda_humana" | "promesa_incumplida" | "regalo_otorgado" | "regalo_usado";
 export interface CampanaRow { id: number; cliente_id: number; tipo: "regalo_salvador"; base: number; descuento: number; monto_hoy: number; recargos: { n: number; fecha: string; monto: number }[]; estado: "ofrecida" | "usada" | "vencida"; otorgada_por: string; vence: string; creado_en: string }
 export interface EventoRow { id: number; cliente_id: number; tipo: TipoEvento; detalle: Record<string, unknown>; creado_en: string }
 
 export interface Repo {
-  fechaDemo(): string;
-  setFechaDemo(f: string): void;
+  fechaHoy(): string;
+  setFechaHoy(f: string): void;
   reset(): void;
 
   cliente(id: number): ClienteRow | undefined;

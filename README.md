@@ -1,6 +1,6 @@
-# Ponte al Día — Reto 14 Caja Piura (Autogestión Dinámica de Deuda)
+# Ponte al Día con Pareas — Caja Piura (Autogestión Dinámica de Deuda)
 
-Prototipo mobile-first (Next.js + TypeScript + Tailwind) con **dos interfaces**: `/cliente` y `/banco`. Datos 100 % ficticios.
+Módulo web mobile-first (Next.js + TypeScript + Tailwind) para integrarse en la app de Caja Piura, con **dos interfaces**: `/cliente` y `/banco`. Incluye una cartera de ejemplo de 100 clientes; la conexión al core bancario se hace implementando la interfaz `Repo` (`lib/db/repo.ts`).
 
 ## Abrirlo en Antigravity
 Ver [`docs/MIGRAR-A-ANTIGRAVITY.md`](docs/MIGRAR-A-ANTIGRAVITY.md). El contexto para agentes está en `AGENTS.md`, `.agents/rules/` y `.agents/workflows/`.
@@ -18,8 +18,9 @@ npm run build && npm start
 - `npm run seed` la recrea de cero · `npm run export:xlsx` regenera `data/deudores.xlsx`.
 - Opcional: copie `.env.example` a `.env.local` y ponga `GEMINI_API_KEY` para usar Gemini; sin clave el asistente responde con FAQ local.
 - Panel del banco: usuario `gestor` · clave `caja2026`.
-- Cliente de demo: **Gengis Guerrero** (`/cliente`, id 1): cuota S/ 320, 12 días de atraso, score 70. Otros: `/cliente?id=N`.
-- La fecha de la demo es fija (`FECHA_DEMO`, 10 de octubre de 2026). En "Herramientas de la demo" puede **pasar un día** o **reiniciar**.
+- Cliente de ejemplo: **Gengis Guerrero** (`/cliente`, id 1): cuota S/ 320, 12 días de atraso, score 70. Otros: `/cliente?id=N`.
+- La fecha del sistema es fija (`FECHA_SISTEMA`, 10 de octubre de 2026).
+- **Herramientas de prueba** (temporales): botón **Reiniciar** en la barra superior del cliente y del gestor (deja toda la app en su estado inicial y vuelve a la bienvenida) y **Pasar un día** al final del inicio. Se ocultan con `MOSTRAR_HERRAMIENTAS_PRUEBA = false` en `lib/config.ts`.
 
 ## Dónde se ajusta todo
 
@@ -46,7 +47,7 @@ Los montos y fechas siempre se calculan en el servidor (`lib/servicio.ts`); el n
 - **Incumplir el plan:** no hay castigo fijo; vuelve el chicotazo diario y el cliente **pierde sus beneficios** (de nivel y de volver a reprogramar).
 - **🎁 Regalo Salvador:** campaña que otorga el gestor desde su panel (casos derivados o detalle del cliente). El moroso paga hoy un **30 % menos** y recupera ese descuento con **+10 % en sus 3 cuotas siguientes**. Vence en 7 días. Al usarlo se pone al día y recupera sus beneficios. Se ajusta en `REGALO_SALVADOR` (`lib/reglas.ts`).
 - Más de 60 días: la propuesta (con inicial ≥ 30 %) queda **derivada** al gestor; el cliente sigue en mora.
-- Interés moratorio simulado: TEA × 1,5 prorrateada por día (simple). Ajustable en `FACTOR_MORATORIO`.
+- Interés moratorio: TEA × 1,5 prorrateada por día (simple). Ajustable en `FACTOR_MORATORIO`.
 
 ## Asistente blindado (para no gastar tokens)
 Orden de filtros en `lib/asistente/` (todo lo que se filtra se responde **sin IA**):
@@ -79,13 +80,13 @@ De https://github.com/nolly-studio/cult-ui (MIT) se copiaron **solo** los compon
 
 ## Otras notas
 - Tiempo real del banco por polling cada 3 s (ROADMAP: Supabase Realtime sobre la misma interfaz de repositorio). El cliente refresca cada 5 s para ver al instante si el gestor le dio un regalo.
-- Seguridad (prototipo): DNI solo como hash SHA-256 y enmascarado en pantalla; `// ROADMAP` 2FA/biometría (passkeys) y Argon2/bcrypt para claves reales; el login real lo aporta la app de Caja Piura.
+- Seguridad: DNI solo como hash SHA-256 y enmascarado en pantalla; `// ROADMAP` 2FA/biometría (passkeys) y Argon2/bcrypt para claves reales; el login real lo aporta la app de Caja Piura.
 
-## Guion de demo (3 minutos)
+## Recorrido guiado (3 minutos)
 1. **(0:00) Landing** → "Entrar como cliente". ¡Habla, Gengis!: S/ 326.08 (cuota S/ 320 + mora), 12 días. Pareas da su chicotazo con humor.
 2. **(0:25) Armar mi plan:** subir a 3 cuotas → semáforo ámbar con el porqué y la alternativa más cercana → "Usar esta alternativa" → verde. Poner el primer pago para mañana.
 3. **(0:55) Confirmar:** motivo "Bajaron mis ventas", aceptar → "¡Plan aceptado! Falta tu primer pago": Pareas sigue pegando hasta pagar.
 4. **(1:15) En otra pestaña `/banco`** (gestor / caja2026): el feed muestra *"Gengis G. aceptó pagar en 2 cuotas"* y suben los KPIs.
-5. **(1:35) Incumplir:** en el cliente, "Herramientas de la demo → Pasar un día" dos veces sin pagar → "Beneficios en pausa". El banco lo ve: *"Gengis G. incumplió su plan"*, y aparece en casos derivados como candidato a Regalo Salvador.
+5. **(1:35) Incumplir:** en el cliente, "Herramientas de prueba → Pasar un día" dos veces sin pagar → "Beneficios en pausa". El banco lo ve: *"Gengis G. incumplió su plan"*, y aparece en casos derivados como candidato a Regalo Salvador.
 6. **(2:00) 🎁 Regalo Salvador:** el gestor pulsa "Dar Regalo Salvador". En el celular del cliente aparece la tarjeta: paga 30 % menos hoy, +10 % en sus 3 cuotas siguientes → "Aprovechar mi regalo" → pago con QR → al día y con beneficios de vuelta.
 7. **(2:35) Asistente:** "¿Cuánto debo?" (cifras del servidor), "escríbeme un poema" (no responde: no gasta tokens), "mi clave es…" (no la acepta).

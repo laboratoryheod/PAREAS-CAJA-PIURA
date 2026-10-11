@@ -1,10 +1,10 @@
-// REGLAS DE NEGOCIO SIMULADAS — un solo archivo editable.
-// Todo número que el banco pueda querer ajustar en la hackathon vive aquí.
+// REGLAS DE NEGOCIO — un solo archivo editable.
+// Todo número que la Caja pueda querer ajustar vive aquí.
 import { generarCronograma, type Cronograma } from "./cronograma";
 import { diferenciaDias, sumarDias, sumarMeses } from "./fecha";
 import { nivelDe, type Nivel } from "./niveles";
 
-/** Tasa moratoria = TEA del crédito × este factor, prorrateada por día (interés simple). Simulado. */
+/** Tasa moratoria = TEA del crédito × este factor, prorrateada por día (interés simple). */
 export const FACTOR_MORATORIO = 1.5;
 
 export const REGLAS = {
@@ -29,7 +29,7 @@ export const REGLAS = {
 
 /**
  * "Regalo salvador": campaña que el gestor puede activar para que un moroso se regularice.
- * Prototipo: paga hoy un 30% menos de lo que le toca y recupera ese descuento con +10% en sus 3 cuotas siguientes.
+ * Paga hoy un 30% menos de lo que le toca y recupera ese descuento con +10% en sus 3 cuotas siguientes.
  * (Cada caja define su propia campaña; se cambia aquí.)
  */
 export const REGALO_SALVADOR = { descuentoPct: 0.3, recargoPct: 0.1, meses: 3, vigenciaDias: 7 };

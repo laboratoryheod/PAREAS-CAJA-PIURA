@@ -1,5 +1,5 @@
 import { idNumerico, leerJson, responder } from "@/lib/api";
-import { cobroPendiente, pagoSimulado } from "@/lib/servicio";
+import { cobroPendiente, registrarPago } from "@/lib/servicio";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +11,6 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   return responder(async () => {
     const b = await leerJson(req);
-    return pagoSimulado(idNumerico(b.clienteId), typeof b.concepto === "string" ? b.concepto : undefined);
+    return registrarPago(idNumerico(b.clienteId), typeof b.concepto === "string" ? b.concepto : undefined);
   });
 }

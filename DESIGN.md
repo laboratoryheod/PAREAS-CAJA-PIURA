@@ -30,7 +30,7 @@ Se aplica la paleta institucional de Caja Piura (tomada de capturas de cajapiura
 | Mora / CHICOTAZO | `#FF3B30`, degradado `#7A0F1C → #E2401C` |
 | Juego / trivia | `#5B2EE5 → #9B4DFF` |
 | Regalo Salvador | `#D6247A → #FF7A59` |
-El logo oficial de Caja Piura no se usa en el prototipo (solo texto); la marca visible es PAREAS / Pareas.
+El logo de Caja Piura aparece en blanco en la barra superior y en dorado al pie de Beneficios (`public/caja/`). Fondo general: azul tenue que se funde con blanco (`#DCE9F8 → #FFFFFF`).
 
 ## Flotantes
 - Landing: isla de navegación negra arriba (se expande al pasar o tocar) y barra translúcida abajo con "Soy cliente / Soy gestor" que aparece al bajar.

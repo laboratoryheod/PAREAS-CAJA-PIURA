@@ -94,7 +94,7 @@ export function WidgetPagos({ sit, progreso, ir, className }: { sit: Situacion; 
         {sit.diasAtraso > 0 && <p className="text-[13px] text-neutral-500">{sit.diasAtraso} días de atraso · incluye {soles(sit.deuda.interesMoratorio)} de mora</p>}
       </div>
       <ul className="mx-3 mb-3 divide-y divide-black/5 overflow-hidden rounded-2xl bg-neutral-50">
-        {hayPago && <Fila icono={sit.regalo ? IcRegalo : IcTarjeta} color={sit.regalo ? "rosa" : "azul"} titulo={sit.estado === "plan_pendiente" ? "Hacer mi primer pago" : "Pagar hoy"} sub="Pago simulado con QR" onClick={() => ir("pagar")} />}
+        {hayPago && <Fila icono={sit.regalo ? IcRegalo : IcTarjeta} color={sit.regalo ? "rosa" : "azul"} titulo={sit.estado === "plan_pendiente" ? "Hacer mi primer pago" : "Pagar hoy"} sub="Pago con código QR" onClick={() => ir("pagar")} />}
         {sit.limites && !sit.propuestaActiva && !sit.propuestaDerivada && !sit.regalo && <Fila icono={IcCalculadora} color="sol" titulo="Armar mi plan" sub={`Hasta ${sit.limites.maxCuotas} cuotas`} onClick={() => ir("simulador")} />}
         {(sit.propuestaActiva || sit.propuestaDerivada) && <Fila icono={IcCalendario} color="cielo" titulo="Ver mi plan" sub={sit.propuestaDerivada ? "En revisión del gestor" : sit.estado === "plan_pendiente" ? "Falta el primer pago" : "En marcha"} onClick={() => ir("plan")} />}
         {hayPago && <Fila icono={IcQR} color="grafito" titulo="QR para un familiar" sub="Para que un familiar pague por usted" onClick={() => ir("pagar")} />}
@@ -116,7 +116,7 @@ const CONSEJOS = [
 ];
 
 export function WidgetConsejos({ sit, onAgente, className }: { sit: Situacion; onAgente: () => void; className?: string }) {
-  const base = Number(sit.fechaDemo.replace(/-/g, "")) % CONSEJOS.length;
+  const base = Number(sit.fechaHoy.replace(/-/g, "")) % CONSEJOS.length;
   const [i, setI] = useState(base);
   const c = CONSEJOS[i % CONSEJOS.length];
   return (

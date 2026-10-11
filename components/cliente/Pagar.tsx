@@ -11,17 +11,17 @@ export default function Pagar({ sit, onPagado, onVolver }: { sit: Situacion; onP
   const [cargando, setCargando] = useState(false);
   const [copiado, setCopiado] = useState(false);
 
-  useEffect(() => { api(`/api/pago-simulado?clienteId=${sit.cliente.id}`).then(setCobro).catch((e) => setError(e.message)); }, [sit.cliente.id]);
+  useEffect(() => { api(`/api/pago?clienteId=${sit.cliente.id}`).then(setCobro).catch((e) => setError(e.message)); }, [sit.cliente.id]);
 
   async function pagar() {
     setCargando(true); setError("");
-    try { const r = await api("/api/pago-simulado", { clienteId: sit.cliente.id, concepto: cobro.concepto }); setRecibo(r); onPagado(r.situacion); }
+    try { const r = await api("/api/pago", { clienteId: sit.cliente.id, concepto: cobro.concepto }); setRecibo(r); onPagado(r.situacion); }
     catch (e: any) { setError(e.message); }
     setCargando(false);
   }
 
   async function compartir() {
-    const texto = `Pago de ${cobro.montoTexto} para ${cobro.pagadorSugerido} · Código ${cobro.codigo} (simulado)`;
+    const texto = `Pago de ${cobro.montoTexto} para ${cobro.pagadorSugerido} · Código ${cobro.codigo}`;
     try { if (navigator.share) await navigator.share({ title: "Pago por un familiar", text: texto }); else { await navigator.clipboard.writeText(texto); setCopiado(true); } } catch { /* cancelado */ }
   }
 
@@ -34,7 +34,7 @@ export default function Pagar({ sit, onPagado, onVolver }: { sit: Situacion; onP
           <h2 className="text-xl font-extrabold text-caja">¡Pago hecho!</h2>
           <p className="text-3xl font-bold">{c.montoTexto}</p>
           <p className="text-sm text-gray-600">{c.detalle} · {c.fechaLarga}</p>
-          <p className="text-xs text-gray-500">Comprobante {c.codigo} · pago simulado de prototipo</p>
+          <p className="text-xs text-gray-500">Comprobante {c.codigo}</p>
           {recibo.mensajes.map((m: string) => <p key={m} className="rounded-xl bg-green-50 border border-green-200 p-2 text-sm">{m}</p>)}
         </div>
         <TextureButton onClick={onVolver}>Volver a mi situación</TextureButton>
@@ -55,7 +55,7 @@ export default function Pagar({ sit, onPagado, onVolver }: { sit: Situacion; onP
             <p className="text-4xl font-bold">{cobro.montoTexto}</p>
             {cobro.qr && <img src={cobro.qr} alt="Código QR de pago" width={200} height={200} className="mx-auto rounded-xl border border-caja-borde" />}
             <p className="text-xs text-gray-500">Este código QR también puede usarlo un familiar para pagar por usted.</p>
-            <TextureButton variant={cobro.concepto === "regalo" ? "regalo" : "accent"} size="lg" onClick={pagar} disabled={cargando}>{cargando ? "Procesando…" : "Hacer el pago (simulado)"}</TextureButton>
+            <TextureButton variant={cobro.concepto === "regalo" ? "regalo" : "accent"} size="lg" onClick={pagar} disabled={cargando}>{cargando ? "Procesando…" : "Pagar ahora"}</TextureButton>
             <TextureButton variant="secondary" onClick={compartir}><IcCompartir tam={18} />{copiado ? "¡Copiado!" : "Compartir con un familiar"}</TextureButton>
           </>
         )}

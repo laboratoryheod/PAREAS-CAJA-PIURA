@@ -5,9 +5,11 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { api, type Situacion } from "@/lib/cliente-api";
 import { usarPolling } from "@/lib/usar-polling";
+import { MOSTRAR_HERRAMIENTAS_PRUEBA } from "@/lib/config";
+import BotonReinicio, { reiniciarTodo } from "@/components/BotonReinicio";
 import { Dock, DockCard } from "@/components/ui/dock";
 import { FamilyButton } from "@/components/ui/family-button";
-import { IcInicio, IcTarjeta, IcCalculadora, IcCalendario, IcMando, IcBurbuja, IcGestor, IcQR, IcReloj } from "@/components/iconos";
+import { IcInicio, IcTarjeta, IcCalculadora, IcCalendario, IcMando, IcBurbuja, IcGestor, IcQR, IcReloj, IcReiniciar } from "@/components/iconos";
 import dynamic from "next/dynamic";
 import type { PlanElegido } from "./Simulador";
 import { Inicio } from "./inicio/Inicio";
@@ -49,7 +51,7 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
 
   if (error) return <main className="mx-auto max-w-md p-6"><p className="card text-red-700">{error}</p><Link href="/" className="text-[#0072C6] underline">Volver al inicio</Link></main>;
   if (!sit) return (
-    <main className="grid min-h-screen place-items-center bg-[#F7F7F7]">
+    <main className="grid min-h-screen place-items-center">
       <motion.div animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 1.2, repeat: Infinity }} className="relative h-24 w-24"><Image src="/pareas/pareas.png" alt="Cargando" fill sizes="96px" className="object-contain" /></motion.div>
     </main>
   );
@@ -59,7 +61,7 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
   const hayDeuda = sit.deuda.total > 0;
   const puedeArmar = !!sit.limites && hayDeuda && !sit.propuestaDerivada && !sit.propuestaActiva && !sit.regalo;
   const tienePlan = !!(sit.propuestaActiva || sit.propuestaDerivada);
-  const [y, m, d] = sit.fechaDemo.split("-").map(Number);
+  const [y, m, d] = sit.fechaHoy.split("-").map(Number);
   const dia = DIAS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
 
   async function pedirGestor() {
@@ -77,14 +79,15 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
   ];
 
   return (
-    <main className="min-h-screen bg-[#F7F7F7] pb-36 text-[#1C1C1E]">
+    <main className="min-h-screen pb-36 text-[#1C1C1E]">
       {/* barra superior translúcida estilo iOS */}
       <header className="sticky top-0 z-30 bg-[#00529B] text-white shadow-[0_1px_0_rgba(0,0,0,0.08)]">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
           <Link href="/" className="flex min-h-[44px] items-center gap-2 text-[17px] font-semibold tracking-[-0.01em]">
             <span className="relative h-[34px] w-[34px] overflow-hidden rounded-[9px] bg-white"><Image src="/pareas/pareas.png" alt="" fill sizes="34px" className="object-contain p-0.5" /></span>Ponte al Día
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <BotonReinicio claro />
             <Image src="/caja/logo-caja-piura-blanco.png" alt="Caja Piura" width={110} height={26} className="h-[24px] w-auto" priority />
             <span className="h-6 w-px bg-white/25" aria-hidden />
             <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-white/90 hover:text-white">Salir</Link>
@@ -98,16 +101,18 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
             {vista === "inicio" ? (
               <>
                 <div className="mb-3">
-                  <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-neutral-500">{dia} {sit.fechaDemoLarga}</p>
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.06em] text-neutral-500">{dia} {sit.fechaHoyLarga}</p>
                   <h1 className="text-[34px] font-bold leading-tight tracking-[-0.03em]">Hola, {sit.cliente.nombre}</h1>
                 </div>
                 <Inicio sit={sit} progreso={progreso} ir={(v) => irA(v)} />
 
-                <div className="mt-6 overflow-hidden rounded-[20px] bg-white text-[15px] shadow-[0_0_0_1px_rgba(0,0,0,0.05)]">
-                  <p className="px-4 pb-1 pt-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Demo · {sit.fechaDemoLarga}</p>
-                  <button className="flex min-h-[48px] w-full items-center gap-3 px-4 text-left hover:bg-black/[0.03]" onClick={async () => { await api("/api/demo/avanzar-dia", {}); refrescar(); }}><IcReloj tam={20} className="text-[#0072C6]" />Pasar un día</button>
-                  <button className="flex min-h-[48px] w-full items-center gap-3 border-t border-black/5 px-4 text-left text-[#FF3B30] hover:bg-black/[0.03]" onClick={async () => { await api("/api/demo/reset", {}); try { localStorage.removeItem(`pareas-bienvenida-${clienteId}`); } catch {} location.reload(); }}>Reiniciar demo</button>
-                </div>
+                {MOSTRAR_HERRAMIENTAS_PRUEBA && (
+                  <div className="mt-6 overflow-hidden rounded-[20px] bg-white text-[15px] shadow-[0_0_0_1px_#D6E4F5]">
+                    <p className="px-4 pb-1 pt-3 text-[12px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Herramientas de prueba · {sit.fechaHoyLarga}</p>
+                    <button className="flex min-h-[48px] w-full items-center gap-3 px-4 text-left hover:bg-black/[0.03]" onClick={async () => { await api("/api/pruebas/avanzar-dia", {}); refrescar(); }}><IcReloj tam={20} className="text-[#0072C6]" />Pasar un día</button>
+                    <button className="flex min-h-[48px] w-full items-center gap-3 border-t border-black/5 px-4 text-left text-[#FF3B30] hover:bg-black/[0.03]" onClick={() => reiniciarTodo("/cliente")}><IcReiniciar tam={20} />Reiniciar toda la aplicación</button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="mx-auto max-w-xl space-y-4">

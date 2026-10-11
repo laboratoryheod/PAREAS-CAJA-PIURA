@@ -43,6 +43,7 @@ export const IcChispa = (p: P) => <Glifo {...p}><path d="M12 3.5c.6 4 2.2 6.6 6.
 export const IcReloj = (p: P) => <Glifo {...p}><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></Glifo>;
 export const IcOjo = (p: P) => <Glifo {...p}><path d="M2.8 12S6 5.8 12 5.8 21.2 12 21.2 12 18 18.2 12 18.2 2.8 12 2.8 12Z" /><circle cx="12" cy="12" r="2.8" /></Glifo>;
 export const IcCompartir = (p: P) => <Glifo {...p}><path d="M12 3.8v11M8 7.6l4-3.8 4 3.8" /><path d="M7.5 11H6.3a1.8 1.8 0 0 0-1.8 1.8v5.9a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-5.9a1.8 1.8 0 0 0-1.8-1.8h-1.2" /></Glifo>;
+export const IcReiniciar = (p: P) => <Glifo {...p}><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" /><path d="M4.2 4.2v3.4h3.4" /></Glifo>;
 export const IcDescuento = (p: P) => <Glifo {...p}><path d="M3.8 12.6V5.4a1.6 1.6 0 0 1 1.6-1.6h7.2l7.8 7.8a1.6 1.6 0 0 1 0 2.3l-6.6 6.6a1.6 1.6 0 0 1-2.3 0Z" /><circle cx="8.3" cy="8.3" r="1.3" /><path d="m11 15.2 4.2-4.2" /></Glifo>;
 
 /** Pareas en silueta (cabeza de iguana con cresta) para avatares pequeños. */

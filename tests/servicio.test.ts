@@ -7,11 +7,11 @@ beforeAll(async () => {
   process.env.SQLITE_PATH = ":memory:";
   S = await import("@/lib/servicio");
 });
-beforeEach(() => S.resetearDemo());
+beforeEach(() => S.reiniciarApp());
 
 const plan = (nCuotas: number, inicial = 0, fecha = "2026-10-17") => ({ clienteId: GENGIS, nCuotas, inicial, fechaPrimerPago: fecha });
 
-describe("Gengis Guerrero (demo)", () => {
+describe("Gengis Guerrero (cliente de ejemplo)", () => {
   it("parte en mora con S/ 320 y 12 días, score 70", () => {
     const s = S.situacion(GENGIS);
     expect(s.estado).toBe("en_mora");
@@ -48,7 +48,7 @@ describe("Gengis Guerrero (demo)", () => {
     expect(r.situacion.pareas.humor).toBe("chicotazo");
     S.avanzarDia();
     expect(S.situacion(GENGIS).score).toBe(70 - 12); // sigue pegando
-    const pago = await S.pagoSimulado(GENGIS);
+    const pago = await S.registrarPago(GENGIS);
     expect(pago.situacion.estado).toBe("reprogramado");
     expect(pago.situacion.diasAtraso).toBe(0);
     expect(pago.mensajes.join(" ")).toMatch(/Su plan está activo/);
@@ -66,9 +66,9 @@ describe("Gengis Guerrero (demo)", () => {
 
   it("cumplir el plan: pagos a tiempo suman y al final se cumple la promesa (+20)", async () => {
     await S.registrarPropuesta({ ...plan(2), motivo: "olvido", acepta: true });
-    const primero = await S.pagoSimulado(GENGIS);
+    const primero = await S.registrarPago(GENGIS);
     expect(primero.situacion.score).toBe(85); // 70 + 15 por pagar a tiempo
-    const fin = (await S.pagoSimulado(GENGIS)).situacion;
+    const fin = (await S.registrarPago(GENGIS)).situacion;
     expect(fin.estado).toBe("al_dia");
     expect(fin.score).toBe(100); // 85 + 15 + 20 de promesa cumplida, acotado a 100
   });
@@ -91,10 +91,10 @@ describe("Gengis Guerrero (demo)", () => {
     const cobro = await S.cobroPendiente(GENGIS);
     expect(cobro.concepto).toBe("deuda");
     expect(cobro.qr).toMatch(/^data:image\/png/);
-    const r = await S.pagoSimulado(GENGIS, "deuda");
+    const r = await S.registrarPago(GENGIS, "deuda");
     expect(r.situacion.estado).toBe("al_dia");
     expect(r.situacion.pareas.humor).toBe("feliz");
-    await expect(S.pagoSimulado(GENGIS)).rejects.toThrow(/al día/);
+    await expect(S.registrarPago(GENGIS)).rejects.toThrow(/al día/);
   });
 });
 
@@ -115,7 +115,7 @@ describe("regalo salvador", () => {
     const cobro = await S.cobroPendiente(GENGIS);
     expect(cobro.concepto).toBe("regalo");
     expect(cobro.monto).toBe(regalo.montoHoy);
-    const r = await S.pagoSimulado(GENGIS, "regalo");
+    const r = await S.registrarPago(GENGIS, "regalo");
     expect(r.situacion.estado).toBe("al_dia");
     expect(r.situacion.sinBeneficios).toBe(false);
     expect(r.situacion.regalo).toBeNull();
@@ -125,7 +125,7 @@ describe("regalo salvador", () => {
   it("no se da dos veces ni a quien está al día", async () => {
     S.otorgarRegalo(GENGIS);
     expect(() => S.otorgarRegalo(GENGIS)).toThrow(/vigente/);
-    await S.pagoSimulado(GENGIS);
+    await S.registrarPago(GENGIS);
     expect(() => S.otorgarRegalo(GENGIS)).toThrow(/no está en mora/);
   });
   it("vence a los 7 días si no se usa", () => {

@@ -1,6 +1,6 @@
-// Fecha "hoy" de la demo: fija y configurable para que los días de atraso no cambien en plena presentación.
+// Fecha "hoy" del sistema: fija y configurable (FECHA_SISTEMA) para que los días de atraso sean estables.
 // Se puede mover con el botón "pasar un día" (se guarda en la tabla app_estado).
-export const FECHA_DEMO_INICIAL = process.env.FECHA_DEMO ?? "2026-10-10";
+export const FECHA_INICIAL = process.env.FECHA_SISTEMA ?? "2026-10-10";
 
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 

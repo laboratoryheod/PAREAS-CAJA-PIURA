@@ -27,7 +27,7 @@ function migrar(db: Database.Database) {
   if (!cols.includes("sin_beneficios")) db.exec("ALTER TABLE clientes ADD COLUMN sin_beneficios INTEGER NOT NULL DEFAULT 0");
 }
 
-/** Borra todo y vuelve a sembrar (para resetear la demo). */
+/** Borra todo y vuelve a sembrar (reinicio de la aplicación a su estado inicial). */
 export function resetDb(): Database.Database {
   const db = getDb();
   db.exec("PRAGMA foreign_keys = OFF");

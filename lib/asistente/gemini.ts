@@ -8,7 +8,7 @@ export interface Turno { rol: "usuario" | "asistente"; texto: string }
 /** Hechos verificados por el servidor. El modelo NO calcula montos ni fechas: solo los redacta. */
 function hechos(s: Sit): string {
   const l: string[] = [
-    `Cliente: ${s.cliente.nombre}. Fecha de hoy: ${fechaLarga(s.fechaDemo)}. Estado: ${s.estado}.`,
+    `Cliente: ${s.cliente.nombre}. Fecha de hoy: ${fechaLarga(s.fechaHoy)}. Estado: ${s.estado}.`,
     `Deuda total hoy: ${soles(s.deuda.total)} (cuotas vencidas ${soles(s.deuda.montoVencido)} + interés moratorio ${soles(s.deuda.interesMoratorio)}). Días de atraso: ${s.diasAtraso}.`,
     `Score: ${s.score} puntos, nivel ${s.nivel}. ${s.siguienteNivel.texto}.${s.sinBeneficios ? " Incumplió un plan: sin beneficios ni nueva reprogramación." : ""}`,
   ];

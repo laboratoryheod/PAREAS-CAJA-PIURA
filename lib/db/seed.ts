@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import type Database from "better-sqlite3";
-import { FECHA_DEMO_INICIAL, sumarDias } from "@/lib/fecha";
+import { FECHA_INICIAL, sumarDias } from "@/lib/fecha";
 import { interesMoratorio, validarPropuesta } from "@/lib/reglas";
 import { generarCronograma } from "@/lib/cronograma";
 import { TRIVIA } from "./trivia-data";
@@ -41,7 +41,7 @@ export function seed(db: Database.Database) {
   const rnd = mulberry32(20261010);
   const pick = <T,>(a: T[]) => a[Math.floor(rnd() * a.length)];
   const between = (a: number, b: number) => a + Math.floor(rnd() * (b - a + 1));
-  const hoy = FECHA_DEMO_INICIAL;
+  const hoy = FECHA_INICIAL;
   const ahora = new Date().toISOString();
 
   const insCliente = db.prepare("INSERT INTO clientes (nombres,dni_hash,dni_mascara,telefono,zona,negocio,score,nivel,creado_en) VALUES (?,?,?,?,?,?,?,?,?)");
@@ -50,13 +50,13 @@ export function seed(db: Database.Database) {
   const insMov = db.prepare("INSERT INTO movimientos_score (cliente_id,tipo,puntos,saldo_resultante,detalle,fecha,creado_en) VALUES (?,?,?,?,?,?,?)");
 
   const tx = db.transaction(() => {
-    db.prepare("INSERT OR REPLACE INTO app_estado (clave,valor) VALUES ('fecha_demo',?)").run(hoy);
+    db.prepare("INSERT OR REPLACE INTO app_estado (clave,valor) VALUES ('fecha_sistema',?)").run(hoy);
 
-    const crear = (nombre: string, negocioIdx: number, dias: number, cuota: number, score: number, tea: number, esDemo = false) => {
+    const crear = (nombre: string, negocioIdx: number, dias: number, cuota: number, score: number, tea: number, esPrincipal = false) => {
       const dni = String(between(10000000, 79999999));
       const hash = crypto.createHash("sha256").update(dni).digest("hex");
       const neg = NEGOCIOS[negocioIdx];
-      const zona = esDemo ? "Piura" : pick(ZONAS);
+      const zona = esPrincipal ? "Piura" : pick(ZONAS);
       const tel = "9" + String(between(10000000, 99999999));
       const cid = Number(insCliente.run(nombre, hash, "****" + dni.slice(-4), tel, zona, neg.negocio, score, nivelDe(score), ahora).lastInsertRowid);
       const desembolsado = Math.round(cuota * between(10, 24) / 50) * 50;
@@ -73,7 +73,7 @@ export function seed(db: Database.Database) {
       return cid;
     };
 
-    // Cliente de demo: 12 días de atraso, cuota S/ 320, score 70
+    // Cliente principal de ejemplo: 12 días de atraso, cuota S/ 320, score 70
     crear("Gengis Guerrero", 0, 12, 320, 70, 0.38, true);
 
     // 99 deudores: 60% 1-30 días, 25% 31-60, 15% >60 (59 + 25 + 15 = 99, Gengis ya está en el primer grupo => 60/25/15 con 100)

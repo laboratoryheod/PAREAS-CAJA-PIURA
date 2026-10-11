@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { APP_NOMBRE } from "@/lib/config";
 import { api, soles } from "@/lib/cliente-api";
 import { TextureButton } from "@/components/ui/texture-button";
+import BotonReinicio from "@/components/BotonReinicio";
 
 const ETIQ_ESTADO: Record<string, string> = { en_mora: "En mora", plan_pendiente: "Plan sin 1er pago", reprogramado: "Plan en marcha", incumplido: "Incumplió (sin beneficios)", derivado: "Derivado a gestor", al_dia: "Al día" };
 const COLOR_ESTADO: Record<string, string> = { en_mora: "bg-amber-100", plan_pendiente: "bg-sky-100", reprogramado: "bg-green-100", incumplido: "bg-rose-200", derivado: "bg-red-100", al_dia: "bg-blue-100" };
@@ -108,7 +109,10 @@ export default function BancoDashboard() {
     <main className="max-w-6xl mx-auto pb-16">
       <header className="bg-caja-header text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <span className="font-bold">{APP_NOMBRE} · Panel del gestor</span>
-        <button className="text-sm underline min-h-[44px]" onClick={async () => { await fetch("/api/banco/login", { method: "DELETE" }); router.push("/banco/login"); }}>Salir</button>
+        <div className="flex items-center gap-3">
+          <BotonReinicio claro destino="/banco" />
+          <button className="text-sm underline min-h-[44px]" onClick={async () => { await fetch("/api/banco/login", { method: "DELETE" }); router.push("/banco/login"); }}>Salir</button>
+        </div>
       </header>
 
       <div className="px-4 pt-4 space-y-5">
@@ -190,7 +194,7 @@ const PanelFeed = memo(function PanelFeed({ feed }: { feed: any[] }) {
         {feed.length === 0 && <li className="py-2 text-gray-500">Esperando actividad…</li>}
         {feed.map((e) => (
           <li key={e.id} className="py-2 flex justify-between gap-2">
-            <Link href={`/banco/cliente/${e.clienteId}`} className={e.tipo === "propuesta_enviada" || e.tipo === "pago_simulado" ? "font-semibold" : ""}>{e.texto}</Link>
+            <Link href={`/banco/cliente/${e.clienteId}`} className={e.tipo === "propuesta_enviada" || e.tipo === "pago_registrado" ? "font-semibold" : ""}>{e.texto}</Link>
             <span className="text-xs text-gray-500 whitespace-nowrap">{hace(e.creadoEn)}</span>
           </li>
         ))}

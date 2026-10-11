@@ -1,5 +1,5 @@
 import type { Movimiento } from "@/lib/score";
-import { FECHA_DEMO_INICIAL } from "@/lib/fecha";
+import { FECHA_INICIAL } from "@/lib/fecha";
 import { getDb, resetDb } from "./sqlite";
 import type { CampanaRow, ClienteRow, CreditoRow, CuotaRow, EventoRow, MovimientoRow, PreguntaRow, PropuestaRow, Repo } from "./repo";
 
@@ -10,8 +10,8 @@ const parseEv = (r: any): EventoRow => ({ ...r, detalle: r.detalle ? JSON.parse(
 export function crearRepoSqlite(): Repo {
   const db = () => getDb();
   return {
-    fechaDemo: () => ((db().prepare("SELECT valor FROM app_estado WHERE clave='fecha_demo'").get() as { valor: string } | undefined)?.valor ?? FECHA_DEMO_INICIAL),
-    setFechaDemo: (f) => void db().prepare("INSERT OR REPLACE INTO app_estado (clave,valor) VALUES ('fecha_demo',?)").run(f),
+    fechaHoy: () => ((db().prepare("SELECT valor FROM app_estado WHERE clave='fecha_sistema'").get() as { valor: string } | undefined)?.valor ?? FECHA_INICIAL),
+    setFechaHoy: (f) => void db().prepare("INSERT OR REPLACE INTO app_estado (clave,valor) VALUES ('fecha_sistema',?)").run(f),
     reset: () => void resetDb(),
 
     cliente: (id) => db().prepare("SELECT * FROM clientes WHERE id=?").get(id) as ClienteRow | undefined,

@@ -10,8 +10,8 @@ export async function POST(req: Request) {
   const b = await leerJson(req);
   if (b.usuario !== USUARIO || b.clave !== CLAVE) return NextResponse.json({ error: "Usuario o clave incorrectos" }, { status: 401 });
   const res = NextResponse.json({ ok: true });
-  // ROADMAP: sesión firmada/JWT + 2FA/biometría (passkeys/WebAuthn). Aquí solo un marcador para la demo.
-  res.cookies.set("banco_sesion", "gestor-demo", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 8 });
+  // ROADMAP: sesión firmada/JWT + 2FA/biometría (passkeys/WebAuthn) provistas por la app de Caja Piura.
+  res.cookies.set("banco_sesion", "gestor-activo", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 8 });
   return res;
 }
 

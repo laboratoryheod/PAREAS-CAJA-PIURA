@@ -94,12 +94,12 @@ export default function Landing() {
   }, [reducir]);
 
   return (
-    <main className="min-h-screen overflow-x-clip bg-[#F7F7F7] text-[#1D1D1F]">
+    <main className="min-h-screen overflow-x-clip text-[#1D1D1F]">
       <IslaNav />
 
       {/* ---------- hero ---------- */}
       <section ref={hero} className="relative px-5 pb-10 pt-28 text-center md:pt-32">
-        <motion.p {...ENTRA(0)} className="text-[15px] font-semibold text-[#00529B]">Nuevo · Caja Piura · Reto 14</motion.p>
+        <motion.p {...ENTRA(0)} className="text-[15px] font-semibold text-[#00529B]">Nuevo · Caja Piura</motion.p>
         <motion.h1 {...ENTRA(1)} className="mx-auto mt-2 max-w-4xl text-[48px] font-semibold leading-[1.04] tracking-[-0.045em] md:text-[84px]">
           Ponte al día.<br /><span className="bg-gradient-to-r from-[#0047AB] via-[#0072C6] to-[#F9A825] bg-clip-text text-transparent">Con Pareas.</span>
         </motion.h1>
@@ -215,7 +215,7 @@ export default function Landing() {
       <footer className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-5 pb-32 pt-12 text-center text-[12px] text-[#86868B]">
         <Image src="/pareas/logo.png" alt="Logo PAREAS" width={48} height={48} className="rounded-[12px]" />
         <p className="text-[14px] font-semibold text-[#1D1D1F]">PAREAS</p>
-        <p>Prototipo con datos ficticios para el Reto 14 de Caja Piura.</p>
+        <p>Ponte al Día · Caja Piura</p>
       </footer>
 
       <BarraFlotante visible={barra} />

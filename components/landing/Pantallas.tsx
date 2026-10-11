@@ -1,5 +1,5 @@
 "use client";
-// Pantallas de muestra para los dispositivos de la landing (ilustrativas, con los datos del cliente de demo).
+// Pantallas de muestra para los dispositivos de la landing (ilustrativas, con los datos del cliente de ejemplo).
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { AnilloScore } from "@/components/cliente/inicio/AnilloScore";
@@ -7,7 +7,7 @@ import { FichaApp, IcBurbuja, IcCalculadora, IcLatigo, IcMando, IcTarjeta, IcEnV
 
 export function PantallaCliente() {
   return (
-    <div className="flex h-full flex-col gap-2 overflow-hidden bg-[#F7F7F7] px-3 pb-6 text-[#1C1C1E]">
+    <div className="flex h-full flex-col gap-2 overflow-hidden bg-gradient-to-b from-[#DCE9F8] to-white px-3 pb-6 text-[#1C1C1E]">
       <div>
         <p className="text-[9px] font-semibold uppercase tracking-[0.06em] text-neutral-500">Sábado 10 de octubre</p>
         <p className="text-[20px] font-bold leading-tight tracking-[-0.03em]">Hola, Gengis</p>
@@ -67,7 +67,7 @@ export function PantallaGestor() {
     [IcGestor, "grafito", "Santos Z. pidió hablar con un gestor", "hace 8 min"],
   ] as const;
   return (
-    <div className="grid h-full grid-cols-[1fr_1.1fr] gap-3 bg-[#F7F7F7] p-3 text-[#1C1C1E]">
+    <div className="grid h-full grid-cols-[1fr_1.1fr] gap-3 bg-gradient-to-b from-[#EAF2FC] to-white p-3 text-[#1C1C1E]">
       <div className="space-y-2">
         <p className="text-[13px] font-bold tracking-[-0.02em]">Panel del gestor</p>
         <div className="grid grid-cols-2 gap-1.5">

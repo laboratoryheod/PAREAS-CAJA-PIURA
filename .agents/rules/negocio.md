@@ -1,4 +1,4 @@
-# Reglas de negocio (prototipo)
+# Reglas de negocio
 
 - Tramos (`lib/reglas.ts`): 1–15 días → máx. 2 cuotas, 0% inicial · 16–30 → 3 cuotas, 0% (score ≥ 60) o 10% (< 60) · 31–60 → 4 cuotas, 20% · > 60 → se deriva a gestor con inicial ≥ 30%.
 - Cada cuota ≥ S/ 20. Una sola reprogramación activa por crédito. Si una propuesta no cumple, siempre se ofrece la alternativa más cercana (`contrapropuesta`).

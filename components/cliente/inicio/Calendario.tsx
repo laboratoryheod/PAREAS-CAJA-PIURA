@@ -27,7 +27,7 @@ function marcasDe(s: Situacion): Marca[] {
 }
 
 export function Calendario({ sit, className }: { sit: Situacion; className?: string }) {
-  const [y0, m0] = sit.fechaDemo.split("-").map(Number);
+  const [y0, m0] = sit.fechaHoy.split("-").map(Number);
   const [mes, setMes] = useState({ y: y0, m: m0 - 1 });
   const marcas = useMemo(() => marcasDe(sit), [sit]);
   const porDia = useMemo(() => {
@@ -45,7 +45,7 @@ export function Calendario({ sit, className }: { sit: Situacion; className?: str
   const iso = (d: number) => `${mes.y}-${String(mes.m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   const mover = (k: number) => { setElegido(null); setMes(({ y, m }) => { const t = m + k; return { y: y + Math.floor(t / 12), m: ((t % 12) + 12) % 12 }; }); };
 
-  const proximos = marcas.filter((x) => x.fecha >= sit.fechaDemo && x.tipo !== "pagado").sort((a, b) => a.fecha.localeCompare(b.fecha)).slice(0, 3);
+  const proximos = marcas.filter((x) => x.fecha >= sit.fechaHoy && x.tipo !== "pagado").sort((a, b) => a.fecha.localeCompare(b.fecha)).slice(0, 3);
   const vencidas = marcas.filter((x) => x.tipo === "vencida");
   const lista = elegido ? porDia.get(elegido) ?? [] : [...vencidas, ...proximos].slice(0, 4);
   const fechaCorta = (f: string) => { const [, mm, dd] = f.split("-").map(Number); return `${dd} ${MESES[mm - 1].slice(0, 3).toLowerCase()}`; };
@@ -69,8 +69,8 @@ export function Calendario({ sit, className }: { sit: Situacion; className?: str
           initial={{ opacity: 0, x: 12, filter: "blur(4px)" }} animate={{ opacity: 1, x: 0, filter: "blur(0px)" }} exit={{ opacity: 0, x: -12, filter: "blur(4px)" }} transition={{ type: "spring", bounce: 0, duration: 0.35 }}>
           {Array.from({ length: offset }, (_, i) => <span key={`v${i}`} />)}
           {Array.from({ length: dias }, (_, i) => {
-            const d = i + 1, f = iso(d), ms = porDia.get(f) ?? [], hoy = f === sit.fechaDemo, sel = f === elegido;
-            const enMora = !!inicioMora && f > inicioMora && f <= sit.fechaDemo;
+            const d = i + 1, f = iso(d), ms = porDia.get(f) ?? [], hoy = f === sit.fechaHoy, sel = f === elegido;
+            const enMora = !!inicioMora && f > inicioMora && f <= sit.fechaHoy;
             return (
               <button key={f} onClick={() => setElegido(sel ? null : f)} aria-label={`${d} de ${MESES[mes.m]}${ms.length ? `: ${ms.map((x) => ETIQUETA[x.tipo]).join(", ")}` : ""}`}
                 className={cn("relative mx-auto flex h-11 w-full flex-col items-center justify-center active:scale-[0.96]", enMora && "bg-[#FF3B30]/[0.08]")}>

@@ -8,7 +8,7 @@ import { api, soles, type Situacion } from "@/lib/cliente-api";
 export default function Plan({ sit, onPagar, onVolver }: { sit: Situacion; onPagar: () => void; onVolver: () => void }) {
   const p = sit.propuestaActiva ?? sit.propuestaDerivada;
   const [cobro, setCobro] = useState<any>(null);
-  useEffect(() => { if (sit.propuestaActiva) api(`/api/pago-simulado?clienteId=${sit.cliente.id}`).then(setCobro).catch(() => {}); }, [sit]);
+  useEffect(() => { if (sit.propuestaActiva) api(`/api/pago?clienteId=${sit.cliente.id}`).then(setCobro).catch(() => {}); }, [sit]);
   if (!p) return <TextureButton onClick={onVolver}>Volver</TextureButton>;
   const derivada = p.estado === "derivada";
   const porArrancar = !derivada && !p.iniciado;

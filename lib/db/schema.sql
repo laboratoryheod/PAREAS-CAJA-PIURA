@@ -1,4 +1,4 @@
--- Esquema del prototipo (SQLite). JSON se guarda como TEXT.
+-- Esquema de Ponte al Día (SQLite). JSON se guarda como TEXT.
 CREATE TABLE IF NOT EXISTS app_estado (
   clave TEXT PRIMARY KEY,
   valor TEXT NOT NULL
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS movimientos_score (
   puntos INTEGER NOT NULL,
   saldo_resultante INTEGER NOT NULL,
   detalle TEXT,
-  fecha TEXT NOT NULL,             -- día (fecha de la demo) al que pertenece el movimiento
+  fecha TEXT NOT NULL,             -- día (fecha del sistema) al que pertenece el movimiento
   creado_en TEXT NOT NULL
 );
 
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS trivia_respuestas (
 CREATE TABLE IF NOT EXISTS eventos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   cliente_id INTEGER NOT NULL REFERENCES clientes(id),
-  tipo TEXT NOT NULL,              -- modulo_abierto | simulacion | propuesta_enviada | pago_simulado | chat | trivia_jugada | ayuda_humana
+  tipo TEXT NOT NULL,              -- modulo_abierto | simulacion | propuesta_enviada | pago_registrado | chat | trivia_jugada | ayuda_humana
   detalle TEXT,
   creado_en TEXT NOT NULL
 );

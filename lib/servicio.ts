@@ -34,7 +34,7 @@ function cargar(repo: Repo, clienteId: number) {
 }
 
 function regaloVigente(repo: Repo, clienteId: number): CampanaRow | undefined {
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   return repo.campanasDeCliente(clienteId).find((c) => c.estado === "ofrecida" && c.vence >= hoy);
 }
 
@@ -67,7 +67,7 @@ function estadoDe(cliente: ClienteRow, cuotas: CuotaRow[], propuestas: Propuesta
 
 /** Aplica un movimiento al score y recalcula (auditable en movimientos_score). */
 function moverScore(repo: Repo, clienteId: number, tipo: Movimiento["tipo"], puntos: number, detalle: string) {
-  repo.insertarMovimiento(clienteId, tipo, puntos, detalle, repo.fechaDemo());
+  repo.insertarMovimiento(clienteId, tipo, puntos, detalle, repo.fechaHoy());
   const r = recalcularScore(
     { movimientos: (id) => repo.movimientos(id), actualizarScore: (id, s, n) => repo.actualizarScoreCliente(id, s, n) },
     clienteId,
@@ -83,7 +83,7 @@ const primerNombre = (nombres: string) => nombres.split(" ")[0];
 export function situacion(clienteId: number) {
   const repo = getRepo();
   const { cliente, credito, cuotas, propuestas, regalo } = cargar(repo, clienteId);
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   const cr = reglasDe(credito, cuotas, propuestas);
   const estado = estadoDe(cliente, cuotas, propuestas);
   const sinBeneficios = !!cliente.sin_beneficios;
@@ -104,8 +104,8 @@ export function situacion(clienteId: number) {
   else saludo = `Hola, ${nombre}. Tiene ${pendiente}. Veamos juntos cómo ponerse al día.`;
 
   return {
-    fechaDemo: hoy,
-    fechaDemoLarga: fechaLarga(hoy),
+    fechaHoy: hoy,
+    fechaHoyLarga: fechaLarga(hoy),
     cliente: { id: cliente.id, nombres: cliente.nombres, nombre, dni: cliente.dni_mascara, negocio: cliente.negocio, zona: cliente.zona },
     credito: { id: credito.id, tipo: credito.tipo_credito, cuotaMensual: credito.cuota_mensual, cuotasPendientes: credito.cuotas_pendientes, tea: credito.tea },
     estado,
@@ -183,7 +183,7 @@ export function simular(e: EntradaPlan) {
   const clienteId = e.clienteId ?? (e.creditoId ? clienteDeCredito(repo, e.creditoId) : NaN);
   if (!Number.isFinite(clienteId)) throw new ErrorNegocio("Falta creditoId o clienteId");
   const { cliente, credito, cuotas, propuestas } = cargar(repo, clienteId);
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   const plan = sanear(e, hoy);
   const v = validarPropuesta(reglasDe(credito, cuotas, propuestas), { score: cliente.score, sinBeneficios: !!cliente.sin_beneficios }, plan, hoy);
   // Un solo evento de simulación por minuto, para no inundar el feed del banco mientras mueve los sliders
@@ -191,7 +191,7 @@ export function simular(e: EntradaPlan) {
   if (!ultima || Date.now() - Date.parse(ultima.creado_en) > 60000) repo.insertarEvento(clienteId, "simulacion", { nCuotas: plan.nCuotas, inicial: plan.inicial });
   return {
     plan,
-    fechaDemo: hoy,
+    fechaHoy: hoy,
     cronograma: { ...v.cronograma, pagos: v.cronograma.pagos.map((p) => ({ ...p, fechaLarga: fechaLarga(p.fecha) })) },
     total: v.cronograma.total,
     validacion: {
@@ -223,7 +223,7 @@ export async function registrarPropuesta(e: EntradaPlan & { motivo?: unknown; ac
   const motivo = MOTIVOS.includes(e.motivo as MotivoAtraso) ? (e.motivo as MotivoAtraso) : null;
   if (!motivo) throw new ErrorNegocio("Indíquenos qué ocurrió este mes para continuar");
   const { cliente, credito, cuotas, propuestas } = cargar(repo, clienteId);
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   if (propuestaDerivada(propuestas)) throw new ErrorNegocio("Su propuesta ya fue enviada a un gestor. Pronto se comunicará con usted.");
   const plan = sanear(e, hoy);
   const cr = reglasDe(credito, cuotas, propuestas);
@@ -274,7 +274,7 @@ function preguntasDelDia(repo: Repo, clienteId: number, hoy: string) {
 export function triviaSiguiente(clienteId: number) {
   const repo = getRepo();
   cargar(repo, clienteId);
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   const del = preguntasDelDia(repo, clienteId, hoy);
   const resp = repo.respuestasDelDia(clienteId, hoy);
   const hechas = new Set(resp.map((r) => r.pregunta_id));
@@ -302,7 +302,7 @@ function reaccionTrivia(acerto: boolean, enMora: boolean): string {
 export function responderTrivia(clienteId: number, preguntaId: number, opcion: number) {
   const repo = getRepo();
   const { cuotas } = cargar(repo, clienteId);
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   const del = preguntasDelDia(repo, clienteId, hoy);
   const pregunta = del.find((p) => p.id === preguntaId);
   if (!pregunta) throw new ErrorNegocio("Esa pregunta no es parte de la trivia de hoy");
@@ -341,7 +341,7 @@ export function responderTrivia(clienteId: number, preguntaId: number, opcion: n
   };
 }
 
-// ------------------------------------------------------------------ pagos (simulados)
+// ------------------------------------------------------------------ pagos
 
 function proximoPago(prop: PropuestaRow): PagoPlan | undefined {
   return prop.cronograma.find((p) => !p.pagado);
@@ -366,7 +366,7 @@ export async function cobroPendiente(clienteId: number) {
     monto = r2(cr.montoVencido + cr.interesMoratorio);
     if (monto > 0) { concepto = "deuda"; detalle = "Cuotas vencidas más interés moratorio a la fecha"; }
   }
-  const codigo = `PAD-${cliente.id}-${repo.fechaDemo().replace(/-/g, "")}-${Math.round(monto * 100)}`;
+  const codigo = `PAD-${cliente.id}-${repo.fechaHoy().replace(/-/g, "")}-${Math.round(monto * 100)}`;
   const qr = concepto === "nada" ? null : await QRCode.toDataURL(`PONTEALDIA|${codigo}|${monto.toFixed(2)}|PEN`, { margin: 1, width: 240 });
   return { concepto, monto, detalle, codigo, qr, montoTexto: soles(monto), pagadorSugerido: cliente.nombres };
 }
@@ -377,10 +377,10 @@ function cancelarVencidas(repo: Repo, credito: CreditoRow, cuotas: CuotaRow[]) {
   repo.actualizarDiasCredito(credito.id, 0);
 }
 
-export async function pagoSimulado(clienteId: number, concepto?: string) {
+export async function registrarPago(clienteId: number, concepto?: string) {
   const repo = getRepo();
   const { credito, cuotas, propuestas, regalo } = cargar(repo, clienteId);
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   const cobro = await cobroPendiente(clienteId);
   if (cobro.concepto === "nada") throw new ErrorNegocio("No tiene pagos pendientes. Está al día.");
   if (concepto && concepto !== cobro.concepto) throw new ErrorNegocio("El pago pendiente cambió. Por favor, actualice la pantalla.");
@@ -423,9 +423,9 @@ export async function pagoSimulado(clienteId: number, concepto?: string) {
       mensajes.push(`Cumplió su promesa de pago: +${PARAMS_SCORE.promesaCumplida} puntos.`);
     }
   }
-  repo.insertarEvento(clienteId, "pago_simulado", { concepto: cobro.concepto, monto: cobro.monto });
+  repo.insertarEvento(clienteId, "pago_registrado", { concepto: cobro.concepto, monto: cobro.monto });
   return {
-    comprobante: { codigo: cobro.codigo, monto: cobro.monto, montoTexto: cobro.montoTexto, detalle: cobro.detalle, fecha: hoy, fechaLarga: fechaLarga(hoy), qr: cobro.qr, simulado: true },
+    comprobante: { codigo: cobro.codigo, monto: cobro.monto, montoTexto: cobro.montoTexto, detalle: cobro.detalle, fecha: hoy, fechaLarga: fechaLarga(hoy), qr: cobro.qr },
     mensajes,
     situacion: situacion(clienteId),
   };
@@ -442,20 +442,20 @@ export function otorgarRegalo(clienteId: number, gestor = "gestor") {
   const cr = reglasDe(credito, cuotas, propuestas);
   const base = r2(cr.montoVencido + cr.interesMoratorio);
   if (cr.diasAtraso <= 0 || base <= 0) throw new ErrorNegocio("El cliente no está en mora.");
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   const calc = calcularRegaloSalvador(base, hoy);
   const c = repo.crearCampana({ cliente_id: cliente.id, tipo: "regalo_salvador", base: calc.base, descuento: calc.descuento, monto_hoy: calc.montoHoy, recargos: calc.recargos, estado: "ofrecida", otorgada_por: gestor, vence: sumarDias(hoy, REGALO_SALVADOR.vigenciaDias) });
   repo.insertarEvento(cliente.id, "regalo_otorgado", { montoHoy: calc.montoHoy, descuento: calc.descuento });
   return { ok: true, regalo: presentarRegalo(c) };
 }
 
-// ------------------------------------------------------------------ paso del tiempo (demo)
+// ------------------------------------------------------------------ paso del tiempo (herramienta de pruebas)
 
-/** Avanza un día la fecha de la demo: sube la mora, Pareas da su chicotazo y se evalúan planes y campañas vencidas. */
+/** Avanza un día la fecha del sistema: sube la mora, Pareas da su chicotazo y se evalúan planes y campañas vencidas. */
 export function avanzarDia() {
   const repo = getRepo();
-  const nueva = sumarDias(repo.fechaDemo(), 1);
-  repo.setFechaDemo(nueva);
+  const nueva = sumarDias(repo.fechaHoy(), 1);
+  repo.setFechaHoy(nueva);
   const afectados: number[] = [];
 
   for (const c of repo.todasLasCampanas()) if (c.estado === "ofrecida" && c.vence < nueva) repo.actualizarEstadoCampana(c.id, "vencida");
@@ -488,10 +488,10 @@ export function avanzarDia() {
       if (!yaGolpeado) { moverScore(repo, cliente.id, "chicotazo_mora", chicotazoDelDia(dias), `Día ${dias} en mora`); afectados.push(cliente.id); }
     }
   }
-  return { fechaDemo: nueva, fechaDemoLarga: fechaLarga(nueva), clientesConChicotazo: afectados.length };
+  return { fechaHoy: nueva, fechaHoyLarga: fechaLarga(nueva), clientesConChicotazo: afectados.length };
 }
 
-export function resetearDemo() {
+export function reiniciarApp() {
   getRepo().reset();
   return { ok: true };
 }
@@ -508,7 +508,7 @@ function mensajeEvento(e: EventoRow, nombre: string): string {
       return d.estado === "aceptada"
         ? `${nombre} aceptó pagar en ${d.nCuotas} cuota${d.nCuotas === 1 ? "" : "s"}${d.inicial > 0 ? ` con inicial de ${soles(d.inicial)}` : ""}`
         : `${nombre} dejó una propuesta para el gestor (${d.nCuotas} cuotas)`;
-    case "pago_simulado": return d.concepto === "regalo" ? `${nombre} se regularizó con el Regalo Salvador (${soles(Number(d.monto))})` : `${nombre} pagó ${soles(Number(d.monto))}`;
+    case "pago_registrado": return d.concepto === "regalo" ? `${nombre} se regularizó con el Regalo Salvador (${soles(Number(d.monto))})` : `${nombre} pagó ${soles(Number(d.monto))}`;
     case "ayuda_humana": return `${nombre} pidió hablar con un gestor`;
     case "trivia_jugada": return `${nombre} jugó la trivia`;
     case "chat": return `${nombre} consultó al asistente`;
@@ -528,7 +528,7 @@ export function feed(desde = 0, limite = 30) {
   const repo = getRepo();
   const nombres = new Map(repo.clientes().map((c) => [c.id, c.nombres]));
   const filas = desde > 0 ? repo.eventosDesde(desde, limite) : repo.ultimosEventos(limite).reverse();
-  const importantes = new Set(["propuesta_enviada", "pago_simulado", "ayuda_humana", "modulo_abierto", "simulacion", "promesa_incumplida", "regalo_otorgado"]);
+  const importantes = new Set(["propuesta_enviada", "pago_registrado", "ayuda_humana", "modulo_abierto", "simulacion", "promesa_incumplida", "regalo_otorgado"]);
   const items = filas.filter((e) => importantes.has(e.tipo)).map((e) => ({
     id: e.id, tipo: e.tipo, clienteId: e.cliente_id, creadoEn: e.creado_en,
     texto: mensajeEvento(e, nombreCorto(nombres.get(e.cliente_id) ?? "Cliente")),
@@ -541,7 +541,7 @@ export interface FiltrosCartera { tramo?: string; tipo?: string; estado?: string
 
 export function cartera(f: FiltrosCartera = {}) {
   const repo = getRepo();
-  const hoy = repo.fechaDemo();
+  const hoy = repo.fechaHoy();
   // Una consulta para todos (antes: una por cliente para eventos y otra para campañas)
   const conAyuda = new Set(repo.idsConEvento("ayuda_humana"));
   const conRegalo = new Set(repo.todasLasCampanas().filter((c) => c.estado === "ofrecida" && c.vence >= hoy).map((c) => c.cliente_id));
@@ -640,7 +640,7 @@ export function detalleCliente(clienteId: number) {
     regaloVigente: regalo ? presentarRegalo(regalo) : null,
     campanas: repo.campanasDeCliente(clienteId).map(presentarRegalo),
     puedeRecibirRegalo: !regalo && cr.diasAtraso > 0 && estado !== "reprogramado",
-    vistaPreviaRegalo: !regalo && cr.diasAtraso > 0 ? calcularRegaloSalvador(r2(cr.montoVencido + cr.interesMoratorio), repo.fechaDemo()) : null,
+    vistaPreviaRegalo: !regalo && cr.diasAtraso > 0 ? calcularRegaloSalvador(r2(cr.montoVencido + cr.interesMoratorio), repo.fechaHoy()) : null,
     eventos: repo.eventosDeCliente(clienteId).map((e) => ({ id: e.id, tipo: e.tipo, creadoEn: e.creado_en, texto: mensajeEvento(e, nombreCorto(cliente.nombres)) })),
     historialScore: repo.movimientosDetalle(clienteId, 50),
   };
