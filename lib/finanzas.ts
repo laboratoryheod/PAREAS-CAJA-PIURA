@@ -3,7 +3,9 @@
 
 export type Frecuencia = "unico" | "semanal" | "quincenal" | "mensual";
 export type TipoGasto = "fijo" | "variable";
-export type Ambito = "personal" | "negocio";
+/** A qué parte de la vida del cliente corresponde el gasto. */
+export type Ambito = "personal" | "negocio" | "otros";
+export const AMBITOS: Ambito[] = ["personal", "negocio", "otros"];
 export type Semaforo = "verde" | "amarillo" | "rojo" | "sin_datos";
 
 /** `fecha`: día en que se registró (un ingreso "una sola vez" solo cuenta en ese mes). */
@@ -116,6 +118,7 @@ export function resumenMensual(p: { ingresos: Ingreso[]; gastos: Gasto[]; credit
     porAmbito: {
       personal: r2(delMes.filter((g) => g.ambito === "personal").reduce((s, g) => s + g.monto, 0)),
       negocio: r2(delMes.filter((g) => g.ambito === "negocio").reduce((s, g) => s + g.monto, 0)),
+      otros: r2(delMes.filter((g) => g.ambito === "otros").reduce((s, g) => s + g.monto, 0)),
     },
   };
 }

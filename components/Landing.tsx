@@ -11,6 +11,7 @@ import { AnilloScore } from "@/components/cliente/inicio/AnilloScore";
 import { PantallaCliente, PantallaGestor, IslaChicotazo } from "@/components/landing/Pantallas";
 import { FichaApp, IcBurbuja, IcCalendario, IcEscudo, IcBillete, IcBilletera, IcEnVivo, IcFlecha, IcMando, IcCandado, IcGestor, IcCaja } from "@/components/iconos";
 import { cn } from "@/lib/utils";
+import { APP_NOMBRE } from "@/lib/config";
 
 // Los mockups de iPhone y Mac son pesados: se descargan aparte, con un marcador del mismo tamaño (sin saltos)
 const IPhone17ProMax = dynamic(() => import("@/components/ui/apple-iphone-17-pro").then((m) => m.IPhone17ProMax), {
@@ -37,7 +38,7 @@ function IslaNav() {
         <motion.div layout className="flex items-center gap-3 py-1.5 pl-1.5 pr-1.5">
           <button onClick={() => setAbierta((x) => !x)} aria-expanded={abierta} className="flex min-h-[40px] items-center gap-2 rounded-full pr-2">
             <span className="relative h-9 w-9 overflow-hidden rounded-full bg-white"><Image src="/pareas/logo.png" alt="" fill sizes="36px" className="object-cover" priority /></span>
-            <span className="text-[15px] font-semibold tracking-[-0.01em]">Ponte al Día</span>
+            <span className="text-[15px] font-semibold tracking-[0.02em]">{APP_NOMBRE}</span>
             <span className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold text-white"><motion.span className="h-1.5 w-1.5 rounded-full bg-[#FF453A]" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />En vivo</span>
           </button>
           <Link href="/cliente" className="flex min-h-[40px] items-center rounded-full bg-[#F9A825] text-[#1A1A1A] px-4 text-[14px] font-semibold active:scale-[0.96] transition-transform">Entrar</Link>
@@ -225,7 +226,7 @@ export default function Landing() {
       <footer className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-5 pb-32 pt-12 text-center text-[12px] text-[#86868B]">
         <Image src="/pareas/logo.png" alt="Logo PAREAS" width={48} height={48} className="rounded-[12px]" />
         <p className="text-[14px] font-semibold text-[#1D1D1F]">PAREAS</p>
-        <p>Ponte al Día · Caja Piura</p>
+        <p>{APP_NOMBRE} · Caja Piura</p>
       </footer>
 
       <BarraFlotante visible={barra} />

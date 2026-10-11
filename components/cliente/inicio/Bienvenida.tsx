@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
+import { APP_NOMBRE } from "@/lib/config";
 import { FichaApp, IcLatigo, IcMando, IcTarjeta, IcBillete } from "@/components/iconos";
 
 const REGLAS = [
@@ -26,7 +27,7 @@ export function Bienvenida({ clienteId, nombre }: { clienteId: number; nombre: s
             initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={{ type: "spring", bounce: 0, duration: 0.5 }}>
             <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-neutral-200 md:hidden" />
             <div className="relative mx-auto h-36 w-36"><Image src="/pareas/pareas.png" alt="Pareas" fill sizes="144px" className="object-contain" priority /></div>
-            <p className="text-center text-[12px] font-semibold uppercase tracking-[0.12em] text-[#0072C6]">Ponte al Día</p>
+            <p className="text-center text-[12px] font-semibold uppercase tracking-[0.12em] text-[#0072C6]">{APP_NOMBRE}</p>
             <h2 id="bienvenida-titulo" className="text-center text-[28px] font-bold leading-tight tracking-[-0.03em]">Bienvenido(a), {nombre}</h2>
             <p className="mt-1 text-center text-[15px] text-neutral-600">Soy Pareas. Su puntaje inicia en 70 puntos. Así se ganan y se pierden puntos:</p>
             <ul className="mt-4 space-y-3">

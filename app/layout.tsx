@@ -13,7 +13,7 @@ const plusJakarta = localFont({
   adjustFontFallback: "Arial",
 });
 
-export const metadata: Metadata = { title: `${APP_NOMBRE} · Pareas`, description: "Autogestión dinámica de deuda con Pareas, la iguana de la Caja" };
+export const metadata: Metadata = { title: `${APP_NOMBRE} · Caja Piura`, description: "PAREAS: autogestión de deuda y finanzas con Pareas, la iguana de la Caja Piura" };
 export const viewport: Viewport = { themeColor: "#00529B", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

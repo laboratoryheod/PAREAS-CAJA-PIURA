@@ -56,7 +56,7 @@ function hoja(wb: ExcelJS.Workbook, nombre: string, cols: { titulo: string; anch
 function instrucciones(wb: ExcelJS.Workbook) {
   const ws = wb.addWorksheet("Instrucciones");
   ws.columns = [{ width: 26 }, { width: 70 }];
-  ws.addRow(["Cartera de Ponte al Día · Caja Piura"]).font = { bold: true, size: 14, color: { argb: AZUL } };
+  ws.addRow(["Cartera de PAREAS · Caja Piura"]).font = { bold: true, size: 14, color: { argb: AZUL } };
   ws.addRow([]);
   ws.addRow(["Cómo funciona", "Suba este archivo en Panel del gestor › Cartera › Subir Excel. Los clientes con el mismo ID sistema o DNI se actualizan; los demás se agregan. Nunca se borra a nadie."]);
   ws.addRow(["Clientes que ya pagaron", "Escriba Sí en la columna ¿Ya pagó?: se cancela lo vencido y el cliente queda al día."]);

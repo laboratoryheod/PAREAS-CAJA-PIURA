@@ -65,3 +65,16 @@ describe("blindaje: temas ajenos e inyección no gastan IA", () => {
     expect((await A.conversar(1, "hola")).respuesta).toMatch(/Hola, Gengis/);
   });
 });
+
+describe("asistente: vencimiento de cuota y Modo Rescate sin IA", () => {
+  it("responde cuándo vence la próxima cuota con la fecha del servidor", async () => {
+    const r = await A.conversar(1, "¿Cuándo vence mi cuota?");
+    expect(r.fuente).toBe("faq");
+    expect(r.respuesta).toMatch(/S\/ 320\.00 y vence el \d+ de \w+/);
+    expect(r.respuesta).toMatch(/CHICOTAZO/);
+  });
+  it("explica qué es el Modo Rescate aunque el cliente no tenga uno", async () => {
+    const r = await A.conversar(1, "¿Qué es el Modo Rescate?");
+    expect(r.respuesta).toMatch(/30 % menos/);
+  });
+});

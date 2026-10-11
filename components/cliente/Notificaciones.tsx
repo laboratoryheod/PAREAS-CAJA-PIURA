@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/cliente-api";
-import { MOSTRAR_HERRAMIENTAS_PRUEBA } from "@/lib/config";
+import { APP_NOMBRE, MOSTRAR_HERRAMIENTAS_PRUEBA } from "@/lib/config";
 import { FichaApp, IcCalendario, IcCampana, IcCerrar, IcLatigo, IcMando, IcBillete, type ColorFicha } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 
@@ -138,7 +138,7 @@ export function Notificaciones({ clienteId, firma, onAccion }: { clienteId: numb
               initial={{ y: -90, opacity: 0, scale: 0.96 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: -90, opacity: 0 }} transition={{ type: "spring", bounce: 0.25, duration: 0.55 }}>
               <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-[11px] bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.06)]"><Image src="/pareas/logo.png" alt="" fill sizes="40px" className="object-cover" /></span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-center justify-between text-[12px] text-neutral-500"><span className="font-semibold uppercase tracking-[0.06em]">Ponte al Día</span><span>ahora</span></span>
+                <span className="flex items-center justify-between text-[12px] text-neutral-500"><span className="font-semibold uppercase tracking-[0.06em]">{APP_NOMBRE}</span><span>ahora</span></span>
                 <span className={cn("mt-0.5 flex items-center gap-1.5 text-[15px] font-semibold", actual.tipo === "mora" && "text-[#C9182B]")}>{actual.titulo}</span>
                 <span className="mt-0.5 line-clamp-3 block text-[14px] leading-snug text-neutral-700">{actual.mensaje}</span>
               </span>

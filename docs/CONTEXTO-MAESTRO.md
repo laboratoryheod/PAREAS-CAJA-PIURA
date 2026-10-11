@@ -121,6 +121,15 @@ En la interfaz (`components/cliente/Notificaciones.tsx`):
 - Interfaz pensada para adultos mayores (letra ≥ 16 px, botones ≥ 48 px).
 - "Hablar con un asesor" usa `/api/ayuda`.
 
+### Chatbot de Pareas
+- **Burbuja flotante** con el favicon de Pareas (`components/cliente/ChatPareas.tsx`; reemplazó el botón "+" de ayuda rápida). Abre un panel de chat que comparte la conversación con la pestaña "Pareas" del dock.
+- **Proveedor:** OpenAI si existe `OPENAI_API_KEY` (`lib/asistente/openai.ts`, modelo `OPENAI_MODEL`, por defecto `gpt-4o-mini`, vía Chat Completions con `fetch`); si no, Gemini; si no, el FAQ.
+- La clave se guarda solo en `.env.local`. La que se compartió en el chat debe revocarse y reemplazarse.
+- Reglas y HECHOS del servidor en `lib/asistente/prompt.ts`: deuda, score, Modo Rescate, próxima cuota, canales de pago y campañas.
+- `GET /api/asistente/estado` hace un diagnóstico de la conexión sin mostrar la clave.
+- En este contenedor de la nube `api.openai.com` está bloqueado por la política de red: hay que agregarlo en *Network access → Allowed domains*.
+- Los intentos fallidos con la IA no gastan cupo, y si falla responde el FAQ.
+
 ### Asistente blindado (`lib/asistente/`)
 Los filtros se aplican en este orden; todo lo que se filtra se responde sin IA:
 1. datos sensibles;
@@ -128,7 +137,7 @@ Los filtros se aplican en este orden; todo lo que se filtra se responde sin IA:
 3. intento de sacarlo de su rol;
 4. tema ajeno;
 5. FAQ con cifras del servidor;
-6. Gemini, con cupos: 15 por cliente al día y 300 en total. Lee 300 caracteres del mensaje, usa 4 turnos de historial y responde con 150 tokens como máximo.
+6. IA (OpenAI o Gemini), con cupos: 15 por cliente al día y 300 en total. Lee 300 caracteres del mensaje, usa 4 turnos de historial y responde con 150 tokens como máximo.
 
 Los cupos están en `LIMITES_ASISTENTE` (`guardia.ts`).
 
@@ -246,6 +255,7 @@ Rendimiento:
 9. Se optimizó el rendimiento de `/cliente` y `/banco`.
 10. Se agregaron las notificaciones del cliente y la barra con logo en el gestor.
 11. El gestor pasó a tener sidebar (Resumen, Cartera y Modo Rescate). El gráfico circular reemplazó al feed y llegó el Modo Rescate masivo por puntos. El Modo Rescate quedó en azul y blanco con icono de billete, y se corrigió la superposición de las notificaciones.
+14. Nombre de la app: **PAREAS**. Barra institucional de la Caja (logo a la izquierda, menú ☰, píldoras PAREAS/usuario, línea naranja) en el cliente y el gestor. Mis Finanzas agrega el ámbito "Otros". Chatbot de Pareas con OpenAI y FAQ de vencimiento de cuota y Modo Rescate.
 13. Ronda de QA: 12 bugs corregidos (rutas de prueba abiertas, ingreso único que se repetía, trivia, fechas de gastos, montos con miles, migración `fecha_demo`, Escape, áreas táctiles, textos del asistente y del detalle del gestor).
 12. Modo Rescate masivo con "score mínimo o más". "Mi plan" se reemplazó por **Mis Finanzas**. Excel de cartera para importar y exportar (botones y scripts). La fecha real de Perú reemplazó a la fecha fija. Optimización de carga (fuente local, landing sin blur, statements preparados, índices, polling liviano) y pantalla de carga con Pareas.
 

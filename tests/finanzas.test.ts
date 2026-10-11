@@ -32,9 +32,11 @@ describe("cálculos de Mis Finanzas", () => {
     expect(semaforoDe(1000, -10)).toBe("rojo");
     expect(semaforoDe(0, 0)).toBe("sin_datos");
   });
-  it("separa gastos personales y del negocio", () => {
+  it("separa gastos de la casa, del negocio y otros", () => {
+    const o = resumenMensual({ ingresos: [ing(1000)], gastos: [gas(40, "otros", { ambito: "otros" })], credito: sinCredito, hoy: HOY });
+    expect(o.porAmbito.otros).toBe(40);
     const r = resumenMensual({ ingresos: [ing(1000)], gastos: [gas(100), gas(250, "negocio", { ambito: "negocio" })], credito: sinCredito, hoy: HOY });
-    expect(r.porAmbito).toEqual({ personal: 100, negocio: 250 });
+    expect(r.porAmbito).toEqual({ personal: 100, negocio: 250, otros: 0 });
   });
   it("un ingreso 'una sola vez' cuenta solo en su mes; los que se repiten, desde su mes", () => {
     expect(ingresoEnMes({ frecuencia: "unico", fecha: "2026-10-05" }, "2026-10")).toBe(true);

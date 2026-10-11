@@ -5,8 +5,8 @@ export const LIMITES_ASISTENTE = {
   maxTurnosHistorial: 4, // contexto que viaja a la IA
   maxCaracteresTurno: 300,
   maxTokensRespuesta: 150,
-  iaPorClientePorDia: Number(process.env.GEMINI_MAX_CLIENTE_DIA ?? 15),
-  iaGlobalPorDia: Number(process.env.GEMINI_MAX_DIA ?? 300),
+  iaPorClientePorDia: Number(process.env.IA_MAX_CLIENTE_DIA ?? process.env.GEMINI_MAX_CLIENTE_DIA ?? 15),
+  iaGlobalPorDia: Number(process.env.IA_MAX_DIA ?? process.env.GEMINI_MAX_DIA ?? 300),
 };
 
 export const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();

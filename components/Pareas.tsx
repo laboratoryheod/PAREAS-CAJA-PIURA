@@ -46,7 +46,7 @@ function Figura({ humor, tam }: { humor: HumorPareas; tam: number }) {
         <motion.span key={pos} className={`absolute ${pos} z-10 text-[#FF9F0A]`} animate={{ opacity: [0, 1, 0], scale: [0.4, 1.1, 0.4] }} transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.5 }}><IcChispa tam={16} /></motion.span>
       ))}
       <motion.div className="relative z-[1] h-full w-full origin-bottom" {...anim}>
-        <Image src="/pareas/pareas.png" alt="Pareas, la iguana de Ponte al Día" fill sizes={`${tam}px`} className="object-contain drop-shadow-[0_8px_12px_rgba(0,40,90,0.25)]" priority={tam > 100} />
+        <Image src="/pareas/pareas.png" alt="Pareas, la iguana de la Caja" fill sizes={`${tam}px`} className="object-contain drop-shadow-[0_8px_12px_rgba(0,40,90,0.25)]" priority={tam > 100} />
       </motion.div>
     </div>
   );

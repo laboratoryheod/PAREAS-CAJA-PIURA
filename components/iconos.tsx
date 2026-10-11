@@ -1,4 +1,4 @@
-// ICONOS PROPIOS de Ponte al Día con Pareas — glifos dibujados para el proyecto (estilo SF Symbols:
+// ICONOS PROPIOS de PAREAS (Caja Piura) — glifos dibujados para el proyecto (estilo SF Symbols:
 // trazo redondeado 1.8 en una grilla de 24). Sin emojis ni librerías de iconos genéricas.
 import type { SVGProps } from "react";
 import { cn } from "@/lib/utils";
@@ -64,6 +64,10 @@ export const IcEstrella = (p: P) => <Glifo {...p}><path d="m12 3.8 2.5 5.1 5.6.8
 export const IcCorazon = (p: P) => <Glifo {...p}><path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10Z" /></Glifo>;
 export const IcLapiz = (p: P) => <Glifo {...p}><path d="M4.5 19.5 5.3 15.8 15.6 5.5a1.9 1.9 0 0 1 2.7 0l.2.2a1.9 1.9 0 0 1 0 2.7L8.2 18.7Z" /><path d="m14 7.1 2.9 2.9" /></Glifo>;
 export const IcBasura = (p: P) => <Glifo {...p}><path d="M4.5 6.8h15M9.5 6.8V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.8" /><path d="M6.5 6.8 7.4 19a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.9-12.2M10.2 10.5v6M13.8 10.5v6" /></Glifo>;
+/** Menú (tres líneas). */
+export const IcMenu = (p: P) => <Glifo {...p}><path d="M4 7h16M4 12h16M4 17h16" strokeWidth={2.2} /></Glifo>;
+/** Usuario (silueta). */
+export const IcUsuario = (p: P) => <Glifo {...p}><circle cx="12" cy="8.5" r="3.8" /><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6" /></Glifo>;
 export const IcDescuento = (p: P) => <Glifo {...p}><path d="M3.8 12.6V5.4a1.6 1.6 0 0 1 1.6-1.6h7.2l7.8 7.8a1.6 1.6 0 0 1 0 2.3l-6.6 6.6a1.6 1.6 0 0 1-2.3 0Z" /><circle cx="8.3" cy="8.3" r="1.3" /><path d="m11 15.2 4.2-4.2" /></Glifo>;
 
 /** Pareas en silueta (cabeza de iguana con cresta) para avatares pequeños. */

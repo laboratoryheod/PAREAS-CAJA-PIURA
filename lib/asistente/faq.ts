@@ -1,10 +1,10 @@
 // Respuestas sin IA. Los montos y fechas SIEMPRE vienen de situacion() en el servidor.
-import { soles } from "@/lib/fecha";
-import type { situacion } from "@/lib/servicio";
+import { fechaLarga, soles } from "@/lib/fecha";
+import type { cuotaParaFinanzas, situacion } from "@/lib/servicio";
 import { norm } from "./guardia";
 
 type Sit = ReturnType<typeof situacion>;
-export interface RespuestaAsistente { respuesta: string; derivar: boolean; fuente: "faq" | "gemini" | "filtro" }
+export interface RespuestaAsistente { respuesta: string; derivar: boolean; fuente: "faq" | "gemini" | "openai" | "filtro" }
 
 const tiene = (t: string, ...palabras: string[]) => palabras.some((p) => t.includes(p));
 
@@ -25,7 +25,7 @@ export const RESPUESTA_DERIVAR = "Lo entiendo. Ya avisé a un gestor para que se
  * Intenta responder con plantillas. Devuelve null si no reconoce la pregunta
  * (solo entonces, y si está en tema, se gasta IA).
  */
-export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
+export function respuestaFaq(texto: string, s: Sit, extra?: { credito?: ReturnType<typeof cuotaParaFinanzas> }): RespuestaAsistente | null {
   const t = norm(texto);
   const ok = (respuesta: string): RespuestaAsistente => ({ respuesta, derivar: false, fuente: "faq" });
 
@@ -35,9 +35,16 @@ export function respuestaFaq(texto: string, s: Sit): RespuestaAsistente | null {
       : "No puedo ofrecer condonaciones ni cambios de tasa. Si su dinero no alcanza, un asesor de la Caja puede revisar su caso. ¿Desea que lo contacte?");
 
   if (tiene(t, "regalo", "campana", "salvador", "rescate", "descuento")) {
-    if (!s.regalo) return ok("Las campañas como el Modo Rescate las activa la Caja según cada caso. Si se le otorga una, la verá aquí.");
+    if (!s.regalo) return ok("El Modo Rescate es una campaña de la Caja: paga hoy un 30 % menos de lo vencido y recupera ese monto con un 10 % más en sus 3 cuotas siguientes; vence a los 7 días. La Caja lo activa según cada caso; si se le otorga, le llegará un aviso y lo verá en su inicio.");
     const r = s.regalo;
     return ok(`Tiene un Modo Rescate: paga ${soles(r.montoHoy)} hoy (${r.descuentoPct}% menos) y el descuento se recupera con ${r.recargoPct}% más en sus 3 cuotas siguientes. Vence el ${r.venceLargo}.`);
+  }
+
+  if (tiene(t, "vence", "vencimiento", "proxima cuota", "siguiente cuota", "cuando pago", "cuando tengo que pagar", "fecha de pago", "mi cuota")) {
+    const c = extra?.credito?.proxima;
+    const atraso = s.diasAtraso > 0 ? ` Además tiene ${soles(s.deuda.total)} vencidos que conviene pagar hoy para detener el CHICOTAZO.` : "";
+    if (c) return ok(`Su próxima ${c.concepto === "plan" ? "cuota del plan" : "cuota"} es de ${soles(c.monto)} y vence el ${fechaLarga(c.fecha)} (${c.diasFaltan === 0 ? "hoy" : c.diasFaltan === 1 ? "mañana" : `faltan ${c.diasFaltan} días`}).${atraso}`);
+    if (s.diasAtraso > 0) return ok(`No tiene cuotas próximas registradas, pero sí ${soles(s.deuda.total)} vencidos. Puede pagarlos desde “Pagar hoy”.`);
   }
 
   if (tiene(t, "cuanto debo", "mi deuda", "cuanto es", "saldo", "cuanto pago", "monto", "cuanto tengo que")) {

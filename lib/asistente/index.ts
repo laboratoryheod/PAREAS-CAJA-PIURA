@@ -1,7 +1,9 @@
 import { getRepo } from "@/lib/db/repo";
-import { situacion, pedirAyudaHumana } from "@/lib/servicio";
+import { cuotaParaFinanzas, situacion, pedirAyudaHumana } from "@/lib/servicio";
 import { mencionaDatosSensibles, pideAyudaHumana, RESPUESTA_DERIVAR, RESPUESTA_SENSIBLE, respuestaFaq, respuestaGenerica, type RespuestaAsistente } from "./faq";
 import { consultarGemini, type Turno } from "./gemini";
+import { consultarOpenAI } from "./openai";
+import { hechos } from "./prompt";
 import { clasificar, LIMITES_ASISTENTE, RESPUESTA_AJENO, RESPUESTA_CUPO, RESPUESTA_INYECCION } from "./guardia";
 
 /**
@@ -25,7 +27,8 @@ export async function conversar(clienteId: number, mensaje: string, historial: T
   if (clase === "inyeccion") return registrar({ respuesta: RESPUESTA_INYECCION, derivar: false, fuente: "filtro" });
   if (clase === "ajeno") return registrar({ respuesta: RESPUESTA_AJENO, derivar: false, fuente: "filtro" });
 
-  const faq = respuestaFaq(texto || "hola", s);
+  const credito = cuotaParaFinanzas(clienteId);
+  const faq = respuestaFaq(texto || "hola", s, { credito });
   if (faq) return registrar(faq);
   if (clase !== "en_tema") return registrar(respuestaGenerica(s));
 
@@ -36,7 +39,14 @@ export async function conversar(clienteId: number, mensaje: string, historial: T
     return registrar({ ...respuestaGenerica(s), respuesta: RESPUESTA_CUPO });
   }
   const limpio = historial.slice(-LIMITES_ASISTENTE.maxTurnosHistorial).map((t) => ({ ...t, texto: t.texto.slice(0, LIMITES_ASISTENTE.maxCaracteresTurno) }));
-  const ia = await consultarGemini(s, texto, limpio);
-  if (ia) return registrar({ respuesta: ia, derivar: false, fuente: "gemini" });
+  // Proveedor de IA: OpenAI si hay OPENAI_API_KEY; si no, Gemini si hay GEMINI_API_KEY; si no, FAQ
+  const contexto = hechos(s, { credito });
+  if (process.env.OPENAI_API_KEY) {
+    const ia = await consultarOpenAI(s, texto, limpio, contexto);
+    if (ia) return registrar({ respuesta: ia, derivar: false, fuente: "openai" });
+  } else {
+    const ia = await consultarGemini(s, texto, limpio, contexto);
+    if (ia) return registrar({ respuesta: ia, derivar: false, fuente: "gemini" });
+  }
   return registrar(respuestaGenerica(s));
 }

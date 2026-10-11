@@ -111,7 +111,7 @@ export function crearRepoSqlite(): Repo {
     eventosDeCliente: (cid) => (prep("SELECT * FROM eventos WHERE cliente_id=? ORDER BY id DESC").all(cid) as any[]).map(parseEv),
     contarEventos: (tipo) => (prep("SELECT COUNT(*) c FROM eventos WHERE tipo=?").get(tipo) as { c: number }).c,
     contarChatsIA: (desde, cid) => {
-      const sql = "SELECT COUNT(*) c FROM eventos WHERE tipo='chat' AND json_extract(detalle,'$.fuente')='gemini' AND creado_en>=?";
+      const sql = "SELECT COUNT(*) c FROM eventos WHERE tipo='chat' AND json_extract(detalle,'$.fuente') IN ('gemini','openai') AND creado_en>=?";
       const r = (cid ? prep(sql + " AND cliente_id=?").get(desde, cid) : prep(sql).get(desde)) as { c: number };
       return r.c;
     },

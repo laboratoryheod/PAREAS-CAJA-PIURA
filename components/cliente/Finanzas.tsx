@@ -17,7 +17,8 @@ type Datos = ReturnType<typeof finanzasCliente>;
 type Categoria = Datos["categorias"][number];
 type Gasto = Datos["gastos"][number];
 type Ingreso = Datos["ingresos"][number];
-type Filtro = "todos" | "personal" | "negocio";
+type Filtro = "todos" | "personal" | "negocio" | "otros";
+const AMBITO_TEXTO = { personal: "Casa", negocio: "Negocio", otros: "Otros" } as const;
 
 const ICONOS = { canasta: IcCanasta, casa: IcInicio, bus: IcBus, salud: IcSalud, libro: IcLibro, tienda: IcTienda, tarjeta: IcTarjeta, etiqueta: IcEtiqueta, estrella: IcEstrella, corazon: IcCorazon } as const;
 const COLORES_PROPIOS = ["#D6247A", "#FF7A59", "#0FA5A0", "#2F8CFF", "#7B2FF7", "#1DA851"];
@@ -178,12 +179,12 @@ export default function Finanzas({ clienteId, onVolver, onPagar, onAsistente }: 
           <h2 className="text-[22px] font-bold">Mis gastos</h2>
           <button onClick={() => setHoja({ tipo: "etiqueta" })} className="flex min-h-[48px] items-center gap-2 rounded-2xl px-3 text-[16px] font-semibold text-caja hover:bg-[#EAF2FC]"><IcEtiqueta tam={20} />Nueva etiqueta</button>
         </div>
-        <div className="mt-2 grid grid-cols-3 gap-1 rounded-2xl bg-neutral-100 p-1" role="group" aria-label="Ver gastos">
-          {([["todos", "Todos"], ["personal", "De mi casa"], ["negocio", "Del negocio"]] as [Filtro, string][]).map(([v, t]) => (
+        <div className="mt-2 grid grid-cols-2 gap-1 rounded-2xl bg-neutral-100 p-1 sm:grid-cols-4" role="group" aria-label="Ver gastos">
+          {([["todos", "Todos"], ["personal", "De mi casa"], ["negocio", "Del negocio"], ["otros", "Otros"]] as [Filtro, string][]).map(([v, t]) => (
             <button key={v} onClick={() => setFiltro(v)} aria-pressed={filtro === v} className={cn("min-h-[48px] rounded-xl text-[16px] font-semibold transition-colors", filtro === v ? "bg-white text-caja shadow-sm" : "text-neutral-600")}>{t}</button>
           ))}
         </div>
-        <p className="mt-2 text-[15px] text-neutral-600">De mi casa: {soles(r.porAmbito.personal)} · Del negocio: {soles(r.porAmbito.negocio)}</p>
+        <p className="mt-2 text-[15px] text-neutral-600">De mi casa: {soles(r.porAmbito.personal)} · Del negocio: {soles(r.porAmbito.negocio)}{r.porAmbito.otros > 0 ? ` · Otros: ${soles(r.porAmbito.otros)}` : ""}</p>
         {grupos.length === 0 && <p className="mt-4 text-[17px] text-neutral-600">Aún no tiene gastos aquí este mes. Toque “Agregar gasto” para empezar.</p>}
         <div className="mt-3 space-y-4">
           {grupos.map(({ c, lista }) => (
@@ -197,7 +198,7 @@ export default function Finanzas({ clienteId, onVolver, onPagar, onAsistente }: 
                   <li key={g.id} className="flex flex-wrap items-center gap-2 px-3 py-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-[17px] font-semibold">{g.nombre}</p>
-                      <p className="text-[15px] text-neutral-600">{g.tipo === "fijo" ? "Fijo, cada mes" : g.fechaLarga} · {g.ambito === "negocio" ? "Negocio" : "Casa"}</p>
+                      <p className="text-[15px] text-neutral-600">{g.tipo === "fijo" ? "Fijo, cada mes" : g.fechaLarga} · {AMBITO_TEXTO[g.ambito] ?? "Casa"}</p>
                     </div>
                     <p className="text-[18px] font-bold tabular-nums">{soles(g.monto)}</p>
                     <div className="flex w-full justify-end gap-2 sm:w-auto">
@@ -314,9 +315,9 @@ function Campo({ etiqueta, children, ayuda }: { etiqueta: string; children: Reac
 }
 const claseInput = "min-h-[56px] w-full rounded-2xl border-2 border-caja-borde bg-white px-4 text-[18px] focus:border-caja-medio focus:outline-none";
 
-function Opciones<T extends string>({ valor, onChange, opciones, etiqueta }: { valor: T; onChange: (v: T) => void; opciones: readonly (readonly [T, string])[]; etiqueta: string }) {
+function Opciones<T extends string>({ valor, onChange, opciones, etiqueta, columnas = 2 }: { valor: T; onChange: (v: T) => void; opciones: readonly (readonly [T, string])[]; etiqueta: string; columnas?: 2 | 3 }) {
   return (
-    <div role="radiogroup" aria-label={etiqueta} className="grid grid-cols-2 gap-2">
+    <div role="radiogroup" aria-label={etiqueta} className={cn("grid gap-2", columnas === 3 ? "grid-cols-3" : "grid-cols-2")}>
       {opciones.map(([v, t]) => (
         <button key={v} type="button" role="radio" aria-checked={valor === v} onClick={() => onChange(v)}
           className={cn("min-h-[52px] rounded-2xl border-2 px-3 text-[17px] font-semibold", valor === v ? "border-caja bg-[#EAF2FC] text-caja" : "border-caja-borde bg-white text-neutral-700")}>{t}</button>
@@ -346,7 +347,7 @@ function FormGasto({ categorias, hoy, gasto, onGuardar, onNuevaEtiqueta }: { cat
   const [categoria, setCategoria] = useState(gasto?.categoria ?? "");
   const [fecha, setFecha] = useState(gasto?.fecha ?? hoy);
   const [tipo, setTipo] = useState<"fijo" | "variable">(gasto?.tipo ?? "variable");
-  const [ambito, setAmbito] = useState<"personal" | "negocio">(gasto?.ambito ?? "personal");
+  const [ambito, setAmbito] = useState<"personal" | "negocio" | "otros">(gasto?.ambito ?? "personal");
   const { error, cargando, enviar } = usarEnvio(onGuardar);
   return (
     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); enviar({ id: gasto?.id, nombre, monto, categoria, fecha, tipo, ambito }); }}>
@@ -366,7 +367,7 @@ function FormGasto({ categorias, hoy, gasto, onGuardar, onNuevaEtiqueta }: { cat
       </fieldset>
       <Campo etiqueta="¿Cuándo?"><input type="date" value={fecha} max={hoy} onChange={(e) => setFecha(e.target.value)} className={claseInput} /></Campo>
       <div><p className="mb-1.5 text-[17px] font-semibold">¿Se repite cada mes?</p><Opciones etiqueta="Tipo de gasto" valor={tipo} onChange={setTipo} opciones={[["variable", "No, fue esta vez"], ["fijo", "Sí, es fijo"]]} /></div>
-      <div><p className="mb-1.5 text-[17px] font-semibold">¿Es de su casa o de su negocio?</p><Opciones etiqueta="Gasto personal o del negocio" valor={ambito} onChange={setAmbito} opciones={[["personal", "De mi casa"], ["negocio", "Del negocio"]]} /></div>
+      <div><p className="mb-1.5 text-[17px] font-semibold">¿Es de su casa, de su negocio u otro?</p><Opciones etiqueta="Gasto de la casa, del negocio u otro" valor={ambito} onChange={setAmbito} columnas={3} opciones={[["personal", "De mi casa"], ["negocio", "Del negocio"], ["otros", "Otros"]]} /></div>
       <MensajeError texto={error} />
       <Guardar cargando={cargando} />
     </form>

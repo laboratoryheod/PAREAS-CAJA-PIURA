@@ -19,7 +19,7 @@ Pruebas de calidad de punta a punta (API, interfaz y recorrido completo): ver [`
 - La base SQLite (`data/ponte.db`) se crea y se llena sola la primera vez (100 deudores, trivia, actividad previa).
 - `npm run seed` la recrea de cero.
 - **Cartera en Excel** (también con botones en Panel del gestor › Cartera): `npm run plantilla:xlsx` crea `data/plantilla-cartera.xlsx` · `npm run importar:xlsx -- archivo.xlsx` agrega clientes nuevos y actualiza los existentes por ID sistema o DNI (nunca borra; "¿Ya pagó? = Sí" registra el pago) · `npm run export:xlsx` descarga la cartera actual a `data/cartera.xlsx`.
-- Opcional: copie `.env.example` a `.env.local` y ponga `GEMINI_API_KEY` para usar Gemini; sin clave el asistente responde con FAQ local.
+- **Chatbot de Pareas** (burbuja flotante con su favicon): copie `.env.example` a `.env.local` y ponga `OPENAI_API_KEY` (u opcionalmente `GEMINI_API_KEY`). Sin clave responde con los filtros y el FAQ local. `GET /api/asistente/estado` dice qué proveedor está activo y si OpenAI responde. **Nunca suba claves al repositorio** (`.env.local` está en `.gitignore`).
 - Panel del banco: usuario `gestor` · clave `caja2026`.
 - Cliente de ejemplo: **Gengis Guerrero** (`/cliente`, id 1): cuota S/ 320, 12 días de atraso el día en que se crea la base, score 70, con ingresos y gastos de ejemplo en Mis Finanzas. Otros: `/cliente?id=N`.
 - **Fecha del sistema: la fecha real de Perú** (America/Lima). Cada día que pasa se procesan solos la mora, el interés y el CHICOTAZO (una vez por día, aunque nadie abra la app ese día). `FECHA_SISTEMA=AAAA-MM-DD` la fija (lo usan las pruebas automáticas) y "Pasar un día" la adelanta.

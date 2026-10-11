@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import QRCode from "qrcode";
 import { getRepo as repoBase, type CampanaRow, type ClienteRow, type CreditoRow, type CuotaRow, type EventoRow, type PagoPlan, type PropuestaRow, type Repo } from "./db/repo";
 import { diferenciaDias, fechaLarga, soles, sumarDias, sumarMeses } from "./fecha";
-import { CATEGORIAS_BASE, COLORES_ETIQUETA, DatoInvalido, FRECUENCIAS, ICONOS_ETIQUETA, ingresoEnMes, resumenMensual, validarFecha, validarMonto, validarNombre, type Categoria, type CuotaCredito, type IconoCategoria } from "./finanzas";
+import { AMBITOS, CATEGORIAS_BASE, COLORES_ETIQUETA, DatoInvalido, FRECUENCIAS, ICONOS_ETIQUETA, ingresoEnMes, resumenMensual, validarFecha, validarMonto, validarNombre, type Categoria, type CuotaCredito, type IconoCategoria } from "./finanzas";
 import { consejosFinanzas } from "./consejos-finanzas";
 import { calcularRegaloSalvador, interesMoratorio, limitesPara, REGALO_SALVADOR, validarPropuesta, type CreditoReglas, type PropuestaPlan } from "./reglas";
 import { APELATIVO } from "./config";
@@ -891,7 +891,7 @@ export function accionFinanzas(clienteId: number, accion: AccionFinanzas, d: Rec
       case "guardar_gasto": {
         if (!categoriasDe(repo, clienteId).some((c) => c.id === d.categoria)) throw new DatoInvalido("Elija una categoría para el gasto.");
         if (d.tipo !== "fijo" && d.tipo !== "variable") throw new DatoInvalido("Indique si el gasto es fijo o variable.");
-        if (d.ambito !== "personal" && d.ambito !== "negocio") throw new DatoInvalido("Indique si el gasto es personal o del negocio.");
+        if (!AMBITOS.includes(d.ambito)) throw new DatoInvalido("Indique si el gasto es de su casa, de su negocio u otro.");
         if (id && !repo.gastos(clienteId).some((x) => x.id === id)) throw new DatoInvalido("No encontramos ese gasto.");
         repo.guardarGasto(clienteId, { id, nombre: validarNombre(d.nombre), monto: validarMonto(d.monto), categoria: d.categoria, fecha: d.fecha ? validarFecha(d.fecha, repo.fechaHoy()) : repo.fechaHoy(), tipo: d.tipo, ambito: d.ambito });
         break;

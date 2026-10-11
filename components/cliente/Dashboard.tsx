@@ -8,8 +8,10 @@ import { usarPolling } from "@/lib/usar-polling";
 import { MOSTRAR_HERRAMIENTAS_PRUEBA } from "@/lib/config";
 import BotonReinicio, { reiniciarTodo } from "@/components/BotonReinicio";
 import { Dock, DockCard } from "@/components/ui/dock";
-import { FamilyButton } from "@/components/ui/family-button";
-import { IcInicio, IcTarjeta, IcBilletera, IcMando, IcBurbuja, IcGestor, IcQR, IcReloj, IcReiniciar } from "@/components/iconos";
+import { IcInicio, IcTarjeta, IcBilletera, IcMando, IcBurbuja, IcReloj, IcReiniciar, IcAtras } from "@/components/iconos";
+import { BarraCaja } from "@/components/BarraCaja";
+import { APP_NOMBRE } from "@/lib/config";
+import { BurbujaChat, usarConversacion } from "./ChatPareas";
 import dynamic from "next/dynamic";
 import { Inicio } from "./inicio/Inicio";
 import { PantallaCarga } from "@/components/PantallaCarga";
@@ -36,7 +38,9 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
   const [progreso, setProgreso] = useState<ProgresoTrivia | null>(inicial.progreso);
   const [vista, setVista] = useState<Vista>(vistaInicial);
   const [error, setError] = useState("");
-  const [aviso, setAviso] = useState("");
+  const [menu, setMenu] = useState(false);
+  const [chatAbierto, setChatAbierto] = useState(false);
+  const chat = usarConversacion(inicial.sit);
 
   const refrescarSituacion = useCallback(async () => { const s = await api<Situacion>(`/api/cliente/${clienteId}`); setSit(s); return s; }, [clienteId]);
   const refrescarTrivia = useCallback(async () => { const t = await api<{ progreso: ProgresoTrivia }>(`/api/trivia?clienteId=${clienteId}`); setProgreso(t.progreso); }, [clienteId]);
@@ -60,12 +64,6 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
   const [y, m, d] = sit.fechaHoy.split("-").map(Number);
   const dia = DIAS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
 
-  async function pedirGestor() {
-    try { const r = await api<{ mensaje: string }>("/api/ayuda", { clienteId, nota: "Pidió ayuda desde el botón flotante" }); setAviso(r.mensaje); }
-    catch (e: any) { setAviso(e.message); }
-    setTimeout(() => setAviso(""), 5000);
-  }
-
   const ITEMS: { v: Vista; e: string; I: typeof IcInicio; ok: boolean }[] = [
     { v: "inicio", e: "Inicio", I: IcInicio, ok: true },
     { v: "pagar", e: "Pagar", I: IcTarjeta, ok: hayDeuda || !!sit.propuestaActiva },
@@ -73,24 +71,35 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
     { v: "trivia", e: "Juego", I: IcMando, ok: true },
     { v: "asistente", e: "Pareas", I: IcBurbuja, ok: true },
   ];
+  const irDesdeMenu = (v: Vista) => { setMenu(false); if (v === "asistente") setChatAbierto(true); else irA(v); };
 
   return (
     <main className="min-h-screen pb-36 text-[#1C1C1E]">
-      {/* barra superior translúcida estilo iOS */}
-      <header className="sticky top-0 z-30 bg-[#00529B] text-white shadow-[0_1px_0_rgba(0,0,0,0.08)]">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2">
-          <Link href="/" className="flex min-h-[44px] items-center gap-2 text-[17px] font-semibold tracking-[-0.01em]">
-            <span className="relative h-[34px] w-[34px] overflow-hidden rounded-[9px] bg-white"><Image src="/pareas/pareas.png" alt="" fill sizes="34px" className="object-contain p-0.5" /></span><span className="max-sm:hidden">Ponte al Día</span>
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Notificaciones clienteId={clienteId} firma={`${sit.fechaHoy}|${sit.estado}|${sit.score}|${sit.regalo?.id ?? 0}|${sit.propuestaActiva?.pagos.filter((x) => x.pagado).length ?? -1}|${progreso?.respondidas ?? 0}`} onAccion={(a) => irA(a)} />
-            <BotonReinicio claro />
-            <Image src="/caja/logo-caja-piura-blanco.png" alt="Caja Piura" width={110} height={26} className="h-[24px] w-auto max-[400px]:hidden" priority />
-            <span className="h-6 w-px max-[400px]:hidden bg-white/25" aria-hidden />
-            <Link href="/" className="min-h-[44px] flex items-center text-[17px] text-white/90 hover:text-white">Salir</Link>
-          </div>
-        </div>
-      </header>
+      {/* Barra superior con la distribución de Caja Piura: logo y menú a la izquierda; PAREAS y el usuario a la derecha */}
+      <BarraCaja pagina={APP_NOMBRE} usuario={sit.cliente.nombre} onMenu={() => setMenu((x) => !x)} menuAbierto={menu} ancho="max-w-5xl">
+        <Notificaciones clienteId={clienteId} firma={`${sit.fechaHoy}|${sit.estado}|${sit.score}|${sit.regalo?.id ?? 0}|${sit.propuestaActiva?.pagos.filter((x) => x.pagado).length ?? -1}|${progreso?.respondidas ?? 0}`} onAccion={(a) => irA(a)} />
+        <BotonReinicio claro />
+        <Link href="/" className="flex min-h-[44px] items-center px-1 text-[16px] text-white/90 hover:text-white max-sm:hidden">Salir</Link>
+      </BarraCaja>
+
+      {/* Menú de secciones (botón ☰) */}
+      <AnimatePresence>
+        {menu && (
+          <>
+            <motion.div className="fixed inset-0 z-[28] bg-black/20" onClick={() => setMenu(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+            <motion.nav aria-label="Menú" className="fixed left-3 top-[70px] z-[29] w-[min(300px,calc(100vw-24px))] overflow-hidden rounded-[22px] bg-white p-2 shadow-[0_20px_50px_rgba(0,30,80,0.3)] md:left-[max(12px,calc(50%-500px))]"
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              onKeyDown={(e) => { if (e.key === "Escape") setMenu(false); }}>
+              {ITEMS.filter((x) => x.ok).map((x) => (
+                <button key={x.e} onClick={() => irDesdeMenu(x.v)} className={`flex min-h-[48px] w-full items-center gap-3 rounded-xl px-3 text-left text-[16px] font-semibold ${vista === x.v ? "bg-[#EAF2FC] text-caja" : "text-[#1C1C1E] hover:bg-black/[0.04]"}`}>
+                  <x.I tam={20} className="text-caja-medio" />{x.v === "asistente" ? "Chat con Pareas" : x.v === "trivia" ? "Juego del día" : x.v === "finanzas" ? "Mis Finanzas" : x.e}
+                </button>
+              ))}
+              <Link href="/" className="mt-1 flex min-h-[48px] items-center gap-3 rounded-xl border-t border-black/5 px-3 text-[16px] font-semibold text-neutral-600 hover:bg-black/[0.04]"><IcAtras tam={20} />Salir</Link>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
 
       <div className="mx-auto max-w-5xl px-4 pt-3">
         <AnimatePresence mode="wait" initial={false}>
@@ -116,7 +125,7 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
                 {vista === "finanzas" && <Finanzas sit={sit} clienteId={clienteId} onVolver={volver} onPagar={() => irA("pagar")} onAsistente={() => irA("asistente")} />}
                 {vista === "pagar" && <Pagar sit={sit} onPagado={setSit} onVolver={volver} />}
                 {vista === "trivia" && <Trivia sit={sit} onScore={(s) => { setSit(s); refrescarTrivia().catch(() => {}); }} onVolver={volver} />}
-                {vista === "asistente" && <Asistente sit={sit} onVolver={volver} />}
+                {vista === "asistente" && <Asistente chat={chat} onVolver={volver} onPagar={() => irA("pagar")} />}
               </div>
             )}
           </motion.div>
@@ -125,27 +134,14 @@ export default function Dashboard({ clienteId, vistaInicial = "inicio", inicial 
 
       <Bienvenida clienteId={clienteId} nombre={sit.cliente.nombre} />
 
-      <AnimatePresence>
-        {aviso && <motion.p initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="fixed inset-x-4 top-16 z-50 mx-auto max-w-md rounded-[20px] bg-black/85 p-3 text-center text-[15px] font-medium text-white backdrop-blur">{aviso}</motion.p>}
-      </AnimatePresence>
-
-      {/* Botón flotante de ayuda rápida (family-button de cult-ui) */}
-      <div className="fixed bottom-[104px] right-3 z-40 md:right-[max(12px,calc(50%-500px))]">
-        <FamilyButton etiqueta="Ayuda rápida">
-          <div className="flex h-full flex-col items-stretch gap-2 p-3 pt-4">
-            <p className="px-1 text-[13px] font-semibold text-white/80">¿En qué le ayudamos?</p>
-            <button onClick={() => irA("asistente")} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left text-[14px] font-semibold hover:bg-white/25"><IcBurbuja tam={18} />Hablar con Pareas</button>
-            <button onClick={pedirGestor} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left text-[14px] font-semibold hover:bg-white/25"><IcGestor tam={18} />Llamar a mi gestor</button>
-            {(hayDeuda || sit.propuestaActiva) && <button onClick={() => irA("pagar")} className="flex min-h-[44px] items-center gap-2 rounded-xl bg-white/15 px-3 text-left text-[14px] font-semibold hover:bg-white/25"><IcQR tam={18} />QR para un familiar</button>}
-          </div>
-        </FamilyButton>
-      </div>
+      {/* Chatbot virtual de Pareas (burbuja flotante con su favicon) */}
+      <BurbujaChat chat={chat} abierto={chatAbierto} setAbierto={setChatAbierto} onPagar={() => irA("pagar")} />
 
       {/* Barra de pestañas flotante (dock de cult-ui) */}
       <nav aria-label="Secciones">
         <Dock className="fixed bottom-3 left-1/2 h-auto items-end gap-2 rounded-[26px] bg-white/75 px-2.5 pb-1.5 pt-2 backdrop-blur-xl hover:bg-white/85">
           {ITEMS.filter((x) => x.ok).map((x, i) => (
-            <DockCard key={x.e} id={String(i)} etiqueta={x.e} activo={vista === x.v} onClick={() => irA(x.v)}>
+            <DockCard key={x.e} id={String(i)} etiqueta={x.e} activo={vista === x.v} onClick={() => (x.v === "asistente" ? setChatAbierto(true) : irA(x.v))}>
               <span className="flex h-full w-full items-center justify-center"><x.I tam={22} /></span>
             </DockCard>
           ))}
