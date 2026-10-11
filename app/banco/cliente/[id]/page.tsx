@@ -1,11 +1,11 @@
 "use client";
 import { use, useCallback, useEffect, useState } from "react";
 import { usarPolling } from "@/lib/usar-polling";
-import { IcSalvavidas, IcCheck, IcReloj } from "@/components/iconos";
+import { IcBillete, IcCheck, IcReloj } from "@/components/iconos";
 import Link from "next/link";
 import { api, soles } from "@/lib/cliente-api";
 import { TextureButton } from "@/components/ui/texture-button";
-import { BarraGestor } from "@/components/banco/BarraGestor";
+import { MarcoGestor } from "@/components/banco/MarcoGestor";
 
 const MOTIVOS: Record<string, string> = { olvido: "Olvido", bajaron_ventas: "Bajaron las ventas", salud: "Salud", otro: "Otro" };
 
@@ -21,12 +21,11 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
   const cargar = useCallback(() => api(`/api/banco/cliente/${id}`).then(setD).catch((e) => setError(e.message)), [id]);
   useEffect(() => { cargar(); }, [cargar]);
   usarPolling(cargar, 5000); // pausado con la pestaña en segundo plano
-  if (error) return <main className="p-6"><p className="text-red-700">{error}</p></main>;
-  if (!d) return <main className="p-6">Cargando…</main>;
+  if (error) return <MarcoGestor><p className="text-red-700">{error}</p></MarcoGestor>;
+  if (!d) return <MarcoGestor><p>Cargando…</p></MarcoGestor>;
   return (
-    <>
-    <BarraGestor><Link href="/banco" className="text-sm underline min-h-[44px] flex items-center">Volver al panel</Link></BarraGestor>
-    <main className="max-w-4xl mx-auto p-4 space-y-4 pb-16">
+    <MarcoGestor>
+      <Link href="/banco/cartera" className="inline-flex min-h-[44px] items-center text-sm font-semibold text-caja-medio underline">Volver a la cartera</Link>
       <section className="card">
         <h1 className="text-2xl font-bold text-caja">{d.cliente.nombres}</h1>
         <p className="text-sm text-gray-600">DNI {d.cliente.dni} · {d.cliente.negocio} · {d.cliente.zona} · tel. {d.cliente.telefono}</p>
@@ -42,8 +41,8 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         </div>
       </section>
 
-      <section className="card space-y-2 border-fuchsia-200">
-        <h2 className="flex items-center gap-2 font-bold text-fuchsia-700"><IcSalvavidas tam={18} />Modo Rescate (campaña de regularización)</h2>
+      <section className="card space-y-2 border-[#B9D3F0]">
+        <h2 className="flex items-center gap-2 font-bold text-[#0047AB]"><IcBillete tam={18} />Modo Rescate (campaña de regularización)</h2>
         {d.cliente.sinBeneficios && <p className="text-sm rounded-xl bg-rose-50 border border-rose-200 p-2">Incumplió un plan: está <b>sin beneficios</b> y no puede reprogramar. Solo una campaña lo reactiva.</p>}
         {d.regaloVigente && (
           <p className="text-sm">Vigente hasta el {d.regaloVigente.venceLargo}: paga <b>{soles(d.regaloVigente.montoHoy)}</b> hoy (en vez de {soles(d.regaloVigente.base)}) y recupera {soles(d.regaloVigente.descuento)} con recargos de {d.regaloVigente.recargos.map((r: any) => soles(r.monto)).join(" + ")}.</p>
@@ -51,11 +50,11 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
         {d.puedeRecibirRegalo && d.vistaPreviaRegalo && (
           <>
             <p className="text-sm">Si se lo otorgas: paga <b>{soles(d.vistaPreviaRegalo.montoHoy)}</b> hoy (−{soles(d.vistaPreviaRegalo.descuento)}) y +{soles(d.vistaPreviaRegalo.recargos[0].monto)} en sus 3 cuotas siguientes. Vence en 7 días.</p>
-            <TextureButton variant="regalo" className="md:w-auto" onClick={darRegalo}><IcSalvavidas tam={18} />Activar Modo Rescate</TextureButton>
+            <TextureButton variant="regalo" className="md:w-auto" onClick={darRegalo}><IcBillete tam={18} />Activar Modo Rescate</TextureButton>
           </>
         )}
         {!d.puedeRecibirRegalo && !d.regaloVigente && <p className="text-sm text-gray-500">No aplica ahora (el cliente no está en mora o tiene un plan en marcha).</p>}
-        {aviso && <p className="text-sm font-semibold text-fuchsia-700">{aviso}</p>}
+        {aviso && <p className="text-sm font-semibold text-[#0047AB]">{aviso}</p>}
         {d.campanas.length > 0 && <p className="text-xs text-gray-500">Historial: {d.campanas.map((c: any) => `${c.estado} (${soles(c.montoHoy)})`).join(" · ")}</p>}
       </section>
 
@@ -84,7 +83,6 @@ export default function DetalleCliente({ params }: { params: Promise<{ id: strin
           </ul>
         </section>
       </div>
-    </main>
-    </>
+    </MarcoGestor>
   );
 }

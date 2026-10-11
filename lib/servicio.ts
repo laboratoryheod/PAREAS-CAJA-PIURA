@@ -1,4 +1,5 @@
 // Lógica de negocio del módulo. TODOS los montos y fechas se calculan aquí (servidor); el cliente nunca los inventa.
+import { createHash } from "node:crypto";
 import QRCode from "qrcode";
 import { getRepo, type CampanaRow, type ClienteRow, type CreditoRow, type CuotaRow, type EventoRow, type PagoPlan, type PropuestaRow, type Repo } from "./db/repo";
 import { diferenciaDias, fechaLarga, soles, sumarDias } from "./fecha";
@@ -607,7 +608,7 @@ export function cartera(f: FiltrosCartera = {}) {
     const ayuda = conAyuda.has(cliente.id);
     const regaloVig = conRegalo.has(cliente.id);
     return {
-      id: cliente.id, nombres: cliente.nombres, dni: cliente.dni_mascara, zona: cliente.zona, negocio: cliente.negocio,
+      id: cliente.id, nombres: cliente.nombres, dni: cliente.dni_mascara, dniHash: cliente.dni_hash, zona: cliente.zona, negocio: cliente.negocio,
       tipoCredito: credito.tipo_credito, score: cliente.score, nivel: cliente.nivel, estado, pideAyuda: ayuda,
       sinBeneficios: !!cliente.sin_beneficios, regaloVigente: regaloVig,
       puedeRecibirRegalo: !regaloVig && cr.diasAtraso > 0 && estado !== "reprogramado",
@@ -616,13 +617,15 @@ export function cartera(f: FiltrosCartera = {}) {
     };
   });
   const q = f.q?.trim().toLowerCase();
+  // DNI completo (8 dígitos): se compara por su hash, porque la base nunca guarda el DNI en claro
+  const hashQ = q && /^\d{8}$/.test(q) ? createHash("sha256").update(q).digest("hex") : null;
   return filas.filter((x) =>
     (!f.tramo || x.tramo === f.tramo) &&
     (!f.tipo || x.tipoCredito === f.tipo) &&
     (!f.estado || x.estado === f.estado) &&
     (!f.zona || x.zona === f.zona) &&
-    (!q || x.nombres.toLowerCase().includes(q) || x.dni.includes(q) || x.negocio.toLowerCase().includes(q)),
-  );
+    (!q || x.nombres.toLowerCase().includes(q) || x.dni.includes(q) || x.negocio.toLowerCase().includes(q) || x.dniHash === hashQ),
+  ).map(({ dniHash: _, ...x }) => x);
 }
 
 function tramoDe(dias: number): string {
@@ -659,6 +662,60 @@ export function kpis(listaPrevia?: ReturnType<typeof cartera>) {
     regalosUsados: campanas.filter((c) => c.estado === "usada").length,
     derivados: derivados(lista).length,
   };
+}
+
+// ------------------------------------------------------------------ distribución de la cartera (gráfico del gestor)
+
+export type GrupoCartera = "morosos" | "impagos" | "pagaron";
+/** Morosos: en mora, plan sin primer pago o derivados. Impagos: incumplieron su plan. Pagaron: al día o pagando su plan. */
+export const GRUPO_DE_ESTADO: Record<EstadoCliente, GrupoCartera> = {
+  en_mora: "morosos", plan_pendiente: "morosos", derivado: "morosos",
+  incumplido: "impagos",
+  al_dia: "pagaron", reprogramado: "pagaron",
+};
+
+/** Cuántos clientes hay en cada grupo y su porcentaje (mismos filtros de la cartera, sin búsqueda por DNI). */
+export function distribucionCartera(f: Omit<FiltrosCartera, "q"> = {}) {
+  const lista = cartera({ tramo: f.tramo, tipo: f.tipo, estado: f.estado, zona: f.zona });
+  const total = lista.length;
+  const grupos = (["morosos", "impagos", "pagaron"] as GrupoCartera[]).map((g) => {
+    const del = lista.filter((c) => GRUPO_DE_ESTADO[c.estado] === g);
+    const n = del.length;
+    return { grupo: g, clientes: n, pct: total ? Math.round((n / total) * 1000) / 10 : 0, deuda: r2(del.reduce((x, c) => x + c.deuda, 0)) };
+  });
+  return { total, grupos };
+}
+
+// ------------------------------------------------------------------ Modo Rescate masivo (por rango de puntos)
+
+export const RANGOS_RESCATE = [
+  { id: "0-39", min: 0, max: 39 },
+  { id: "40-59", min: 40, max: 59 },
+  { id: "60-79", min: 60, max: 79 },
+  { id: "80-100", min: 80, max: 100 },
+] as const;
+
+const elegiblesRescate = (lista: ReturnType<typeof cartera>, min: number, max: number) =>
+  lista.filter((c) => c.puedeRecibirRegalo && c.score >= min && c.score <= max);
+
+/** Para cada rango de puntos: cuántos clientes pueden recibir hoy el Modo Rescate y cuánto deben. */
+export function segmentosRescate() {
+  const lista = cartera();
+  return RANGOS_RESCATE.map((r) => {
+    const el = elegiblesRescate(lista, r.min, r.max);
+    return { ...r, elegibles: el.length, conRescate: lista.filter((c) => c.regaloVigente && c.score >= r.min && c.score <= r.max).length, deuda: r2(el.reduce((x, c) => x + c.deuda, 0)) };
+  });
+}
+
+/** Activa el Modo Rescate a todos los clientes elegibles de un rango de puntos. */
+export function otorgarRescateMasivo(rangoId: string, gestor = "gestor") {
+  const rango = RANGOS_RESCATE.find((r) => r.id === rangoId);
+  if (!rango) throw new ErrorNegocio("Rango de puntos no válido.");
+  let otorgados = 0, omitidos = 0;
+  for (const c of elegiblesRescate(cartera(), rango.min, rango.max)) {
+    try { otorgarRegalo(c.id, gestor); otorgados++; } catch { omitidos++; }
+  }
+  return { rango: rango.id, otorgados, omitidos };
 }
 
 export function derivados(listaPrevia?: ReturnType<typeof cartera>) {

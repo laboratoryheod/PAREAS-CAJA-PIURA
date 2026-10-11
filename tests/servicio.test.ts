@@ -224,3 +224,27 @@ describe("banco", () => {
     expect(k.montoComprometido).toBeGreaterThan(0);
   });
 });
+
+describe("panel del gestor: distribución y Modo Rescate masivo", () => {
+  it("la distribución suma el 100 % de la cartera y respeta los filtros", () => {
+    const d = S.distribucionCartera();
+    expect(d.total).toBe(S.cartera().length);
+    expect(d.grupos.reduce((s, g) => s + g.clientes, 0)).toBe(d.total);
+    expect(d.grupos.reduce((s, g) => s + g.pct, 0)).toBeCloseTo(100, 0);
+    const zona = S.opcionesFiltros().zonas[0];
+    const z = S.distribucionCartera({ zona });
+    expect(z.total).toBe(S.cartera({ zona }).length);
+    const soloMora = S.distribucionCartera({ estado: "en_mora" });
+    expect(soloMora.grupos.find((g) => g.grupo === "morosos")!.pct).toBe(soloMora.total ? 100 : 0);
+  });
+  it("activa el Modo Rescate a todos los elegibles de un rango y no repite", () => {
+    const rango = S.segmentosRescate().find((r) => r.elegibles > 0)!;
+    const r = S.otorgarRescateMasivo(rango.id);
+    expect(r.otorgados).toBe(rango.elegibles);
+    const despues = S.segmentosRescate().find((x) => x.id === rango.id)!;
+    expect(despues.elegibles).toBe(0);
+    expect(despues.conRescate).toBeGreaterThanOrEqual(rango.elegibles);
+    expect(S.otorgarRescateMasivo(rango.id).otorgados).toBe(0);
+    expect(() => S.otorgarRescateMasivo("999")).toThrow(/Rango/);
+  });
+});

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { AnilloScore } from "@/components/cliente/inicio/AnilloScore";
-import { FichaApp, IcBurbuja, IcCalculadora, IcLatigo, IcMando, IcTarjeta, IcEnVivo, IcSalvavidas, IcGestor } from "@/components/iconos";
+import { FichaApp, IcBurbuja, IcCalculadora, IcLatigo, IcMando, IcTarjeta, IcEnVivo, IcBillete, IcGestor } from "@/components/iconos";
 
 export function PantallaCliente() {
   return (
@@ -62,7 +62,7 @@ export function PantallaGestor() {
   const kpis = [["Avisos", "100"], ["Abrieron", "36%"], ["Planes", "13"], ["Comprometido", "S/ 9,840"]];
   const feed = [
     [IcCalculadora, "sol", "Gengis G. aceptó pagar en 2 cuotas", "hace 5 s"],
-    [IcSalvavidas, "rosa", "Modo Rescate para Elena N.", "hace 1 min"],
+    [IcBillete, "rescate", "Modo Rescate para Elena N.", "hace 1 min"],
     [IcLatigo, "rojo", "Carmen N. incumplió su plan", "hace 3 min"],
     [IcGestor, "grafito", "Santos Z. pidió hablar con un gestor", "hace 8 min"],
   ] as const;

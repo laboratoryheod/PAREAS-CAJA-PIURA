@@ -2,13 +2,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { FichaApp, IcLatigo, IcMando, IcTarjeta, IcSalvavidas } from "@/components/iconos";
+import { FichaApp, IcLatigo, IcMando, IcTarjeta, IcBillete } from "@/components/iconos";
 
 const REGLAS = [
   { i: IcMando, c: "violeta" as const, t: "Trivia del día", d: "+2 puntos por acierto, hasta +10 al día. Al completar las 5 preguntas suma racha (si está al día)." },
   { i: IcTarjeta, c: "verde" as const, t: "Pagos a tiempo", d: "+15 puntos por cada pago puntual y +20 al cumplir su plan." },
   { i: IcLatigo, c: "rojo" as const, t: "El CHICOTAZO", d: "En mora, Pareas resta 12 puntos por día. Se detiene cuando usted paga." },
-  { i: IcSalvavidas, c: "rosa" as const, t: "Campañas de la Caja", d: "Si presenta atraso, la Caja puede otorgarle un Modo Rescate para regularizarse." },
+  { i: IcBillete, c: "rescate" as const, t: "Campañas de la Caja", d: "Si presenta atraso, la Caja puede otorgarle un Modo Rescate para regularizarse." },
 ];
 
 /** Hoja de bienvenida estilo iOS: aparece la primera vez a cada usuario y ahí empieza el juego. */

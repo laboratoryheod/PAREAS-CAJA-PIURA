@@ -6,7 +6,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "@/lib/cliente-api";
 import { MOSTRAR_HERRAMIENTAS_PRUEBA } from "@/lib/config";
-import { FichaApp, IcCalendario, IcCampana, IcCerrar, IcLatigo, IcMando, IcSalvavidas, type ColorFicha } from "@/components/iconos";
+import { FichaApp, IcCalendario, IcCampana, IcCerrar, IcLatigo, IcMando, IcBillete, type ColorFicha } from "@/components/iconos";
 import { cn } from "@/lib/utils";
 
 export type AccionNotificacion = "pagar" | "trivia" | "plan" | "simulador";
@@ -16,7 +16,7 @@ const CLAVE_ACTIVAS = "pareas-notificaciones";
 const CLAVE_VISTAS = "pareas-notif-vistas";
 const DURACION_MS = 6500;
 const ESTILO: Record<Notif["tipo"], { icono: typeof IcCampana; color: ColorFicha }> = {
-  rescate: { icono: IcSalvavidas, color: "rosa" },
+  rescate: { icono: IcBillete, color: "rescate" },
   pago_cerca: { icono: IcCalendario, color: "sol" },
   mora: { icono: IcLatigo, color: "rojo" },
   trivia: { icono: IcMando, color: "violeta" },
@@ -58,29 +58,30 @@ export function Notificaciones({ clienteId, firma, onAccion }: { clienteId: numb
     return () => { vivo = false; };
   }, [clienteId, firma, activas, encolarNuevas]);
 
-  // Un banner a la vez; se va solo
-  const actual = cola[0];
+  // Un banner a la vez; se va solo. Con el centro abierto no se muestran banners (ahí ya se ven todas).
+  const actual = abierto ? undefined : cola[0];
   useEffect(() => { if (!actual) return; const t = setTimeout(() => setCola((c) => c.slice(1)), DURACION_MS); return () => clearTimeout(t); }, [actual]);
+  const abrirCentro = () => { setCola([]); setAbierto(true); };
 
   async function activar() {
     guardar(CLAVE_ACTIVAS, "1"); setActivas(true);
     try { if (typeof Notification !== "undefined" && Notification.permission === "default") await Notification.requestPermission(); } catch { /* opcional */ }
   }
   function desactivar() { guardar(CLAVE_ACTIVAS, "0"); setActivas(false); setCola([]); }
-  function reenviar() { vistas.current = new Set(); guardar(CLAVE_VISTAS, "[]"); setAbierto(false); encolarNuevas(items); }
+  function reenviar() { vistas.current = new Set(); guardar(CLAVE_VISTAS, "[]"); setAbierto(false); setCola([]); encolarNuevas(items); }
   const tocar = (n: Notif) => { setCola((c) => c.filter((x) => x.id !== n.id)); setAbierto(false); onAccion(n.accion); };
 
   return (
     <>
       {/* Campana de la barra superior (desactivadas: píldora para activarlas, como el botón Reiniciar) */}
       {activas ? (
-        <button onClick={() => setAbierto((x) => !x)} aria-label={`Notificaciones (${items.length})`} aria-expanded={abierto}
+        <button onClick={() => (abierto ? setAbierto(false) : abrirCentro())} aria-label={`Notificaciones (${items.length})`} aria-expanded={abierto}
           className="relative grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25 active:scale-[0.96]">
           <IcCampana tam={19} />
           {items.length > 0 && <span className="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#FF3B30] px-1 text-[11px] font-bold tabular-nums">{items.length}</span>}
         </button>
       ) : (
-        <button onClick={() => { activar(); setAbierto(true); }} aria-label="Activar notificaciones"
+        <button onClick={activar} aria-label="Activar notificaciones"
           className="flex min-h-[36px] items-center gap-1.5 rounded-full bg-[#F9A825] px-3 text-[13px] font-semibold text-[#1A1A1A] transition-transform active:scale-[0.96]">
           <IcCampana tam={16} /><span className="max-sm:hidden">Activar avisos</span>
         </button>
@@ -120,7 +121,7 @@ export function Notificaciones({ clienteId, firma, onAccion }: { clienteId: numb
 
       {/* Banner tipo iOS */}
       <div className="pointer-events-none fixed inset-x-0 top-2 z-[70] flex justify-center px-3">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
           {actual && (
             <motion.button key={actual.id} onClick={() => tocar(actual)} drag="y" dragConstraints={{ top: -120, bottom: 0 }} dragElastic={0.2}
               onDragEnd={(_, info) => { if (info.offset.y < -40) setCola((c) => c.slice(1)); }}

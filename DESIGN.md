@@ -29,7 +29,7 @@ Se aplica la paleta institucional de Caja Piura (tomada de capturas de cajapiura
 | Éxito / pagado | `#34C759` |
 | Mora / CHICOTAZO | `#FF3B30`, degradado `#7A0F1C → #E2401C` |
 | Juego / trivia | `#5B2EE5 → #9B4DFF` |
-| Modo Rescate | `#D6247A → #FF7A59` |
+| Modo Rescate | azul institucional `#0072C6 → #0047AB → #00347A`, texto blanco, icono `IcBillete` (fajo de billetes) |
 El logo de Caja Piura aparece en blanco en la barra superior y en dorado al pie de Beneficios (`public/caja/`). Fondo general: azul tenue que se funde con blanco (`#DCE9F8 → #FFFFFF`).
 
 ## Flotantes

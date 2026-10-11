@@ -5,7 +5,7 @@ Contexto para agentes (Antigravity, Claude Code, Codex, etc.). **Para retomar el
 ## Qué es
 Módulo web mobile-first de autogestión de deuda para clientes con 1–30+ días de atraso. Tiene dos interfaces:
 - `/cliente`: inicio en widgets (juego/trivia, score, calendario, pagos y juegos, beneficios/campañas/CHICOTAZO, consejos + agente Pareas), simulador de plan, pagos con QR, trivia y asistente.
-- `/banco`: panel del gestor (usuario `gestor`, clave `caja2026`) con KPIs, feed en tiempo real (polling de 3 s), cartera, casos derivados y el **Modo Rescate**.
+- `/banco`: panel del gestor (usuario `gestor`, clave `caja2026`) con sidebar: Resumen (KPIs, gráfico circular de la cartera con filtros, casos derivados), Cartera y **Modo Rescate** (masivo por rango de puntos o individual por DNI/nombre).
 Usa una cartera de ejemplo en SQLite; la conexión al core bancario se hace implementando la interfaz `Repo`.
 
 ## Stack

@@ -11,8 +11,8 @@ type Tipo = "vencida" | "plan" | "pagado" | "regalo" | "recargo";
 interface Marca { fecha: string; tipo: Tipo; texto: string; monto?: number }
 
 const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-const COLOR: Record<Tipo, string> = { vencida: "bg-[#FF3B30]", plan: "bg-[#0072C6]", pagado: "bg-[#34C759]", regalo: "bg-[#D6247A]", recargo: "bg-[#FF9F0A]" };
-const ETIQUETA: Record<Tipo, string> = { vencida: "Vencida", plan: "Pago del plan", pagado: "Pagado", regalo: "Vence su regalo", recargo: "Recargo" };
+const COLOR: Record<Tipo, string> = { vencida: "bg-[#FF3B30]", plan: "bg-[#0072C6]", pagado: "bg-[#34C759]", regalo: "bg-[#00347A]", recargo: "bg-[#FF9F0A]" };
+const ETIQUETA: Record<Tipo, string> = { vencida: "Vencida", plan: "Pago del plan", pagado: "Pagado", regalo: "Vence Modo Rescate", recargo: "Recargo" };
 
 /** Todas las fechas vienen del servidor (situación del cliente); aquí solo se ubican en el mes. */
 function marcasDe(s: Situacion): Marca[] {
@@ -21,7 +21,7 @@ function marcasDe(s: Situacion): Marca[] {
   plan?.pagos.forEach((p) => m.push({ fecha: p.fecha, tipo: p.pagado ? "pagado" : "plan", texto: p.tipo === "inicial" ? "Inicial del plan" : `Cuota ${p.n} del plan`, monto: p.monto }));
   if (s.regalo) {
     m.push({ fecha: s.regalo.vence, tipo: "regalo", texto: "Vence su Modo Rescate", monto: s.regalo.montoHoy });
-    s.regalo.recargos.forEach((r) => m.push({ fecha: r.fecha, tipo: "recargo", texto: "Recargo del regalo", monto: r.monto }));
+    s.regalo.recargos.forEach((r) => m.push({ fecha: r.fecha, tipo: "recargo", texto: "Recargo del Modo Rescate", monto: r.monto }));
   }
   return m;
 }

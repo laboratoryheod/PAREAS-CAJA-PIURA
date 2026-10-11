@@ -46,6 +46,12 @@ export const IcCompartir = (p: P) => <Glifo {...p}><path d="M12 3.8v11M8 7.6l4-3
 export const IcReiniciar = (p: P) => <Glifo {...p}><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" /><path d="M4.2 4.2v3.4h3.4" /></Glifo>;
 /** Salvavidas: el Modo Rescate. */
 export const IcSalvavidas = (p: P) => <Glifo {...p}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="3.6" /><path d="M9.4 9.4 6 6M14.6 9.4 18 6M14.6 14.6 18 18M9.4 14.6 6 18" strokeWidth={2.6} /></Glifo>;
+/** Fajo de billetes: el Modo Rescate. */
+export const IcBillete = (p: P) => <Glifo {...p}><rect x="2.8" y="7" width="15.5" height="10" rx="2" /><circle cx="10.55" cy="12" r="2.3" /><path d="M5.6 9.8v.01M15.5 14.2v.01" strokeWidth={2.4} /><path d="M5.5 19.3h12.7a2.5 2.5 0 0 0 2.5-2.5V9.5" /></Glifo>;
+/** Gráfico circular (distribución de la cartera). */
+export const IcGraficoCircular = (p: P) => <Glifo {...p}><path d="M20.5 13A8.5 8.5 0 1 1 11 3.5" /><path d="M14 3.6A7 7 0 0 1 20.4 10H14Z" /></Glifo>;
+/** Lista de clientes (cartera). */
+export const IcLista = (p: P) => <Glifo {...p}><path d="M9 6.5h11M9 12h11M9 17.5h11" /><circle cx="4.8" cy="6.5" r="1.1" fill="currentColor" stroke="none" /><circle cx="4.8" cy="12" r="1.1" fill="currentColor" stroke="none" /><circle cx="4.8" cy="17.5" r="1.1" fill="currentColor" stroke="none" /></Glifo>;
 export const IcDescuento = (p: P) => <Glifo {...p}><path d="M3.8 12.6V5.4a1.6 1.6 0 0 1 1.6-1.6h7.2l7.8 7.8a1.6 1.6 0 0 1 0 2.3l-6.6 6.6a1.6 1.6 0 0 1-2.3 0Z" /><circle cx="8.3" cy="8.3" r="1.3" /><path d="m11 15.2 4.2-4.2" /></Glifo>;
 
 /** Pareas en silueta (cabeza de iguana con cresta) para avatares pequeños. */
@@ -61,7 +67,7 @@ const PALETA = {
   rojo: "from-[#FF6A3D] to-[#C9182B]",
   verde: "from-[#5EE08A] to-[#1DA851]",
   violeta: "from-[#C77DFF] to-[#7B2FF7]",
-  rosa: "from-[#FF6FB5] to-[#D6247A]",
+  rescate: "from-[#2F8CFF] to-[#00529B]", // Modo Rescate: azul institucional
   grafito: "from-[#5A5F6A] to-[#1C1F26]",
   menta: "from-[#63E6E2] to-[#0FA5A0]",
 } as const;

@@ -14,7 +14,11 @@ Tiene dos interfaces:
   - consejos, más el asistente Pareas.
 
   Tiene además el simulador de plan, el pago con QR, la trivia, el asistente, **notificaciones** y el **Modo Rescate**.
-- **`/banco`**: el panel del gestor (usuario `gestor`, clave `caja2026`). Ofrece KPIs, un feed en tiempo real (polling de 3 s), la cartera con filtros, los casos derivados y el detalle de cada cliente, desde donde el gestor activa el **Modo Rescate**.
+- **`/banco`**: el panel del gestor (usuario `gestor`, clave `caja2026`). Tiene un sidebar (`components/banco/MarcoGestor.tsx`) con tres secciones; en celular, el sidebar se convierte en tres pestañas.
+  - **Resumen** (`/banco`, `BancoDashboard.tsx`): KPIs, el **gráfico circular** de la cartera y los casos derivados. El gráfico (`GraficoCartera.tsx`, API `/api/banco/distribucion`) muestra morosos, impagos y pagaron con filtros de tramo, tipo, estado y zona, sin DNI.
+  - **Cartera** (`/banco/cartera`, `Cartera.tsx`): tabla con búsqueda y filtros.
+  - **Modo Rescate** (`/banco/rescate`, `ModoRescate.tsx`, API `/api/banco/rescate`): campaña **masiva** por rango de score (0–39, 40–59, 60–79 y 80–100; pide dos toques para confirmar) y campaña **individual** buscando por DNI o nombre.
+  - El detalle del cliente (`/banco/cliente/[id]`) también permite activar el Modo Rescate.
 - **`/`**: landing estilo Apple, con mock de iPhone y Mac y botones flotantes.
 
 La cartera es de ejemplo (100 deudores) y vive en SQLite. Para conectarse al core bancario hay que implementar la interfaz `Repo` (`lib/db/repo.ts`).
@@ -31,6 +35,7 @@ La cartera es de ejemplo (100 deudores) y vive en SQLite. Para conectarse al cor
 - **Fecha del sistema:** es fija (`FECHA_SISTEMA`, 10 de octubre de 2026) y se guarda en `app_estado.fecha_sistema`. "Pasar un día" la avanza.
 
 ## 3. Preferencias del usuario (respetar siempre)
+- **Empezar toda respuesta al usuario con "Hola patrón"** (regla pedida por el usuario).
 - Responder **en español**.
 - **Preguntar antes de implementar si hay dudas** y **antes de cambios sustanciales**.
 - **Sin emojis ni stickers** en la interfaz; los iconos propios están en `components/iconos.tsx`. Tampoco poner emojis en la documentación.
@@ -78,6 +83,13 @@ Internamente todavía se llama `regalo`: constante `REGALO_SALVADOR`, tabla `cam
 - El cliente paga **hoy un 30 % menos** y recupera ese monto con **+10 % en sus 3 cuotas siguientes**.
 - Vence en 7 días.
 - Al usarlo, el cliente se pone al día y recupera sus beneficios.
+- **Masivo:** `segmentosRescate()` y `otorgarRescateMasivo(rangoId)` (`RANGOS_RESCATE`) solo alcanzan a los elegibles (`puedeRecibirRegalo`).
+- **Búsqueda por DNI completo:** se compara el SHA-256 de 8 dígitos con `dni_hash`. También funcionan los últimos 4 dígitos y el nombre.
+- **Grupos del gráfico** (`GRUPO_DE_ESTADO`):
+  - Morosos: `en_mora`, `plan_pendiente` y `derivado`.
+  - Impagos: `incumplido`.
+  - Pagaron: `al_dia` y `reprogramado`.
+- **Colores:** azul institucional y blanco (variante `regalo` de `TextureButton`, ficha `"rescate"`), con el icono **`IcBillete`** (fajo de billetes) en el gestor y en el cliente. `IcSalvavidas` e `IcRegalo` siguen exportados, pero ya no se usan.
 
 ### Notificaciones del cliente (`notificacionesCliente` en `lib/servicio.ts`)
 `GET /api/notificaciones?clienteId=N` devuelve `{ items }`. Los avisos van ordenados por `urgencia` y su id se mantiene estable durante el día:
@@ -91,6 +103,7 @@ Internamente todavía se llama `regalo`: constante `REGALO_SALVADOR`, tabla `cam
 En la interfaz (`components/cliente/Notificaciones.tsx`):
 - La píldora amarilla **Activar avisos** enciende las notificaciones y aparece una campana con badge.
 - Los banners son estilo iOS: duran 6,5 s y se descartan arrastrando hacia arriba.
+- Se muestra un solo banner a la vez (`AnimatePresence mode="wait"`). Activar los avisos no abre el centro, y con el centro abierto no salen banners, así que no se superponen.
 - El centro de avisos ofrece **Desactivar avisos** y, si las herramientas de prueba están activas, **Volver a enviar**.
 - También puede usar la API `Notification` del navegador, si se concede permiso.
 - Guarda el estado en `localStorage` con las claves `pareas-notificaciones` y `pareas-notif-vistas`.
@@ -207,8 +220,10 @@ Rendimiento:
 8. Se añadió el botón Reiniciar (temporal, como herramienta de prueba).
 9. Se optimizó el rendimiento de `/cliente` y `/banco`.
 10. Se agregaron las notificaciones del cliente y la barra con logo en el gestor.
+11. El gestor pasó a tener sidebar (Resumen, Cartera y Modo Rescate). El gráfico circular reemplazó al feed y llegó el Modo Rescate masivo por puntos. El Modo Rescate quedó en azul y blanco con icono de billete, y se corrigió la superposición de las notificaciones.
 
 ## 11. Pendientes e ideas
+- El feed "En tiempo real" se quitó de la vista y lo reemplazó el gráfico; `/api/banco/feed` sigue disponible.
 - **Notificaciones para el gestor**, el siguiente paso natural. Por ejemplo: un cliente pidió ayuda, una propuesta quedó derivada, se usó un Modo Rescate o se incumplió un plan. Se puede reutilizar el patrón de `Notificaciones.tsx` sobre el feed.
 - Opcional: renombrar los identificadores internos `regalo` → `rescate`. Afecta la tabla, la API, los componentes y los tests, y requiere `npm run seed`.
 - Antes de producción: poner `MOSTRAR_HERRAMIENTAS_PRUEBA = false` y quitar el botón Reiniciar si ya no se necesita.

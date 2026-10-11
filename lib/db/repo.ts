@@ -4,7 +4,7 @@ import type { Movimiento } from "@/lib/score";
 import type { Nivel } from "@/lib/niveles";
 import { crearRepoSqlite } from "./repo-sqlite";
 
-export interface ClienteRow { id: number; nombres: string; dni_mascara: string; telefono: string; zona: string; negocio: string; score: number; nivel: Nivel; sin_beneficios: 0 | 1; creado_en: string }
+export interface ClienteRow { id: number; nombres: string; dni_hash: string; dni_mascara: string; telefono: string; zona: string; negocio: string; score: number; nivel: Nivel; sin_beneficios: 0 | 1; creado_en: string }
 export interface CreditoRow { id: number; cliente_id: number; tipo_credito: string; monto_desembolsado: number; saldo_capital: number; tea: number; cuota_mensual: number; cuotas_pendientes: number; dias_atraso: number }
 /** pagada: 0 = vencida, 1 = pagada, 2 = reprogramada (incluida en un plan aceptado) */
 export interface CuotaRow { id: number; credito_id: number; monto: number; fecha_vencimiento: string; dias_atraso: number; interes_moratorio: number; pagada: 0 | 1 | 2 }
